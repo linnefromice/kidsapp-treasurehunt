@@ -10,13 +10,14 @@ void main() {
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({
-      'progress.unlockedSceneIds': ['scene01'],
+      'progress.slot1.unlockedSceneIds': ['scene01'],
     });
     final prefs = await SharedPreferences.getInstance();
     final container = ProviderContainer(
       overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
     );
     addTearDown(container.dispose);
+    container.read(activeSlotProvider.notifier).select('slot1');
 
     await tester.pumpWidget(
       UncontrolledProviderScope(

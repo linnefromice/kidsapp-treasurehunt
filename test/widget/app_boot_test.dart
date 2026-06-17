@@ -6,10 +6,8 @@ import 'package:kidsapp_treasurehunt/app.dart';
 import 'package:kidsapp_treasurehunt/providers.dart';
 
 void main() {
-  testWidgets('boots to the treasure map home', (tester) async {
-    SharedPreferences.setMockInitialValues({
-      'progress.unlockedSceneIds': ['scene01'],
-    });
+  testWidgets('boots to the slot select screen', (tester) async {
+    SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
 
     await tester.pumpWidget(
@@ -20,7 +18,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('たからの ちず'), findsOneWidget);
-    expect(find.byKey(const ValueKey('scene-card.scene01')), findsOneWidget);
+    expect(find.byKey(const ValueKey('slot-card.slot1')), findsOneWidget);
+    expect(find.byKey(const ValueKey('slot-new.slot1')), findsOneWidget);
   });
 }

@@ -3,8 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:kidsapp_treasurehunt/data/progress_repository.dart';
+import 'package:kidsapp_treasurehunt/data/save_slot_repository.dart';
 import 'package:kidsapp_treasurehunt/data/settings_repository.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
+import 'package:kidsapp_treasurehunt/scenes_catalog.dart';
 import 'package:kidsapp_treasurehunt/shared/audio/audio_service.dart';
 
 /// main で実インスタンスに override する。
@@ -14,9 +16,58 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
   );
 });
 
-final progressRepositoryProvider = Provider<ProgressRepository>(
-  (ref) => ProgressRepository(ref.watch(sharedPreferencesProvider)),
+/// 現在選択中のセーブスロット id（未選択は null）。
+class ActiveSlotController extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void select(String slotId) => state = slotId;
+}
+
+final activeSlotProvider = NotifierProvider<ActiveSlotController, String?>(
+  ActiveSlotController.new,
 );
+
+final saveSlotRepositoryProvider = Provider<SaveSlotRepository>(
+  (ref) => SaveSlotRepository(ref.watch(sharedPreferencesProvider)),
+);
+
+/// 作成済みスロット id 集合 + 生成/リセットのライフサイクル。
+class SaveSlotController extends Notifier<Set<String>> {
+  @override
+  Set<String> build() =>
+      ref.read(saveSlotRepositoryProvider).createdSlotIds().toSet();
+
+  Future<void> createSlot(String slotId) async {
+    await ref.read(saveSlotRepositoryProvider).markCreated(slotId);
+    await ProgressRepository(
+      ref.read(sharedPreferencesProvider),
+      slotId,
+    ).ensureInitialUnlock(kFirstSceneId);
+    state = {...state, slotId};
+  }
+
+  Future<void> resetSlot(String slotId) async {
+    await ref.read(saveSlotRepositoryProvider).removeCreated(slotId);
+    await ProgressRepository(
+      ref.read(sharedPreferencesProvider),
+      slotId,
+    ).clearAll();
+    state = state.where((id) => id != slotId).toSet();
+  }
+}
+
+final saveSlotControllerProvider =
+    NotifierProvider<SaveSlotController, Set<String>>(SaveSlotController.new);
+
+/// アクティブスロットにスコープした進捗 Repository。既存画面はこれを使うだけでよい。
+final progressRepositoryProvider = Provider<ProgressRepository>((ref) {
+  final slotId = ref.watch(activeSlotProvider);
+  if (slotId == null) {
+    throw StateError('No active save slot selected');
+  }
+  return ProgressRepository(ref.watch(sharedPreferencesProvider), slotId);
+});
 
 final settingsRepositoryProvider = Provider<SettingsRepository>(
   (ref) => SettingsRepository(ref.watch(sharedPreferencesProvider)),

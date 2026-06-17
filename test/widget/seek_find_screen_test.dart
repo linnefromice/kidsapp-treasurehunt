@@ -30,6 +30,8 @@ Future<ProviderContainer> _pumpScene(WidgetTester tester) async {
   );
   addTearDown(container.dispose);
 
+  container.read(activeSlotProvider.notifier).select('slot1');
+
   // rootBundle.loadString は flutter_test の擬似イベントループでは 2 番目以降の
   // テストで解決しない既知の制約があるため、実イベントループ(runAsync)で
   // FutureProvider のシーンロードを先に解決させてから widget を pump する。
