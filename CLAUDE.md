@@ -20,6 +20,7 @@ iPad 向けに **Flutter** で個人開発する。
 | コアゲーム | **シーク＆ファインド**：1 枚のシーンをピンチ拡大/パンしながら隠し宝をタップ → 図鑑に収納 → 全部見つけてコンプリート → 次シーン解放 |
 | 操作 | **タップで探す（Tap 版から開始）**。「掘る (Dig / スクラッチ)」は同じコアループ上に後続で内部差し替え |
 | 対象 | Android タブレット・iPad（タブレット横向きが第一級） / 5〜11 歳 / 言語 ja・en |
+| セーブ | **固定 3 スロット**・進捗のみ独立（言語は共通）。起動時にアバターで選択。リセットは保護者ゲート経由 |
 | バックエンド | **無し**（端末ローカル完結） |
 
 ## ゲーム設計原則（調査レポート由来 / spec §1.3）
@@ -43,10 +44,10 @@ iPad 向けに **Flutter** で個人開発する。
   `GestureDetector` の `localPosition`（= シーン座標）+ `Rect.contains`（正規化 Rect で当たり判定）。
   ゲームループ・物理が不要なため **Flame は入れない**。
 - 状態管理: **Riverpod**（MVP は手動 `Notifier`/`Provider`・**コード生成なし**。将来 `@riverpod` へ移行可）
-- ルーティング: **go_router** / 音声: **audioplayers**（通信なし・効果音のみ）
-- 永続化: **shared_preferences**（`lib/data/` の Repository で隠蔽。将来 DB へ差し替えても上位不変）
+- ルーティング: **go_router**（`routerProvider`）。ルート: `/slots`(初期) / `/` / `/hunt/:sceneId` / `/settings`。アクティブスロット未選択なら `/slots` に redirect。音声: **audioplayers**（通信なし・効果音のみ）
+- 永続化: **shared_preferences**（`lib/data/` の Repository で隠蔽）。進捗はセーブスロットで名前空間化（`progress.<slotId>.*`）、`progressRepositoryProvider` は `activeSlotProvider` にスコープ。将来 DB へ差し替えても上位不変
 - i18n: 当面 **ja/en の文字列 Map**（`lib/shared/strings/`）。本格化時に `intl`/ARB へ移行可
-- 構成: `lib/features/{treasure_map, seek_find, settings}` + `lib/data` + `lib/shared`
+- 構成: `lib/features/{save_slots, treasure_map, seek_find, settings}` + `lib/data` + `lib/shared`（+ `lib/scenes_catalog.dart` / `lib/save_slots_catalog.dart`）
 
 ## 絶対制約（Kids 規制・最重要 / README §6）
 
@@ -72,12 +73,12 @@ iPad 向けに **Flutter** で個人開発する。
 
 ## テスト戦略（spec §8）
 
-- **Unit**: `findHitTargetId`（座標正規化 + `Rect.contains`）/ `ProgressRepository` /
-  `SettingsRepository`（`SharedPreferences.setMockInitialValues` を使用）
-- **Widget**: 宝の地図ホーム / シーン画面（タップ発見 → 図鑑充填 → コンプリート）/ `KidsButton`
+- **Unit**: `findHitTargetId`（座標正規化 + `Rect.contains`）/ `ProgressRepository`（slotスコープ・独立性・`clearAll`） /
+  `SettingsRepository` / `SaveSlotRepository` / `SaveSlotController`（生成/リセット・スロット独立）（`SharedPreferences.setMockInitialValues` を使用）
+- **Widget**: スロット選択（新規→遷移 / リセット→保護者ゲート）/ 宝の地図ホーム / シーン画面（タップ発見 → 図鑑充填 → コンプリート）/ `KidsButton` / 起動スモーク（`/slots`）
 - Golden（alchemist）は画面が安定してから導入（現スコープ外）
-- **ローカル品質チェック**: `scripts/check.sh` = `dart format --set-exit-if-changed .` →
-  `flutter analyze` → `flutter test`
+- **ローカル品質チェック**: `scripts/check.sh` = `fvm dart format --set-exit-if-changed .` →
+  `fvm flutter analyze` → `fvm flutter test`
 
 ## ビルド / 配布
 
