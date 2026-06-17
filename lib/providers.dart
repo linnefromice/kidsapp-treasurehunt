@@ -47,7 +47,7 @@ final localeControllerProvider = NotifierProvider<LocaleController, Locale>(
 );
 
 /// シーン内で見つけた宝の id 集合(sceneId ごと)。
-class FoundController extends FamilyNotifier<Set<String>, String> {
+class FoundController extends AutoDisposeFamilyNotifier<Set<String>, String> {
   @override
   Set<String> build(String sceneId) => <String>{};
 
@@ -57,7 +57,5 @@ class FoundController extends FamilyNotifier<Set<String>, String> {
   }
 }
 
-final foundControllerProvider =
-    NotifierProvider.family<FoundController, Set<String>, String>(
-      FoundController.new,
-    );
+final foundControllerProvider = NotifierProvider.autoDispose
+    .family<FoundController, Set<String>, String>(FoundController.new);

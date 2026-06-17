@@ -62,6 +62,39 @@ void main() {
     expect(find.byKey(const ValueKey('found.apple')), findsOneWidget);
   });
 
+  test('found-state resets on re-entry (auto-dispose, no leak)', () async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+
+    final container1 = ProviderContainer(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        audioServiceProvider.overrideWithValue(SilentAudioService()),
+      ],
+    );
+    // 1 回目: 宝を見つけてから container を破棄。
+    final sub = container1.listen(
+      foundControllerProvider('scene01'),
+      (_, __) {},
+    );
+    container1
+        .read(foundControllerProvider('scene01').notifier)
+        .markFound('apple');
+    expect(container1.read(foundControllerProvider('scene01')), {'apple'});
+    sub.close();
+    container1.dispose();
+
+    // 2 回目: 新しい container では同じ scene の found-state が空に戻る。
+    final container2 = ProviderContainer(
+      overrides: [
+        sharedPreferencesProvider.overrideWithValue(prefs),
+        audioServiceProvider.overrideWithValue(SilentAudioService()),
+      ],
+    );
+    addTearDown(container2.dispose);
+    expect(container2.read(foundControllerProvider('scene01')), isEmpty);
+  });
+
   testWidgets('finding all targets marks the scene cleared', (tester) async {
     final container = await _pumpScene(tester);
 
