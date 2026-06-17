@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'providers.dart';
-import 'router.dart';
-import 'shared/strings/strings.dart';
-import 'shared/theme/kids_theme.dart';
+import 'package:kidsapp_treasurehunt/providers.dart';
+import 'package:kidsapp_treasurehunt/router.dart';
+import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
+import 'package:kidsapp_treasurehunt/shared/theme/kids_theme.dart';
 
 class TreasureHuntApp extends ConsumerWidget {
   const TreasureHuntApp({super.key});

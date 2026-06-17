@@ -2,10 +2,10 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'data/progress_repository.dart';
-import 'data/settings_repository.dart';
-import 'features/seek_find/models/scene_def.dart';
-import 'shared/audio/audio_service.dart';
+import 'package:kidsapp_treasurehunt/data/progress_repository.dart';
+import 'package:kidsapp_treasurehunt/data/settings_repository.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
+import 'package:kidsapp_treasurehunt/shared/audio/audio_service.dart';
 
 /// main で実インスタンスに override する。
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {

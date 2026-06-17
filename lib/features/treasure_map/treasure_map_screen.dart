@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../providers.dart';
-import '../../scenes_catalog.dart';
-import '../../shared/strings/strings.dart';
+import 'package:kidsapp_treasurehunt/providers.dart';
+import 'package:kidsapp_treasurehunt/scenes_catalog.dart';
+import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
 
 class TreasureMapScreen extends ConsumerWidget {
   const TreasureMapScreen({super.key});

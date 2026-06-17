@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../providers.dart';
-import '../../shared/strings/strings.dart';
+import 'package:kidsapp_treasurehunt/providers.dart';
+import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});

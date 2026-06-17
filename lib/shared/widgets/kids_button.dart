@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../theme/kids_theme.dart';
+import 'package:kidsapp_treasurehunt/shared/theme/kids_theme.dart';
 
 /// 子供向けの大きな丸ボタン。最小 60x60 を保証する。
 class KidsButton extends StatelessWidget {

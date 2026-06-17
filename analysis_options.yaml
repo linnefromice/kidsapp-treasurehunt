@@ -4,3 +4,5 @@ linter:
   rules:
     prefer_const_constructors: true
     prefer_final_locals: true
+    # プロジェクト内 import は package: に統一（cross-layer の相対 import を禁止）
+    always_use_package_imports: true

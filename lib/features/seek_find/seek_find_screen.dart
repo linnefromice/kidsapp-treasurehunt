@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../providers.dart';
-import '../../shared/strings/strings.dart';
-import 'models/scene_def.dart';
-import 'seek_find_logic.dart';
-import 'widgets/collection_bar.dart';
-import 'widgets/found_burst.dart';
+import 'package:kidsapp_treasurehunt/providers.dart';
+import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/seek_find_logic.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/widgets/collection_bar.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/widgets/found_burst.dart';
 
 const Size kSceneSize = Size(800, 600);
 
@@ -39,7 +39,7 @@ class _SceneView extends ConsumerStatefulWidget {
 }
 
 class _SceneViewState extends ConsumerState<_SceneView> {
-  bool _completeHandled = false;
+  bool _completed = false;
 
   @override
   Widget build(BuildContext context) {
@@ -47,15 +47,15 @@ class _SceneViewState extends ConsumerState<_SceneView> {
     final localeCode = ref.watch(localeControllerProvider).languageCode;
     final found = ref.watch(foundControllerProvider(scene.id));
 
-    // 全発見 → 一度だけ完了処理
-    if (found.length == scene.targets.length && !_completeHandled) {
-      _completeHandled = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        await ref.read(progressRepositoryProvider).markCleared(scene.id);
-        await ref.read(audioServiceProvider).playComplete();
-        if (mounted) setState(() {});
-      });
-    }
+    // 完了は副作用なので build 中では実行せず、ref.listen で
+    // 「全発見になった瞬間」に一度だけ発火させる。
+    ref.listen(foundControllerProvider(scene.id), (previous, next) {
+      final wasComplete = (previous?.length ?? 0) >= scene.targets.length;
+      final nowComplete = next.length >= scene.targets.length;
+      if (!wasComplete && nowComplete) {
+        _handleComplete(scene.id);
+      }
+    });
 
     return Column(
       children: [
@@ -102,7 +102,7 @@ class _SceneViewState extends ConsumerState<_SceneView> {
           targetIds: [for (final t in scene.targets) t.id],
           foundIds: found,
         ),
-        if (_completeHandled)
+        if (_completed)
           Padding(
             padding: const EdgeInsets.all(16),
             child: Text(
@@ -112,6 +112,12 @@ class _SceneViewState extends ConsumerState<_SceneView> {
           ),
       ],
     );
+  }
+
+  Future<void> _handleComplete(String sceneId) async {
+    await ref.read(progressRepositoryProvider).markCleared(sceneId);
+    await ref.read(audioServiceProvider).playComplete();
+    if (mounted) setState(() => _completed = true);
   }
 
   void _handleTap(Offset localPosition, SceneDef scene, Set<String> found) {

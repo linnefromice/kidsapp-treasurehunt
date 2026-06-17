@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart' show rootBundle;
 
-import 'find_target.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/models/find_target.dart';
 
 /// 1シーンの定義(背景 + 隠し宝のリスト)。
 class SceneDef {
