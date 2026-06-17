@@ -1,0 +1,37 @@
+const Map<String, Map<String, String>> _strings = {
+  'ja': {
+    'app.title': 'たからさがし',
+    'home.title': 'たからの ちず',
+    'home.locked': 'ロック',
+    'home.cleared': 'クリア',
+    'settings.title': 'せってい',
+    'settings.language': 'ことば',
+    'seek.complete': 'みつけたね！',
+    'scene.scene01.title': 'もりの たからさがし',
+    'scene.scene02.title': 'うみの たからさがし',
+    'scene.scene03.title': 'そらの たからさがし',
+    'target.apple': 'りんご',
+    'target.duck': 'あひる',
+    'target.star': 'ほし',
+  },
+  'en': {
+    'app.title': 'Treasure Hunt',
+    'home.title': 'Treasure Map',
+    'home.locked': 'Locked',
+    'home.cleared': 'Cleared',
+    'settings.title': 'Settings',
+    'settings.language': 'Language',
+    'seek.complete': 'You found them all!',
+    'scene.scene01.title': 'Forest Hunt',
+    'scene.scene02.title': 'Ocean Hunt',
+    'scene.scene03.title': 'Sky Hunt',
+    'target.apple': 'Apple',
+    'target.duck': 'Duck',
+    'target.star': 'Star',
+  },
+};
+
+/// localeCode('ja'|'en') と key から表示文字列を返す。未定義は ja → key の順でフォールバック。
+String tr(String localeCode, String key) {
+  return _strings[localeCode]?[key] ?? _strings['ja']?[key] ?? key;
+}
