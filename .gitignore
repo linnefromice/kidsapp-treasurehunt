@@ -1,0 +1,5 @@
+# Claude Code local files
+CLAUDE.local.md
+
+# Claude Code workspace deploy bookkeeping (local, drifts over time)
+.claude/.deploy-state
