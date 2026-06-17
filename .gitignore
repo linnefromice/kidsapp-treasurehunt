@@ -3,3 +3,19 @@ CLAUDE.local.md
 
 # Claude Code workspace deploy bookkeeping (local, drifts over time)
 .claude/.deploy-state
+
+# Flutter/Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+
+# IDE
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
