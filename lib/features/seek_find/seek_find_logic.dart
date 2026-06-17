@@ -1,6 +1,6 @@
 import 'dart:ui';
 
-import 'models/find_target.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/models/find_target.dart';
 
 /// シーン座標 [scenePoint](GestureDetector の localPosition)を正規化し、
 /// まだ見つかっていない最初のヒット対象 id を返す。空振りは null。
