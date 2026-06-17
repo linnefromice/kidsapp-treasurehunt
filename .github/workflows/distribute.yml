@@ -19,9 +19,10 @@ jobs:
           distribution: temurin
           java-version: "17"
 
+      # .fvmrc を単一の真実の源として CI もローカルと同じ Flutter バージョンを使う。
       - uses: subosito/flutter-action@v2
         with:
-          channel: stable
+          flutter-version-file: .fvmrc
 
       - run: flutter pub get
 

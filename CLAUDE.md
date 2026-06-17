@@ -30,6 +30,13 @@ iPad 向けに **Flutter** で個人開発する。
 - 発見の瞬間に**多感覚フィードバックを集中**（拡大 + キラッ + 音）
 - 読字に依存しない（絵 + 音 + アニメで誘導）
 
+## Flutter バージョン（fvm で統一）
+
+- **`.fvmrc` が唯一の真実の源**（現在 `Flutter 3.44.2` / Dart 3.12.2）。ローカルも CI も同じ版を使う。
+- ローカルは必ず **`fvm flutter ...` / `fvm dart ...`**（素の `flutter` を直接使わない）。初回: `fvm install`（`.fvmrc` の版を取得）。バージョン更新: `fvm use <version>` → 全テスト確認 → コミット。
+- CI は `subosito/flutter-action` の `flutter-version-file: .fvmrc` で同じ版を読む。
+- `.fvm/`（SDK シンボリックリンク実体）は gitignore、`.fvmrc` はコミット。
+
 ## 技術スタック
 
 - **コア = 純 Flutter 標準 API**：`InteractiveViewer`（ズーム/パン）+ シーン子要素上の

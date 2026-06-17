@@ -19,3 +19,6 @@ build/
 *.ipr
 *.iws
 .vscode/
+
+# FVM Version Cache
+.fvm/
