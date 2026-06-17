@@ -13,6 +13,10 @@ const Map<String, Map<String, String>> _strings = {
     'target.apple': 'りんご',
     'target.duck': 'あひる',
     'target.star': 'ほし',
+    'slot.title': 'だれが あそぶ?',
+    'slot.new': 'あたらしく',
+    'slot.continue': 'つづき',
+    'slot.reset': 'リセット',
   },
   'en': {
     'app.title': 'Treasure Hunt',
@@ -28,6 +32,10 @@ const Map<String, Map<String, String>> _strings = {
     'target.apple': 'Apple',
     'target.duck': 'Duck',
     'target.star': 'Star',
+    'slot.title': 'Who is playing?',
+    'slot.new': 'New',
+    'slot.continue': 'Continue',
+    'slot.reset': 'Reset',
   },
 };
 
