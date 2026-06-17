@@ -75,6 +75,10 @@ iPad 向けに **Flutter** で個人開発する。
 ## ビルド / 配布
 
 - **CI（GitHub Actions / `workflow_dispatch`）= Firebase App Distribution への Android APK 手動配布のみ**。
+  - `g-runner-flutter` 方式を踏襲: `actions/setup-java@v4`(temurin 17) → flutter-action → `flutter build apk --release` → `wzieba/Firebase-Distribution-Github-Action`。
+  - release は `android/app/build.gradle.kts` の既定で **debug 鍵署名**（専用 keystore 不要。App Distribution のテスター配布はこれで可）。
+  - 必要 Secrets: `FIREBASE_APP_ID` / `FIREBASE_SERVICE_ACCOUNT_KEY`（App Distribution Admin 権限のサービスアカウント JSON 全文）。テスターグループ名は `internal-testers`。
+  - 自動配布したい場合は `distribute.yml` の `push: branches: [main]` のコメントを外す。
 - lint / format / test は当面**ローカル**（`scripts/check.sh`）。後で同スクリプトを CI ジョブへ昇格可能。
 - iOS 配布は当面スコープ外（Apple 署名の CI 投入が重いため。ローカル Xcode で確認）。
 

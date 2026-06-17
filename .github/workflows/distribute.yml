@@ -1,7 +1,11 @@
 name: Distribute (Android)
 
+# Firebase App Distribution への Android APK 配布（手動）。
+# 自動配布したくなったら下の `push:` のコメントを外す（g-runner-flutter は push+manual）。
 on:
   workflow_dispatch:
+  # push:
+  #   branches: [main]
 
 jobs:
   distribute-android:
@@ -9,18 +13,29 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Android (Gradle) ビルドに JDK 17 が必要。
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
 
       - run: flutter pub get
 
+      # release は android/app/build.gradle.kts により debug 鍵で署名される
+      # （専用 keystore 不要。App Distribution のテスター配布はこれで可）。
       - run: flutter build apk --release
 
       - name: Upload to Firebase App Distribution
         uses: wzieba/Firebase-Distribution-Github-Action@v1
         with:
           appId: ${{ secrets.FIREBASE_APP_ID }}
-          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          groups: testers
+          serviceCredentialsFileContent: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KEY }}
+          groups: internal-testers
           file: build/app/outputs/flutter-apk/app-release.apk
+          releaseNotes: |
+            Build from commit ${{ github.sha }}
+            ${{ github.event.head_commit.message }}
