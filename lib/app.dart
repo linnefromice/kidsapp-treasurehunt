@@ -12,11 +12,12 @@ class TreasureHuntApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final locale = ref.watch(localeControllerProvider);
+    final router = ref.watch(routerProvider);
     return MaterialApp.router(
       title: tr(locale.languageCode, 'app.title'),
       theme: KidsTheme.light(),
       locale: locale,
-      routerConfig: appRouter,
+      routerConfig: router,
       debugShowCheckedModeBanner: false,
     );
   }
