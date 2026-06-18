@@ -537,10 +537,19 @@ class _MountainPainter extends CustomPainter {
     final snowH = halfWidth * 0.28;
     final path = Path()
       ..moveTo(peakX * size.width, peakY * size.height)
-      ..lineTo((peakX - snowH) * size.width, (peakY + snowH * 0.9) * size.height)
-      ..lineTo((peakX + snowH) * size.width, (peakY + snowH * 0.9) * size.height)
+      ..lineTo(
+        (peakX - snowH) * size.width,
+        (peakY + snowH * 0.9) * size.height,
+      )
+      ..lineTo(
+        (peakX + snowH) * size.width,
+        (peakY + snowH * 0.9) * size.height,
+      )
       ..close();
-    canvas.drawPath(path, Paint()..color = Colors.white.withValues(alpha: 0.88));
+    canvas.drawPath(
+      path,
+      Paint()..color = Colors.white.withValues(alpha: 0.88),
+    );
   }
 
   void _drawCloud(Canvas canvas, Size size, double cx, double cy) {
@@ -565,11 +574,26 @@ class _NightPainter extends CustomPainter {
   const _NightPainter();
 
   static const List<List<double>> _kStars = [
-    [0.06, 0.05], [0.18, 0.08], [0.30, 0.04], [0.42, 0.09],
-    [0.55, 0.03], [0.67, 0.07], [0.78, 0.05], [0.90, 0.10],
-    [0.12, 0.17], [0.35, 0.14], [0.58, 0.18], [0.82, 0.15],
-    [0.05, 0.28], [0.25, 0.23], [0.47, 0.26], [0.72, 0.21],
-    [0.94, 0.25], [0.15, 0.32], [0.60, 0.30], [0.88, 0.34],
+    [0.06, 0.05],
+    [0.18, 0.08],
+    [0.30, 0.04],
+    [0.42, 0.09],
+    [0.55, 0.03],
+    [0.67, 0.07],
+    [0.78, 0.05],
+    [0.90, 0.10],
+    [0.12, 0.17],
+    [0.35, 0.14],
+    [0.58, 0.18],
+    [0.82, 0.15],
+    [0.05, 0.28],
+    [0.25, 0.23],
+    [0.47, 0.26],
+    [0.72, 0.21],
+    [0.94, 0.25],
+    [0.15, 0.32],
+    [0.60, 0.30],
+    [0.88, 0.34],
   ];
 
   @override
@@ -634,11 +658,17 @@ class _NightPainter extends CustomPainter {
     );
 
     // Fireflies (small glowing dots)
-    final firefly = Paint()..color = const Color(0xFFFFFF00).withValues(alpha: 0.80);
-    final fireflyGlow = Paint()..color = const Color(0xFFFFFF00).withValues(alpha: 0.25);
+    final firefly = Paint()
+      ..color = const Color(0xFFFFFF00).withValues(alpha: 0.80);
+    final fireflyGlow = Paint()
+      ..color = const Color(0xFFFFFF00).withValues(alpha: 0.25);
     for (final pos in [
-      [0.28, 0.55], [0.45, 0.62], [0.62, 0.50], [0.75, 0.58],
-      [0.15, 0.60], [0.87, 0.53],
+      [0.28, 0.55],
+      [0.45, 0.62],
+      [0.62, 0.50],
+      [0.75, 0.58],
+      [0.15, 0.60],
+      [0.87, 0.53],
     ]) {
       final fx = pos[0] * size.width;
       final fy = pos[1] * size.height;
