@@ -3,18 +3,18 @@
   "titleKey": "scene.scene03.title",
   "imageAsset": "assets/scenes/scene03.png",
   "targets": [
-    { "id": "apple",  "labelKey": "target.apple",  "left": 0.110, "top": 0.175, "width": 0.10, "height": 0.12 },
-    { "id": "duck",   "labelKey": "target.duck",   "left": 0.420, "top": 0.215, "width": 0.10, "height": 0.12 },
-    { "id": "star",   "labelKey": "target.star",   "left": 0.730, "top": 0.195, "width": 0.10, "height": 0.12 },
-    { "id": "flower", "labelKey": "target.flower", "left": 0.250, "top": 0.655, "width": 0.10, "height": 0.12 },
-    { "id": "heart",  "labelKey": "target.heart",  "left": 0.630, "top": 0.635, "width": 0.10, "height": 0.12 }
+    { "id": "apple",  "labelKey": "target.apple",  "left": 0.110, "top": 0.175, "width": 0.11, "height": 0.13 },
+    { "id": "duck",   "labelKey": "target.duck",   "left": 0.420, "top": 0.215, "width": 0.11, "height": 0.13 },
+    { "id": "star",   "labelKey": "target.star",   "left": 0.730, "top": 0.195, "width": 0.11, "height": 0.13 },
+    { "id": "flower", "labelKey": "target.flower", "left": 0.250, "top": 0.655, "width": 0.11, "height": 0.13 },
+    { "id": "heart",  "labelKey": "target.heart",  "left": 0.630, "top": 0.635, "width": 0.11, "height": 0.13 }
   ],
   "dummies": [
-    { "id": "car1",      "iconId": "car",      "left": 0.335, "top": 0.420, "width": 0.10, "height": 0.12 },
-    { "id": "key1",      "iconId": "key",      "left": 0.815, "top": 0.450, "width": 0.10, "height": 0.12 },
-    { "id": "umbrella2", "iconId": "umbrella", "left": 0.060, "top": 0.280, "width": 0.10, "height": 0.12 },
-    { "id": "ball2",     "iconId": "ball",     "left": 0.570, "top": 0.460, "width": 0.10, "height": 0.12 },
-    { "id": "bug2",      "iconId": "bug",      "left": 0.750, "top": 0.540, "width": 0.10, "height": 0.12 },
-    { "id": "leaf3",     "iconId": "leaf",     "left": 0.150, "top": 0.530, "width": 0.10, "height": 0.12 }
+    { "id": "car1",      "iconId": "car",      "left": 0.335, "top": 0.420, "width": 0.11, "height": 0.13 },
+    { "id": "key1",      "iconId": "key",      "left": 0.815, "top": 0.450, "width": 0.11, "height": 0.13 },
+    { "id": "umbrella2", "iconId": "umbrella", "left": 0.060, "top": 0.280, "width": 0.11, "height": 0.13 },
+    { "id": "ball2",     "iconId": "ball",     "left": 0.570, "top": 0.460, "width": 0.11, "height": 0.13 },
+    { "id": "bug2",      "iconId": "bug",      "left": 0.750, "top": 0.540, "width": 0.11, "height": 0.13 },
+    { "id": "leaf3",     "iconId": "leaf",     "left": 0.150, "top": 0.530, "width": 0.11, "height": 0.13 }
   ]
 }

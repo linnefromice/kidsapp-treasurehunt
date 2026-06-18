@@ -3,17 +3,17 @@
   "titleKey": "scene.scene02.title",
   "imageAsset": "assets/scenes/scene02.png",
   "targets": [
-    { "id": "apple",  "labelKey": "target.apple",  "left": 0.130, "top": 0.200, "width": 0.10, "height": 0.12 },
-    { "id": "ball",   "labelKey": "target.ball",   "left": 0.630, "top": 0.240, "width": 0.10, "height": 0.12 },
-    { "id": "star",   "labelKey": "target.star",   "left": 0.290, "top": 0.640, "width": 0.10, "height": 0.12 },
-    { "id": "flower", "labelKey": "target.flower", "left": 0.710, "top": 0.660, "width": 0.10, "height": 0.12 }
+    { "id": "apple",  "labelKey": "target.apple",  "left": 0.130, "top": 0.200, "width": 0.11, "height": 0.13 },
+    { "id": "ball",   "labelKey": "target.ball",   "left": 0.630, "top": 0.240, "width": 0.11, "height": 0.13 },
+    { "id": "star",   "labelKey": "target.star",   "left": 0.290, "top": 0.640, "width": 0.11, "height": 0.13 },
+    { "id": "flower", "labelKey": "target.flower", "left": 0.710, "top": 0.660, "width": 0.11, "height": 0.13 }
   ],
   "dummies": [
-    { "id": "anchor1",   "iconId": "anchor",   "left": 0.395, "top": 0.220, "width": 0.10, "height": 0.12 },
-    { "id": "swimmer1",  "iconId": "swimmer",  "left": 0.065, "top": 0.640, "width": 0.10, "height": 0.12 },
-    { "id": "umbrella1", "iconId": "umbrella", "left": 0.495, "top": 0.600, "width": 0.10, "height": 0.12 },
-    { "id": "leaf2",     "iconId": "leaf",     "left": 0.200, "top": 0.350, "width": 0.10, "height": 0.12 },
-    { "id": "rabbit2",   "iconId": "rabbit",   "left": 0.820, "top": 0.400, "width": 0.10, "height": 0.12 },
-    { "id": "duck2",     "iconId": "duck",     "left": 0.500, "top": 0.380, "width": 0.10, "height": 0.12 }
+    { "id": "anchor1",   "iconId": "anchor",   "left": 0.395, "top": 0.220, "width": 0.11, "height": 0.13 },
+    { "id": "swimmer1",  "iconId": "swimmer",  "left": 0.065, "top": 0.640, "width": 0.11, "height": 0.13 },
+    { "id": "umbrella1", "iconId": "umbrella", "left": 0.495, "top": 0.600, "width": 0.11, "height": 0.13 },
+    { "id": "leaf2",     "iconId": "leaf",     "left": 0.200, "top": 0.350, "width": 0.11, "height": 0.13 },
+    { "id": "rabbit2",   "iconId": "rabbit",   "left": 0.820, "top": 0.400, "width": 0.11, "height": 0.13 },
+    { "id": "duck2",     "iconId": "duck",     "left": 0.500, "top": 0.380, "width": 0.11, "height": 0.13 }
   ]
 }
