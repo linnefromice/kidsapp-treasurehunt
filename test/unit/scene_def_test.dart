@@ -30,11 +30,13 @@ void main() {
     expect(t.normalizedRect, const Rect.fromLTWH(0.1, 0.2, 0.3, 0.4));
   });
 
-  test('loads scene02 (4 targets) and scene03 (5 targets) from assets',
-      () async {
-    final s2 = await SceneDef.loadAsset('scene02');
-    expect(s2.targets, hasLength(4));
-    final s3 = await SceneDef.loadAsset('scene03');
-    expect(s3.targets, hasLength(5));
-  });
+  test(
+    'loads scene02 (4 targets) and scene03 (5 targets) from assets',
+    () async {
+      final s2 = await SceneDef.loadAsset('scene02');
+      expect(s2.targets, hasLength(4));
+      final s3 = await SceneDef.loadAsset('scene03');
+      expect(s3.targets, hasLength(5));
+    },
+  );
 }

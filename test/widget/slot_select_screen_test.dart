@@ -29,7 +29,10 @@ void main() {
     final c = await _pumpApp(tester, {});
 
     await tester.tap(find.byKey(const ValueKey('slot-card.slot1')));
-    await tester.pumpAndSettle();
+    // Use pump() instead of pumpAndSettle(): TreasureMapScreen has a
+    // repeating pulse animation that never settles.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
 
     expect(c.read(saveSlotControllerProvider).contains('slot1'), isTrue);
     expect(find.text('たからの ちず'), findsOneWidget); // 宝の地図ホーム
