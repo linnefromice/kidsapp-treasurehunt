@@ -9,4 +9,10 @@ void main() {
     expect(targetIcon('star'), Icons.star);
     expect(targetIcon('mystery'), Icons.help_outline);
   });
+
+  test('returns icons for scene02/03 targets', () {
+    expect(targetIcon('ball'), Icons.sports_soccer);
+    expect(targetIcon('flower'), Icons.local_florist);
+    expect(targetIcon('heart'), Icons.favorite);
+  });
 }

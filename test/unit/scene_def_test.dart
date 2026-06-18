@@ -4,6 +4,8 @@ import 'package:kidsapp_treasurehunt/features/seek_find/models/find_target.dart'
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   test('SceneDef.fromJson parses targets into normalized rects', () {
     final scene = SceneDef.fromJson(const {
       'id': 'scene01',
@@ -27,4 +29,14 @@ void main() {
     expect(t.id, 'apple');
     expect(t.normalizedRect, const Rect.fromLTWH(0.1, 0.2, 0.3, 0.4));
   });
+
+  test(
+    'loads scene02 (4 targets) and scene03 (5 targets) from assets',
+    () async {
+      final s2 = await SceneDef.loadAsset('scene02');
+      expect(s2.targets, hasLength(4));
+      final s3 = await SceneDef.loadAsset('scene03');
+      expect(s3.targets, hasLength(5));
+    },
+  );
 }

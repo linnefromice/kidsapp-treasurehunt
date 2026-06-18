@@ -17,4 +17,10 @@ void main() {
     expect(tr('ja', 'slot.new'), 'あたらしく');
     expect(tr('ja', 'slot.continue'), 'つづき');
   });
+
+  test('resolves new target + toMap strings', () {
+    expect(tr('ja', 'target.ball'), 'ボール');
+    expect(tr('en', 'target.flower'), 'Flower');
+    expect(tr('ja', 'seek.toMap'), 'ちずに もどる');
+  });
 }

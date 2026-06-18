@@ -6,6 +6,9 @@ const Map<String, IconData> _kTargetIcons = {
   'apple': Icons.apple,
   'duck': Icons.flutter_dash,
   'star': Icons.star,
+  'ball': Icons.sports_soccer,
+  'flower': Icons.local_florist,
+  'heart': Icons.favorite,
 };
 
 IconData targetIcon(String id) => _kTargetIcons[id] ?? Icons.help_outline;
