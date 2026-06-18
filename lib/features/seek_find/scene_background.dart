@@ -326,7 +326,7 @@ class _CityPainter extends CustomPainter {
     [0.90, 0.46, 0.10, 0.36],
   ];
 
-  static const _kStars = [
+  static const List<List<double>> _kStars = [
     [0.08, 0.06],
     [0.22, 0.10],
     [0.38, 0.05],
@@ -564,7 +564,7 @@ class _MountainPainter extends CustomPainter {
 class _NightPainter extends CustomPainter {
   const _NightPainter();
 
-  static const _kStars = [
+  static const List<List<double>> _kStars = [
     [0.06, 0.05], [0.18, 0.08], [0.30, 0.04], [0.42, 0.09],
     [0.55, 0.03], [0.67, 0.07], [0.78, 0.05], [0.90, 0.10],
     [0.12, 0.17], [0.35, 0.14], [0.58, 0.18], [0.82, 0.15],

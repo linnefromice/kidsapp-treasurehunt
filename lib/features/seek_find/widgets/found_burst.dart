@@ -21,10 +21,12 @@ class _FoundBurstState extends State<FoundBurst>
     end: 1.0,
   ).animate(CurvedAnimation(parent: _c, curve: Curves.elasticOut));
 
+  // Fade the burst icon fully to 0 so it doesn't permanently obscure
+  // the found target icon after the animation completes.
   late final Animation<double> _iconFade = Tween<double>(
     begin: 1.0,
-    end: 0.7,
-  ).animate(CurvedAnimation(parent: _c, curve: const Interval(0.7, 1.0)));
+    end: 0.0,
+  ).animate(CurvedAnimation(parent: _c, curve: const Interval(0.5, 1.0)));
 
   @override
   void dispose() {

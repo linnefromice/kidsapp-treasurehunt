@@ -194,9 +194,9 @@ class _ClearOverlayState extends State<_ClearOverlay>
     duration: const Duration(milliseconds: 1400),
   )..repeat();
 
-  // Normalized (x, y) positions for the twinkling stars, paired with a phase
-  // offset so they don't all pulse in sync.
-  static const _kStars = [
+  // Normalized [x, y, phaseOffset] for twinkling stars. Explicit List<List<double>>
+  // type prevents Dart inferring List<List<num>> from the literal.
+  static const List<List<double>> _kStars = [
     [0.06, 0.08, 0.0], [0.22, 0.05, 0.3], [0.42, 0.12, 0.6],
     [0.62, 0.06, 0.1], [0.80, 0.10, 0.5], [0.93, 0.04, 0.8],
     [0.14, 0.24, 0.2], [0.36, 0.20, 0.7], [0.58, 0.27, 0.4],
@@ -221,13 +221,16 @@ class _ClearOverlayState extends State<_ClearOverlay>
         opacity: _entry,
         child: Stack(
           children: [
-            // Dark translucent backdrop
-            Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [Color(0xCC000830), Color(0xCC001040)],
+            // Dark translucent backdrop — SizedBox.expand prevents the
+            // DecoratedBox from collapsing to zero under loose Stack constraints.
+            const SizedBox.expand(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0xCC000830), Color(0xCC001040)],
+                  ),
                 ),
               ),
             ),
@@ -326,13 +329,15 @@ class _SparklePainter extends CustomPainter {
 }
 
 class _PulsingStarIcon extends AnimatedWidget {
-  const _PulsingStarIcon({required AnimationController controller})
+  const _PulsingStarIcon({required this.controller})
     : super(listenable: controller);
+
+  // Typed field avoids unsafe `as AnimationController` cast in build.
+  final AnimationController controller;
 
   @override
   Widget build(BuildContext context) {
-    final t = (listenable as AnimationController).value;
-    final scale = 1.0 + math.sin(t * 2 * math.pi) * 0.15;
+    final scale = 1.0 + math.sin(controller.value * 2 * math.pi) * 0.15;
     return Transform.scale(
       scale: scale,
       child: const Icon(Icons.auto_awesome, color: Colors.amber, size: 80),
