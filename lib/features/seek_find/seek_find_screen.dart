@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -138,6 +139,7 @@ class _SceneViewState extends ConsumerState<_SceneView> {
     );
     if (hitId == null) return;
     ref.read(foundControllerProvider(scene.id).notifier).markFound(hitId);
+    HapticFeedback.lightImpact();
     ref.read(audioServiceProvider).playFound();
   }
 }
