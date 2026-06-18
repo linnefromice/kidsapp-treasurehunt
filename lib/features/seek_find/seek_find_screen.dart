@@ -8,7 +8,18 @@ import 'package:kidsapp_treasurehunt/features/seek_find/target_icons.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/collection_bar.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/found_burst.dart';
 import 'package:kidsapp_treasurehunt/providers.dart';
+import 'package:kidsapp_treasurehunt/scenes_catalog.dart';
 import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
+import 'package:kidsapp_treasurehunt/shared/widgets/kids_button.dart';
+
+const Map<String, List<Color>> _sceneGradients = {
+  'scene01': [Color(0xFFB2DFDB), Color(0xFFC8E6C9)],
+  'scene02': [Color(0xFFBBDEFB), Color(0xFFB3E5FC)],
+  'scene03': [Color(0xFFE1F5FE), Color(0xFFD1C4E9)],
+};
+
+List<Color> _gradientFor(String sceneId) =>
+    _sceneGradients[sceneId] ?? const [Color(0xFFB2DFDB), Color(0xFFC8E6C9)];
 
 class SeekFindScreen extends ConsumerWidget {
   const SeekFindScreen({super.key, required this.sceneId});
@@ -47,7 +58,6 @@ class _SceneViewState extends ConsumerState<_SceneView> {
     final localeCode = ref.watch(localeControllerProvider).languageCode;
     final found = ref.watch(foundControllerProvider(scene.id));
 
-    // 完了は副作用なので ref.listen で「全発見になった瞬間」に一度だけ発火させる。
     ref.listen(foundControllerProvider(scene.id), (previous, next) {
       final wasComplete = (previous?.length ?? 0) >= scene.targets.length;
       final nowComplete = next.length >= scene.targets.length;
@@ -74,17 +84,15 @@ class _SceneViewState extends ConsumerState<_SceneView> {
                   key: const ValueKey('scene-content'),
                   fit: StackFit.expand,
                   children: [
-                    // プレースホルダ背景（実アートは後で差し替え）
-                    const DecoratedBox(
+                    DecoratedBox(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
-                          colors: [Color(0xFFB2DFDB), Color(0xFFC8E6C9)],
+                          colors: _gradientFor(scene.id),
                         ),
                       ),
                     ),
-                    // 宝アイコンをはっきり描画。発見済みは点灯 + キラッ。
                     for (final t in scene.targets)
                       Positioned(
                         left: t.normalizedRect.left * sceneSize.width,
@@ -109,9 +117,22 @@ class _SceneViewState extends ConsumerState<_SceneView> {
         if (_completed)
           Padding(
             padding: const EdgeInsets.all(16),
-            child: Text(
-              tr(localeCode, 'seek.complete'),
-              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  tr(localeCode, 'seek.complete'),
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                KidsButton(
+                  label: tr(localeCode, 'seek.toMap'),
+                  onPressed: () => context.go('/'),
+                ),
+              ],
             ),
           ),
       ],
@@ -119,12 +140,11 @@ class _SceneViewState extends ConsumerState<_SceneView> {
   }
 
   Future<void> _handleComplete(String sceneId) async {
-    await ref.read(progressRepositoryProvider).markCleared(sceneId);
+    await completeScene(ref.read(progressRepositoryProvider), sceneId);
     await ref.read(audioServiceProvider).playComplete();
     if (mounted) setState(() => _completed = true);
   }
 
-  /// タップ/なぞり共通。最新の発見集合を読み、未発見の宝に当たれば発見にする。
   void _handleHit(Offset localPosition, Size sceneSize) {
     final scene = widget.scene;
     final found = ref.read(foundControllerProvider(scene.id));
@@ -134,7 +154,7 @@ class _SceneViewState extends ConsumerState<_SceneView> {
       targets: scene.targets,
       foundIds: found,
     );
-    if (hitId == null) return; // 空振りは罰しない
+    if (hitId == null) return;
     ref.read(foundControllerProvider(scene.id).notifier).markFound(hitId);
     ref.read(audioServiceProvider).playFound();
   }
