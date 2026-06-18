@@ -164,7 +164,7 @@ class _TargetView extends StatelessWidget {
             color: found ? Colors.amber.shade700 : targetColor(id),
           ),
         ),
-        if (found) const FoundBurst(),
+        if (found) FoundBurst(color: targetColor(id)),
       ],
     );
   }

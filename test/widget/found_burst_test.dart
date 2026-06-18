@@ -5,7 +5,7 @@ import 'package:kidsapp_treasurehunt/features/seek_find/widgets/found_burst.dart
 void main() {
   testWidgets('animates a found marker without throwing', (tester) async {
     await tester.pumpWidget(
-      const MaterialApp(home: Scaffold(body: FoundBurst())),
+      const MaterialApp(home: Scaffold(body: FoundBurst(color: Colors.teal))),
     );
     expect(find.byType(FoundBurst), findsOneWidget);
     await tester.pump(const Duration(milliseconds: 150));

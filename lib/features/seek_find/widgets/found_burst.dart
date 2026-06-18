@@ -3,7 +3,9 @@ import 'package:flutter/material.dart';
 
 /// 発見した宝の位置に重ねる、放射スパーク＋リング＋拡大のキラッ演出。
 class FoundBurst extends StatefulWidget {
-  const FoundBurst({super.key});
+  const FoundBurst({super.key, required this.color});
+
+  final Color color;
 
   @override
   State<FoundBurst> createState() => _FoundBurstState();
@@ -48,7 +50,7 @@ class _FoundBurstState extends State<FoundBurst>
         animation: _c,
         builder: (context, child) {
           return CustomPaint(
-            painter: _BurstPainter(_c.value),
+            painter: _BurstPainter(_c.value, widget.color),
             child: Center(child: child),
           );
         },
@@ -56,7 +58,7 @@ class _FoundBurstState extends State<FoundBurst>
           scale: _scale,
           child: FadeTransition(
             opacity: _iconFade,
-            child: const Icon(Icons.auto_awesome, color: Colors.amber, size: 52),
+            child: Icon(Icons.auto_awesome, color: widget.color, size: 52),
           ),
         ),
       ),
@@ -65,9 +67,10 @@ class _FoundBurstState extends State<FoundBurst>
 }
 
 class _BurstPainter extends CustomPainter {
-  const _BurstPainter(this.t);
+  const _BurstPainter(this.t, this.color);
 
   final double t;
+  final Color color;
   static const _kOuterCount = 8;
   static const _kInnerCount = 8;
 
@@ -83,12 +86,12 @@ class _BurstPainter extends CustomPainter {
       Offset(cx, cy),
       maxR * ringEnd * 0.75,
       Paint()
-        ..color = Colors.amber.withValues(alpha: 0.55 * (1 - ringEnd))
+        ..color = color.withValues(alpha: 0.55 * (1 - ringEnd))
         ..style = PaintingStyle.stroke
         ..strokeWidth = 3.5,
     );
 
-    // Outer sparks: amber circles radiating outward
+    // Outer sparks: circles radiating outward in the treasure's color
     for (int i = 0; i < _kOuterCount; i++) {
       final angle = (i / _kOuterCount) * 2 * math.pi;
       final r = t * maxR;
@@ -97,11 +100,12 @@ class _BurstPainter extends CustomPainter {
       canvas.drawCircle(
         Offset(cx + math.cos(angle) * r, cy + math.sin(angle) * r),
         dotSize,
-        Paint()..color = Colors.amber.withValues(alpha: opacity),
+        Paint()..color = color.withValues(alpha: opacity),
       );
     }
 
-    // Inner sparks: smaller, offset angle, faster fade
+    // Inner sparks: lighter tint of the treasure's color, faster fade
+    final innerColor = Color.lerp(color, Colors.white, 0.5)!;
     for (int i = 0; i < _kInnerCount; i++) {
       final angle = ((i + 0.5) / _kInnerCount) * 2 * math.pi;
       final r = t * maxR * 0.55;
@@ -109,11 +113,11 @@ class _BurstPainter extends CustomPainter {
       canvas.drawCircle(
         Offset(cx + math.cos(angle) * r, cy + math.sin(angle) * r),
         4.0 * (1.0 - t),
-        Paint()..color = const Color(0xFFFFF9C4).withValues(alpha: opacity),
+        Paint()..color = innerColor.withValues(alpha: opacity),
       );
     }
   }
 
   @override
-  bool shouldRepaint(_BurstPainter old) => old.t != t;
+  bool shouldRepaint(_BurstPainter old) => old.t != t || old.color != color;
 }
