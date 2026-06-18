@@ -98,28 +98,39 @@ class _TrailPainter extends CustomPainter {
     for (var i = 0; i < kSceneCatalog.length - 1; i++) {
       final a = kSceneCatalog[i];
       final b = kSceneCatalog[i + 1];
-      final p1 = Offset(a.mapPos.dx * size.width, a.mapPos.dy * size.height);
-      final p2 = Offset(b.mapPos.dx * size.width, b.mapPos.dy * size.height);
+      final p0 = Offset(a.mapPos.dx * size.width, a.mapPos.dy * size.height);
+      final p1 = Offset(b.mapPos.dx * size.width, b.mapPos.dy * size.height);
       final done = progress.isCleared(a.id);
       final paint = Paint()
         ..color = done ? Colors.brown.shade600 : Colors.brown.shade200
-        ..strokeWidth = 6
-        ..strokeCap = StrokeCap.round;
-      _drawDashed(canvas, p1, p2, paint);
+        ..strokeWidth = 3
+        ..strokeCap = StrokeCap.round
+        ..style = PaintingStyle.stroke;
+      _drawBezierDashed(canvas, p0, p1, paint);
     }
   }
 
-  void _drawDashed(Canvas canvas, Offset a, Offset b, Paint paint) {
-    const dash = 14.0;
-    const gap = 10.0;
-    final total = (b - a).distance;
-    if (total == 0) return;
-    final dir = (b - a) / total;
-    var travelled = 0.0;
-    while (travelled < total) {
-      final end = travelled + dash < total ? travelled + dash : total;
-      canvas.drawLine(a + dir * travelled, a + dir * end, paint);
-      travelled += dash + gap;
+  void _drawBezierDashed(Canvas canvas, Offset p0, Offset p1, Paint paint) {
+    final midY = (p0.dy + p1.dy) / 2;
+    final cp1 = Offset(p0.dx, midY);
+    final cp2 = Offset(p1.dx, midY);
+
+    final fullPath = Path()
+      ..moveTo(p0.dx, p0.dy)
+      ..cubicTo(cp1.dx, cp1.dy, cp2.dx, cp2.dy, p1.dx, p1.dy);
+
+    final pathMetrics = fullPath.computeMetrics().toList();
+    if (pathMetrics.isEmpty) return;
+    final metric = pathMetrics.first;
+
+    const dashLen = 12.0;
+    const gapLen = 8.0;
+    var dist = 0.0;
+    while (dist < metric.length) {
+      final end = (dist + dashLen).clamp(0.0, metric.length);
+      final dashPath = metric.extractPath(dist, end);
+      canvas.drawPath(dashPath, paint);
+      dist += dashLen + gapLen;
     }
   }
 
