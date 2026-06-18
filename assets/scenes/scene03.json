@@ -3,10 +3,10 @@
   "titleKey": "scene.scene03.title",
   "imageAsset": "assets/scenes/scene03.png",
   "targets": [
-    { "id": "apple",  "labelKey": "target.apple",  "left": 0.10, "top": 0.16, "width": 0.13, "height": 0.16 },
-    { "id": "duck",   "labelKey": "target.duck",   "left": 0.40, "top": 0.20, "width": 0.13, "height": 0.16 },
-    { "id": "star",   "labelKey": "target.star",   "left": 0.72, "top": 0.18, "width": 0.13, "height": 0.16 },
-    { "id": "flower", "labelKey": "target.flower", "left": 0.24, "top": 0.64, "width": 0.13, "height": 0.16 },
-    { "id": "heart",  "labelKey": "target.heart",  "left": 0.62, "top": 0.62, "width": 0.13, "height": 0.16 }
+    { "id": "apple",  "labelKey": "target.apple",  "left": 0.08, "top": 0.13, "width": 0.18, "height": 0.22 },
+    { "id": "duck",   "labelKey": "target.duck",   "left": 0.38, "top": 0.17, "width": 0.18, "height": 0.22 },
+    { "id": "star",   "labelKey": "target.star",   "left": 0.70, "top": 0.15, "width": 0.18, "height": 0.22 },
+    { "id": "flower", "labelKey": "target.flower", "left": 0.22, "top": 0.61, "width": 0.18, "height": 0.22 },
+    { "id": "heart",  "labelKey": "target.heart",  "left": 0.60, "top": 0.59, "width": 0.18, "height": 0.22 }
   ]
 }

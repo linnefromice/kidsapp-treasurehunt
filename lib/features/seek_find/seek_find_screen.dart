@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/scene_background.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/seek_find_logic.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/target_icons.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/collection_bar.dart';
@@ -11,15 +12,6 @@ import 'package:kidsapp_treasurehunt/providers.dart';
 import 'package:kidsapp_treasurehunt/scenes_catalog.dart';
 import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
 import 'package:kidsapp_treasurehunt/shared/widgets/kids_button.dart';
-
-const Map<String, List<Color>> _sceneGradients = {
-  'scene01': [Color(0xFFB2DFDB), Color(0xFFC8E6C9)],
-  'scene02': [Color(0xFFBBDEFB), Color(0xFFB3E5FC)],
-  'scene03': [Color(0xFFE1F5FE), Color(0xFFD1C4E9)],
-};
-
-List<Color> _gradientFor(String sceneId) =>
-    _sceneGradients[sceneId] ?? const [Color(0xFFB2DFDB), Color(0xFFC8E6C9)];
 
 class SeekFindScreen extends ConsumerWidget {
   const SeekFindScreen({super.key, required this.sceneId});
@@ -84,15 +76,7 @@ class _SceneViewState extends ConsumerState<_SceneView> {
                   key: const ValueKey('scene-content'),
                   fit: StackFit.expand,
                   children: [
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: _gradientFor(scene.id),
-                        ),
-                      ),
-                    ),
+                    sceneBackground(scene.id),
                     for (final t in scene.targets)
                       Positioned(
                         left: t.normalizedRect.left * sceneSize.width,
@@ -171,11 +155,34 @@ class _TargetView extends StatelessWidget {
     return Stack(
       alignment: Alignment.center,
       children: [
+        Container(
+          margin: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: found
+                ? Colors.amber.shade100.withValues(alpha: 0.90)
+                : Colors.white.withValues(alpha: 0.80),
+            border: Border.all(
+              color: found ? Colors.amber.shade400 : Colors.white70,
+              width: 3,
+            ),
+            boxShadow: const [
+              BoxShadow(
+                color: Colors.black26,
+                blurRadius: 4,
+                offset: Offset(0, 2),
+              ),
+            ],
+          ),
+        ),
         FittedBox(
           fit: BoxFit.contain,
-          child: Icon(
-            icon,
-            color: found ? Colors.amber.shade700 : Colors.brown.shade600,
+          child: Padding(
+            padding: const EdgeInsets.all(10),
+            child: Icon(
+              icon,
+              color: found ? Colors.amber.shade700 : Colors.brown.shade700,
+            ),
           ),
         ),
         if (found) const FoundBurst(),
