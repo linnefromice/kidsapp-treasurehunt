@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:kidsapp_treasurehunt/providers.dart';
-import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/seek_find_logic.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/target_icons.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/collection_bar.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/found_burst.dart';
-
-const Size kSceneSize = Size(800, 600);
+import 'package:kidsapp_treasurehunt/providers.dart';
+import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
 
 class SeekFindScreen extends ConsumerWidget {
   const SeekFindScreen({super.key, required this.sceneId});
@@ -32,6 +31,7 @@ class SeekFindScreen extends ConsumerWidget {
 
 class _SceneView extends ConsumerStatefulWidget {
   const _SceneView({required this.scene});
+
   final SceneDef scene;
 
   @override
@@ -47,8 +47,7 @@ class _SceneViewState extends ConsumerState<_SceneView> {
     final localeCode = ref.watch(localeControllerProvider).languageCode;
     final found = ref.watch(foundControllerProvider(scene.id));
 
-    // 完了は副作用なので build 中では実行せず、ref.listen で
-    // 「全発見になった瞬間」に一度だけ発火させる。
+    // 完了は副作用なので ref.listen で「全発見になった瞬間」に一度だけ発火させる。
     ref.listen(foundControllerProvider(scene.id), (previous, next) {
       final wasComplete = (previous?.length ?? 0) >= scene.targets.length;
       final nowComplete = next.length >= scene.targets.length;
@@ -60,21 +59,24 @@ class _SceneViewState extends ConsumerState<_SceneView> {
     return Column(
       children: [
         Expanded(
-          child: InteractiveViewer(
-            minScale: 1,
-            maxScale: 4,
-            child: GestureDetector(
-              onTapDown: (details) =>
-                  _handleTap(details.localPosition, scene, found),
-              child: SizedBox(
-                key: const ValueKey('scene-content'),
-                width: kSceneSize.width,
-                height: kSceneSize.height,
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final sceneSize = Size(
+                constraints.maxWidth,
+                constraints.maxHeight,
+              );
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTapDown: (d) => _handleHit(d.localPosition, sceneSize),
+                onPanStart: (d) => _handleHit(d.localPosition, sceneSize),
+                onPanUpdate: (d) => _handleHit(d.localPosition, sceneSize),
                 child: Stack(
+                  key: const ValueKey('scene-content'),
+                  fit: StackFit.expand,
                   children: [
-                    // プレースホルダ背景(実アートは後で差し替え)
-                    Container(
-                      decoration: const BoxDecoration(
+                    // プレースホルダ背景（実アートは後で差し替え）
+                    const DecoratedBox(
+                      decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
@@ -82,20 +84,22 @@ class _SceneViewState extends ConsumerState<_SceneView> {
                         ),
                       ),
                     ),
-                    // 見つけた宝の位置に印 + バースト
+                    // 宝アイコンをはっきり描画。発見済みは点灯 + キラッ。
                     for (final t in scene.targets)
-                      if (found.contains(t.id))
-                        Positioned(
-                          left: t.normalizedRect.left * kSceneSize.width,
-                          top: t.normalizedRect.top * kSceneSize.height,
-                          width: t.normalizedRect.width * kSceneSize.width,
-                          height: t.normalizedRect.height * kSceneSize.height,
-                          child: const FoundBurst(),
+                      Positioned(
+                        left: t.normalizedRect.left * sceneSize.width,
+                        top: t.normalizedRect.top * sceneSize.height,
+                        width: t.normalizedRect.width * sceneSize.width,
+                        height: t.normalizedRect.height * sceneSize.height,
+                        child: _TargetView(
+                          icon: targetIcon(t.id),
+                          found: found.contains(t.id),
                         ),
+                      ),
                   ],
                 ),
-              ),
-            ),
+              );
+            },
           ),
         ),
         CollectionBar(
@@ -120,15 +124,42 @@ class _SceneViewState extends ConsumerState<_SceneView> {
     if (mounted) setState(() => _completed = true);
   }
 
-  void _handleTap(Offset localPosition, SceneDef scene, Set<String> found) {
+  /// タップ/なぞり共通。最新の発見集合を読み、未発見の宝に当たれば発見にする。
+  void _handleHit(Offset localPosition, Size sceneSize) {
+    final scene = widget.scene;
+    final found = ref.read(foundControllerProvider(scene.id));
     final hitId = findHitTargetId(
       scenePoint: localPosition,
-      sceneSize: kSceneSize,
+      sceneSize: sceneSize,
       targets: scene.targets,
       foundIds: found,
     );
     if (hitId == null) return; // 空振りは罰しない
     ref.read(foundControllerProvider(scene.id).notifier).markFound(hitId);
     ref.read(audioServiceProvider).playFound();
+  }
+}
+
+class _TargetView extends StatelessWidget {
+  const _TargetView({required this.icon, required this.found});
+
+  final IconData icon;
+  final bool found;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      alignment: Alignment.center,
+      children: [
+        FittedBox(
+          fit: BoxFit.contain,
+          child: Icon(
+            icon,
+            color: found ? Colors.amber.shade700 : Colors.brown.shade600,
+          ),
+        ),
+        if (found) const FoundBurst(),
+      ],
+    );
   }
 }
