@@ -124,6 +124,29 @@ iPad 向けに **Flutter** で個人開発する。
 
 ### ワークフロー
 
+#### 要求受付→実装フロー（一気通貫）
+
+要求を受けたら以下の 3 ステップを **止まらずに** 実行する。
+
+**[1] Spec 起草**
+- 推奨設定を含む spec を書き切る（設計上の判断はまず自分で推奨案を決定）
+- 聞くべき不確定ポイントはいったんストックしておく
+
+**[2] 質問の整理**
+- 推奨設定がある問いは自動採用（ユーザーに確認しない）
+- 推奨設定に優劣がつかない問いのみ、**まとめて 1 回**質問してユーザーに判断を仰ぐ
+
+**[3] Subagent-Driven Development → PR → セルフレビュー → セルフマージ**
+- `superpowers:subagent-driven-development` スキルで実装（タスクごとに fresh subagent）
+- 実装完了後: `scripts/check.sh` → `/create-pr` でブランチ作成 & PR 作成
+- `flutter-reviewer` / `code-reviewer` エージェントでセルフレビュー → 指摘修正
+- `/merge-pr` でマージ（squash or merge commit はプロジェクト慣習に従う）
+- ユーザーを待たずに **一気通貫**で完走することが原則
+
+> **例外**: アーキテクチャ変更・破壊的変更・外部公開 API の変更は、spec を提示して
+> ユーザー承認を得てから [3] に進む。
+
+#### 旧フロー（参考）
 GitHub Issues でタスク分割 → Issue ごとに Claude Code を自走（`/loop`）→ ローカルで
 `scripts/check.sh` → `/create-pr` → `/merge-pr`。実装は spec/plan を起点に TDD で進める。
 
