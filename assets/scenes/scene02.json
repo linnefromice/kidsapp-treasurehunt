@@ -1,0 +1,11 @@
+{
+  "id": "scene02",
+  "titleKey": "scene.scene02.title",
+  "imageAsset": "assets/scenes/scene02.png",
+  "targets": [
+    { "id": "apple",  "labelKey": "target.apple",  "left": 0.12, "top": 0.18, "width": 0.14, "height": 0.18 },
+    { "id": "ball",   "labelKey": "target.ball",   "left": 0.62, "top": 0.22, "width": 0.14, "height": 0.18 },
+    { "id": "star",   "labelKey": "target.star",   "left": 0.28, "top": 0.62, "width": 0.14, "height": 0.18 },
+    { "id": "flower", "labelKey": "target.flower", "left": 0.70, "top": 0.64, "width": 0.14, "height": 0.18 }
+  ]
+}
