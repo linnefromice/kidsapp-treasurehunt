@@ -157,15 +157,63 @@ class _TargetView extends StatelessWidget {
       // Clip.none lets FoundBurst sparks radiate beyond the target bounds
       clipBehavior: Clip.none,
       children: [
+        if (found) _FoundGlow(color: targetColor(id)),
         FittedBox(
           fit: BoxFit.contain,
           child: Icon(
             targetIcon(id),
-            color: found ? Colors.amber.shade700 : targetColor(id),
+            color: found
+                ? targetColor(id)
+                : Colors.grey.shade400.withValues(alpha: 0.45),
           ),
         ),
         if (found) FoundBurst(color: targetColor(id)),
       ],
+    );
+  }
+}
+
+class _FoundGlow extends StatefulWidget {
+  const _FoundGlow({required this.color});
+
+  final Color color;
+
+  @override
+  State<_FoundGlow> createState() => _FoundGlowState();
+}
+
+class _FoundGlowState extends State<_FoundGlow>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _c = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1200),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _c.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _c,
+      builder: (context, _) {
+        final t = _c.value; // 0.0 → 1.0 → 0.0 (reverse)
+        return Container(
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            boxShadow: [
+              BoxShadow(
+                color: widget.color.withValues(alpha: 0.45 * t),
+                blurRadius: 16 + 8 * t,
+                spreadRadius: 2 + 4 * t,
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
