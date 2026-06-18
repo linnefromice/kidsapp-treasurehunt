@@ -3,13 +3,16 @@
   "titleKey": "scene.scene01.title",
   "imageAsset": "assets/scenes/scene01.png",
   "targets": [
-    { "id": "apple", "labelKey": "target.apple", "left": 0.105, "top": 0.160, "width": 0.13, "height": 0.16 },
-    { "id": "duck",  "labelKey": "target.duck",  "left": 0.605, "top": 0.315, "width": 0.13, "height": 0.16 },
-    { "id": "star",  "labelKey": "target.star",  "left": 0.405, "top": 0.695, "width": 0.13, "height": 0.16 }
+    { "id": "apple",  "labelKey": "target.apple",  "left": 0.110, "top": 0.165, "width": 0.10, "height": 0.12 },
+    { "id": "duck",   "labelKey": "target.duck",   "left": 0.610, "top": 0.320, "width": 0.10, "height": 0.12 },
+    { "id": "star",   "labelKey": "target.star",   "left": 0.410, "top": 0.700, "width": 0.10, "height": 0.12 }
   ],
   "dummies": [
-    { "id": "leaf1",   "iconId": "leaf",   "left": 0.310, "top": 0.195, "width": 0.13, "height": 0.16 },
-    { "id": "rabbit1", "iconId": "rabbit", "left": 0.690, "top": 0.620, "width": 0.13, "height": 0.16 },
-    { "id": "bug1",    "iconId": "bug",    "left": 0.060, "top": 0.565, "width": 0.13, "height": 0.16 }
+    { "id": "leaf1",   "iconId": "leaf",   "left": 0.315, "top": 0.200, "width": 0.10, "height": 0.12 },
+    { "id": "rabbit1", "iconId": "rabbit", "left": 0.695, "top": 0.625, "width": 0.10, "height": 0.12 },
+    { "id": "bug1",    "iconId": "bug",    "left": 0.065, "top": 0.570, "width": 0.10, "height": 0.12 },
+    { "id": "flower1", "iconId": "flower", "left": 0.545, "top": 0.475, "width": 0.10, "height": 0.12 },
+    { "id": "heart1",  "iconId": "heart",  "left": 0.175, "top": 0.400, "width": 0.10, "height": 0.12 },
+    { "id": "ball1",   "iconId": "ball",   "left": 0.785, "top": 0.205, "width": 0.10, "height": 0.12 }
   ]
 }

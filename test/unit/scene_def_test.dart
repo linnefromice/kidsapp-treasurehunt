@@ -73,13 +73,16 @@ void main() {
       expect(def.dummies, isEmpty);
     });
 
-    test('scene01 loads with 3 dummies', () async {
+    test('scene01 loads with 6 dummies', () async {
       final def = await SceneDef.loadAsset('scene01');
-      expect(def.dummies.length, 3);
+      expect(def.dummies.length, 6);
       expect(def.dummies.map((d) => d.iconId).toSet(), {
         'leaf',
         'rabbit',
         'bug',
+        'flower',
+        'heart',
+        'ball',
       });
     });
   });

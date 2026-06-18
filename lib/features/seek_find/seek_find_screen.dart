@@ -5,9 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/scene_background.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/seek_find_logic.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/target_icons.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/collection_bar.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/found_burst.dart';
-import 'package:kidsapp_treasurehunt/features/seek_find/widgets/treasure_icon_painter.dart';
 import 'package:kidsapp_treasurehunt/providers.dart';
 import 'package:kidsapp_treasurehunt/scenes_catalog.dart';
 import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
@@ -164,8 +164,12 @@ class _TargetView extends StatelessWidget {
     return Stack(
       alignment: Alignment.center,
       children: [
-        Positioned.fill(
-          child: CustomPaint(painter: treasureIconPainter(id, found: found)),
+        FittedBox(
+          fit: BoxFit.contain,
+          child: Icon(
+            targetIcon(id),
+            color: found ? Colors.amber.shade700 : targetColor(id),
+          ),
         ),
         if (found) const FoundBurst(),
       ],

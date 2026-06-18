@@ -34,12 +34,16 @@ void main() {
     expect(find.byKey(const ValueKey('scene-node.scene01')), findsOneWidget);
     expect(find.byKey(const ValueKey('scene-node.scene02')), findsOneWidget);
     expect(find.byKey(const ValueKey('scene-node.scene03')), findsOneWidget);
+    expect(find.byKey(const ValueKey('scene-node.scene04')), findsOneWidget);
+    expect(find.byKey(const ValueKey('scene-node.scene05')), findsOneWidget);
 
     expect(find.byKey(const ValueKey('node-current.scene01')), findsOneWidget);
     expect(find.byKey(const ValueKey('node-locked.scene02')), findsOneWidget);
     expect(find.byKey(const ValueKey('node-locked.scene03')), findsOneWidget);
+    expect(find.byKey(const ValueKey('node-locked.scene04')), findsOneWidget);
+    expect(find.byKey(const ValueKey('node-locked.scene05')), findsOneWidget);
 
-    expect(find.textContaining('0/3'), findsOneWidget);
+    expect(find.textContaining('0/5'), findsOneWidget);
   });
 
   testWidgets('cleared scene01 + unlocked scene02 reflects states', (
@@ -53,7 +57,9 @@ void main() {
     expect(find.byKey(const ValueKey('node-cleared.scene01')), findsOneWidget);
     expect(find.byKey(const ValueKey('node-current.scene02')), findsOneWidget);
     expect(find.byKey(const ValueKey('node-locked.scene03')), findsOneWidget);
+    expect(find.byKey(const ValueKey('node-locked.scene04')), findsOneWidget);
+    expect(find.byKey(const ValueKey('node-locked.scene05')), findsOneWidget);
 
-    expect(find.textContaining('1/3'), findsOneWidget);
+    expect(find.textContaining('1/5'), findsOneWidget);
   });
 }

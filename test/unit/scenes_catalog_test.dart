@@ -9,7 +9,9 @@ void main() {
   test('nextSceneId follows catalog order; null at end/unknown', () {
     expect(nextSceneId('scene01'), 'scene02');
     expect(nextSceneId('scene02'), 'scene03');
-    expect(nextSceneId('scene03'), isNull);
+    expect(nextSceneId('scene03'), 'scene04');
+    expect(nextSceneId('scene04'), 'scene05');
+    expect(nextSceneId('scene05'), isNull);
     expect(nextSceneId('mystery'), isNull);
   });
 
@@ -24,8 +26,8 @@ void main() {
   test('completeScene on the last scene does not throw / unlock', () async {
     final prefs = await SharedPreferences.getInstance();
     final progress = ProgressRepository(prefs, 'slot1');
-    await completeScene(progress, 'scene03');
-    expect(progress.isCleared('scene03'), isTrue);
-    expect(progress.isUnlocked('scene03'), isFalse);
+    await completeScene(progress, 'scene05');
+    expect(progress.isCleared('scene05'), isTrue);
+    expect(progress.isUnlocked('scene05'), isFalse);
   });
 }
