@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/scene_background.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/seek_find_logic.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/target_icons.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/collection_bar.dart';
@@ -11,15 +12,6 @@ import 'package:kidsapp_treasurehunt/providers.dart';
 import 'package:kidsapp_treasurehunt/scenes_catalog.dart';
 import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
 import 'package:kidsapp_treasurehunt/shared/widgets/kids_button.dart';
-
-const Map<String, List<Color>> _sceneGradients = {
-  'scene01': [Color(0xFFB2DFDB), Color(0xFFC8E6C9)],
-  'scene02': [Color(0xFFBBDEFB), Color(0xFFB3E5FC)],
-  'scene03': [Color(0xFFE1F5FE), Color(0xFFD1C4E9)],
-};
-
-List<Color> _gradientFor(String sceneId) =>
-    _sceneGradients[sceneId] ?? const [Color(0xFFB2DFDB), Color(0xFFC8E6C9)];
 
 class SeekFindScreen extends ConsumerWidget {
   const SeekFindScreen({super.key, required this.sceneId});
@@ -84,15 +76,20 @@ class _SceneViewState extends ConsumerState<_SceneView> {
                   key: const ValueKey('scene-content'),
                   fit: StackFit.expand,
                   children: [
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: _gradientFor(scene.id),
+                    sceneBackground(scene.id),
+                    // Dummies — same visual as unfound targets, no hit detection
+                    for (final d in scene.dummies)
+                      Positioned(
+                        left: d.normalizedRect.left * sceneSize.width,
+                        top: d.normalizedRect.top * sceneSize.height,
+                        width: d.normalizedRect.width * sceneSize.width,
+                        height: d.normalizedRect.height * sceneSize.height,
+                        child: _TargetView(
+                          icon: targetIcon(d.iconId),
+                          color: targetColor(d.iconId),
+                          found: false,
                         ),
                       ),
-                    ),
                     for (final t in scene.targets)
                       Positioned(
                         left: t.normalizedRect.left * sceneSize.width,
@@ -101,6 +98,7 @@ class _SceneViewState extends ConsumerState<_SceneView> {
                         height: t.normalizedRect.height * sceneSize.height,
                         child: _TargetView(
                           icon: targetIcon(t.id),
+                          color: targetColor(t.id),
                           found: found.contains(t.id),
                         ),
                       ),
@@ -161,9 +159,14 @@ class _SceneViewState extends ConsumerState<_SceneView> {
 }
 
 class _TargetView extends StatelessWidget {
-  const _TargetView({required this.icon, required this.found});
+  const _TargetView({
+    required this.icon,
+    required this.color,
+    required this.found,
+  });
 
   final IconData icon;
+  final Color color;
   final bool found;
 
   @override
@@ -173,10 +176,7 @@ class _TargetView extends StatelessWidget {
       children: [
         FittedBox(
           fit: BoxFit.contain,
-          child: Icon(
-            icon,
-            color: found ? Colors.amber.shade700 : Colors.brown.shade600,
-          ),
+          child: Icon(icon, color: found ? Colors.amber.shade700 : color),
         ),
         if (found) const FoundBurst(),
       ],

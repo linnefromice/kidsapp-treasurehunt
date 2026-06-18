@@ -22,6 +22,7 @@ class ActiveSlotController extends Notifier<String?> {
   String? build() => null;
 
   void select(String slotId) => state = slotId;
+  void deselect() => state = null;
 }
 
 final activeSlotProvider = NotifierProvider<ActiveSlotController, String?>(

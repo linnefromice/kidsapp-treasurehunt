@@ -15,4 +15,16 @@ void main() {
     expect(targetIcon('flower'), Icons.local_florist);
     expect(targetIcon('heart'), Icons.favorite);
   });
+
+  test('targetColor returns distinct color for each known id', () {
+    expect(targetColor('apple'), const Color(0xFFE53935));
+    expect(targetColor('duck'), const Color(0xFFFDD835));
+    expect(targetColor('star'), const Color(0xFFFB8C00));
+    expect(targetColor('leaf'), const Color(0xFF43A047));
+    expect(targetColor('key'), const Color(0xFFFFB300));
+  });
+
+  test('targetColor falls back to grey for unknown id', () {
+    expect(targetColor('nonexistent'), const Color(0xFF9E9E9E));
+  });
 }

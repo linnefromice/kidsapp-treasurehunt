@@ -20,6 +20,13 @@ class TreasureMapScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.person),
+          onPressed: () {
+            ref.read(activeSlotProvider.notifier).deselect();
+            context.go('/slots');
+          },
+        ),
         title: Text(tr(localeCode, 'home.title')),
         actions: [
           Center(

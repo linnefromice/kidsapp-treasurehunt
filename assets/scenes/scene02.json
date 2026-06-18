@@ -3,9 +3,14 @@
   "titleKey": "scene.scene02.title",
   "imageAsset": "assets/scenes/scene02.png",
   "targets": [
-    { "id": "apple",  "labelKey": "target.apple",  "left": 0.12, "top": 0.18, "width": 0.14, "height": 0.18 },
-    { "id": "ball",   "labelKey": "target.ball",   "left": 0.62, "top": 0.22, "width": 0.14, "height": 0.18 },
-    { "id": "star",   "labelKey": "target.star",   "left": 0.28, "top": 0.62, "width": 0.14, "height": 0.18 },
-    { "id": "flower", "labelKey": "target.flower", "left": 0.70, "top": 0.64, "width": 0.14, "height": 0.18 }
+    { "id": "apple",  "labelKey": "target.apple",  "left": 0.125, "top": 0.195, "width": 0.13, "height": 0.16 },
+    { "id": "ball",   "labelKey": "target.ball",   "left": 0.625, "top": 0.235, "width": 0.13, "height": 0.16 },
+    { "id": "star",   "labelKey": "target.star",   "left": 0.285, "top": 0.635, "width": 0.13, "height": 0.16 },
+    { "id": "flower", "labelKey": "target.flower", "left": 0.705, "top": 0.655, "width": 0.13, "height": 0.16 }
+  ],
+  "dummies": [
+    { "id": "anchor1",   "iconId": "anchor",   "left": 0.390, "top": 0.215, "width": 0.13, "height": 0.16 },
+    { "id": "swimmer1",  "iconId": "swimmer",  "left": 0.060, "top": 0.635, "width": 0.13, "height": 0.16 },
+    { "id": "umbrella1", "iconId": "umbrella", "left": 0.490, "top": 0.595, "width": 0.13, "height": 0.16 }
   ]
 }
