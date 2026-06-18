@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show setEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -62,7 +63,13 @@ class TreasureMapScreen extends ConsumerWidget {
               ),
               CustomPaint(
                 size: size,
-                painter: _TrailPainter(progress: progress),
+                painter: _TrailPainter(
+                  progress: progress,
+                  clearedIds: kSceneCatalog
+                      .where((e) => progress.isCleared(e.id))
+                      .map((e) => e.id)
+                      .toSet(),
+                ),
               ),
               for (final entry in kSceneCatalog)
                 Positioned(
@@ -89,9 +96,10 @@ class TreasureMapScreen extends ConsumerWidget {
 }
 
 class _TrailPainter extends CustomPainter {
-  _TrailPainter({required this.progress});
+  _TrailPainter({required this.progress, required this.clearedIds});
 
   final ProgressRepository progress;
+  final Set<String> clearedIds;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -135,7 +143,8 @@ class _TrailPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_TrailPainter oldDelegate) => true;
+  bool shouldRepaint(_TrailPainter oldDelegate) =>
+      !setEquals(oldDelegate.clearedIds, clearedIds);
 }
 
 class _MapNode extends StatefulWidget {

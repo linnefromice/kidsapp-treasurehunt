@@ -114,10 +114,7 @@ class _SceneViewState extends ConsumerState<_SceneView> {
           ],
         ),
         if (_completed)
-          _ClearOverlay(
-            localeCode: localeCode,
-            onBack: () => context.go('/'),
-          ),
+          _ClearOverlay(localeCode: localeCode, onBack: () => context.go('/')),
       ],
     );
   }
@@ -157,7 +154,7 @@ class _TargetView extends StatelessWidget {
       // Clip.none lets FoundBurst sparks radiate beyond the target bounds
       clipBehavior: Clip.none,
       children: [
-        if (found) _FoundGlow(color: targetColor(id)),
+        if (found) RepaintBoundary(child: _FoundGlow(color: targetColor(id))),
         FittedBox(
           fit: BoxFit.contain,
           child: Icon(
@@ -247,14 +244,29 @@ class _ClearOverlayState extends State<_ClearOverlay>
   // Normalized [x, y, phaseOffset] for twinkling stars. Explicit List<List<double>>
   // type prevents Dart inferring List<List<num>> from the literal.
   static const List<List<double>> _kStars = [
-    [0.06, 0.08, 0.0], [0.22, 0.05, 0.3], [0.42, 0.12, 0.6],
-    [0.62, 0.06, 0.1], [0.80, 0.10, 0.5], [0.93, 0.04, 0.8],
-    [0.14, 0.24, 0.2], [0.36, 0.20, 0.7], [0.58, 0.27, 0.4],
-    [0.78, 0.22, 0.9], [0.04, 0.44, 0.6], [0.28, 0.40, 0.1],
-    [0.52, 0.38, 0.3], [0.74, 0.45, 0.8], [0.94, 0.42, 0.2],
-    [0.10, 0.62, 0.5], [0.35, 0.68, 0.0], [0.66, 0.60, 0.7],
-    [0.86, 0.65, 0.4], [0.20, 0.80, 0.9], [0.50, 0.84, 0.2],
-    [0.72, 0.78, 0.6], [0.90, 0.88, 0.1],
+    [0.06, 0.08, 0.0],
+    [0.22, 0.05, 0.3],
+    [0.42, 0.12, 0.6],
+    [0.62, 0.06, 0.1],
+    [0.80, 0.10, 0.5],
+    [0.93, 0.04, 0.8],
+    [0.14, 0.24, 0.2],
+    [0.36, 0.20, 0.7],
+    [0.58, 0.27, 0.4],
+    [0.78, 0.22, 0.9],
+    [0.04, 0.44, 0.6],
+    [0.28, 0.40, 0.1],
+    [0.52, 0.38, 0.3],
+    [0.74, 0.45, 0.8],
+    [0.94, 0.42, 0.2],
+    [0.10, 0.62, 0.5],
+    [0.35, 0.68, 0.0],
+    [0.66, 0.60, 0.7],
+    [0.86, 0.65, 0.4],
+    [0.20, 0.80, 0.9],
+    [0.50, 0.84, 0.2],
+    [0.72, 0.78, 0.6],
+    [0.90, 0.88, 0.1],
   ];
 
   @override
