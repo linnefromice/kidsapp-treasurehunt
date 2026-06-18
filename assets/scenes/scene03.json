@@ -8,5 +8,9 @@
     { "id": "star",   "labelKey": "target.star",   "left": 0.70, "top": 0.15, "width": 0.18, "height": 0.22 },
     { "id": "flower", "labelKey": "target.flower", "left": 0.22, "top": 0.61, "width": 0.18, "height": 0.22 },
     { "id": "heart",  "labelKey": "target.heart",  "left": 0.60, "top": 0.59, "width": 0.18, "height": 0.22 }
+  ],
+  "dummies": [
+    { "id": "car1", "iconId": "car", "left": 0.32, "top": 0.40, "width": 0.18, "height": 0.20 },
+    { "id": "key1", "iconId": "key", "left": 0.80, "top": 0.43, "width": 0.18, "height": 0.20 }
   ]
 }

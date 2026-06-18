@@ -9,6 +9,15 @@ const Map<String, IconData> _kTargetIcons = {
   'ball': Icons.sports_soccer,
   'flower': Icons.local_florist,
   'heart': Icons.favorite,
+  // ダミーアイテム用アイコン
+  'leaf': Icons.eco,
+  'rabbit': Icons.cruelty_free,
+  'bug': Icons.emoji_nature,
+  'anchor': Icons.anchor,
+  'swimmer': Icons.pool,
+  'umbrella': Icons.umbrella,
+  'car': Icons.directions_car,
+  'key': Icons.key,
 };
 
 IconData targetIcon(String id) => _kTargetIcons[id] ?? Icons.help_outline;

@@ -39,4 +39,48 @@ void main() {
       expect(s3.targets, hasLength(5));
     },
   );
+
+  group('SceneDef dummy parsing', () {
+    test('parses dummies from json', () {
+      final def = SceneDef.fromJson({
+        'id': 'test',
+        'titleKey': 'k',
+        'imageAsset': 'a.png',
+        'targets': [],
+        'dummies': [
+          {
+            'id': 'd1',
+            'iconId': 'leaf',
+            'left': 0.1,
+            'top': 0.2,
+            'width': 0.15,
+            'height': 0.18,
+          },
+        ],
+      });
+      expect(def.dummies.length, 1);
+      expect(def.dummies.first.iconId, 'leaf');
+      expect(def.dummies.first.normalizedRect.left, closeTo(0.1, 0.001));
+    });
+
+    test('defaults to empty dummies when key absent', () {
+      final def = SceneDef.fromJson({
+        'id': 'test',
+        'titleKey': 'k',
+        'imageAsset': 'a.png',
+        'targets': [],
+      });
+      expect(def.dummies, isEmpty);
+    });
+
+    test('scene01 loads with 3 dummies', () async {
+      final def = await SceneDef.loadAsset('scene01');
+      expect(def.dummies.length, 3);
+      expect(def.dummies.map((d) => d.iconId).toSet(), {
+        'leaf',
+        'rabbit',
+        'bug',
+      });
+    });
+  });
 }

@@ -77,6 +77,18 @@ class _SceneViewState extends ConsumerState<_SceneView> {
                   fit: StackFit.expand,
                   children: [
                     sceneBackground(scene.id),
+                    // Dummies — same visual as unfound targets, no hit detection
+                    for (final d in scene.dummies)
+                      Positioned(
+                        left: d.normalizedRect.left * sceneSize.width,
+                        top: d.normalizedRect.top * sceneSize.height,
+                        width: d.normalizedRect.width * sceneSize.width,
+                        height: d.normalizedRect.height * sceneSize.height,
+                        child: _TargetView(
+                          icon: targetIcon(d.iconId),
+                          found: false,
+                        ),
+                      ),
                     for (final t in scene.targets)
                       Positioned(
                         left: t.normalizedRect.left * sceneSize.width,
