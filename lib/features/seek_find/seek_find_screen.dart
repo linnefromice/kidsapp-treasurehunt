@@ -86,6 +86,7 @@ class _SceneViewState extends ConsumerState<_SceneView> {
                         height: d.normalizedRect.height * sceneSize.height,
                         child: _TargetView(
                           icon: targetIcon(d.iconId),
+                          color: targetColor(d.iconId),
                           found: false,
                         ),
                       ),
@@ -97,6 +98,7 @@ class _SceneViewState extends ConsumerState<_SceneView> {
                         height: t.normalizedRect.height * sceneSize.height,
                         child: _TargetView(
                           icon: targetIcon(t.id),
+                          color: targetColor(t.id),
                           found: found.contains(t.id),
                         ),
                       ),
@@ -157,9 +159,14 @@ class _SceneViewState extends ConsumerState<_SceneView> {
 }
 
 class _TargetView extends StatelessWidget {
-  const _TargetView({required this.icon, required this.found});
+  const _TargetView({
+    required this.icon,
+    required this.color,
+    required this.found,
+  });
 
   final IconData icon;
+  final Color color;
   final bool found;
 
   @override
@@ -167,35 +174,9 @@ class _TargetView extends StatelessWidget {
     return Stack(
       alignment: Alignment.center,
       children: [
-        Container(
-          margin: const EdgeInsets.all(4),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: found
-                ? Colors.amber.shade100.withValues(alpha: 0.90)
-                : Colors.white.withValues(alpha: 0.80),
-            border: Border.all(
-              color: found ? Colors.amber.shade400 : Colors.white70,
-              width: 3,
-            ),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black26,
-                blurRadius: 4,
-                offset: Offset(0, 2),
-              ),
-            ],
-          ),
-        ),
         FittedBox(
           fit: BoxFit.contain,
-          child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: Icon(
-              icon,
-              color: found ? Colors.amber.shade700 : Colors.brown.shade700,
-            ),
-          ),
+          child: Icon(icon, color: found ? Colors.amber.shade700 : color),
         ),
         if (found) const FoundBurst(),
       ],

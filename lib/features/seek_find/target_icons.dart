@@ -20,4 +20,22 @@ const Map<String, IconData> _kTargetIcons = {
   'key': Icons.key,
 };
 
+const Map<String, Color> _kTargetColors = {
+  'apple': Color(0xFFE53935),
+  'duck': Color(0xFFFDD835),
+  'star': Color(0xFFFB8C00),
+  'ball': Color(0xFF1E88E5),
+  'flower': Color(0xFFD81B60),
+  'heart': Color(0xFFE91E63),
+  'leaf': Color(0xFF43A047),
+  'rabbit': Color(0xFFAB47BC),
+  'bug': Color(0xFF00ACC1),
+  'anchor': Color(0xFF1565C0),
+  'swimmer': Color(0xFF039BE5),
+  'umbrella': Color(0xFFFF7043),
+  'car': Color(0xFF546E7A),
+  'key': Color(0xFFFFB300),
+};
+
 IconData targetIcon(String id) => _kTargetIcons[id] ?? Icons.help_outline;
+Color targetColor(String id) => _kTargetColors[id] ?? const Color(0xFF9E9E9E);
