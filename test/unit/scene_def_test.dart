@@ -76,12 +76,15 @@ void main() {
     test('scene01 loads with 6 dummies', () async {
       final def = await SceneDef.loadAsset('scene01');
       expect(def.dummies.length, 6);
+      // `key` (not `heart`) — a dummy must never reuse a target iconId, or it
+      // looks like a treasure yet is never hit-tested. See
+      // scene_consistency_test.dart for the cross-scene invariant.
       expect(def.dummies.map((d) => d.iconId).toSet(), {
         'leaf',
         'rabbit',
         'bug',
         'flower',
-        'heart',
+        'key',
         'ball',
       });
     });
