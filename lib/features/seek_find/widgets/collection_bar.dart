@@ -38,7 +38,9 @@ class CollectionBar extends StatelessWidget {
                 child: Icon(
                   targetIcon(t.iconId),
                   key: ValueKey(
-                    foundIds.contains(t.id) ? 'found.${t.id}' : 'unfound.${t.id}',
+                    foundIds.contains(t.id)
+                        ? 'found.${t.id}'
+                        : 'unfound.${t.id}',
                   ),
                   color: foundIds.contains(t.id)
                       ? Colors.amber.shade800

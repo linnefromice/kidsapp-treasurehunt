@@ -7,11 +7,11 @@ import 'package:kidsapp_treasurehunt/features/seek_find/target_icons.dart';
 const _kRect = Rect.fromLTWH(0, 0, 0.1, 0.1);
 
 FindTarget _target(String id, {String? iconId}) => FindTarget(
-      id: id,
-      iconId: iconId ?? id,
-      labelKey: id,
-      normalizedRect: _kRect,
-    );
+  id: id,
+  iconId: iconId ?? id,
+  labelKey: id,
+  normalizedRect: _kRect,
+);
 
 void main() {
   testWidgets('renders one slot per target and marks found ones', (

@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/find_target.dart';
@@ -59,5 +60,60 @@ void main() {
       foundIds: const {},
     );
     expect(id, isNull);
+  });
+
+  group('pickHintTargetId', () {
+    test('returns null when all targets are found', () {
+      final id = pickHintTargetId(
+        targets: _targets,
+        foundIds: const {'a', 'b'},
+        random: Random(0),
+      );
+      expect(id, isNull);
+    });
+
+    test('returns the only unfound id when one target remains', () {
+      final id = pickHintTargetId(
+        targets: _targets,
+        foundIds: const {'a'},
+        random: Random(0),
+      );
+      expect(id, 'b');
+    });
+
+    test('never returns a found id: multiple seeds determinism check', () {
+      for (int seed = 0; seed < 50; seed++) {
+        final id = pickHintTargetId(
+          targets: _targets,
+          foundIds: const {'a'},
+          random: Random(seed),
+        );
+        expect(id, 'b', reason: 'seed $seed should only pick unfound target');
+      }
+    });
+
+    test('returns one of the unfound ids (any seed)', () {
+      for (int seed = 0; seed < 50; seed++) {
+        final id = pickHintTargetId(
+          targets: _targets,
+          foundIds: const {},
+          random: Random(seed),
+        );
+        expect(
+          {'a', 'b'}.contains(id),
+          true,
+          reason: 'seed $seed should pick from unfound targets',
+        );
+      }
+    });
+
+    test('returns null when targets list is empty', () {
+      final id = pickHintTargetId(
+        targets: const [],
+        foundIds: const {},
+        random: Random(0),
+      );
+      expect(id, isNull);
+    });
   });
 }
