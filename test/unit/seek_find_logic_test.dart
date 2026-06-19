@@ -6,11 +6,13 @@ import 'package:kidsapp_treasurehunt/features/seek_find/seek_find_logic.dart';
 const _targets = [
   FindTarget(
     id: 'a',
+    iconId: 'heart',
     labelKey: 'target.a',
     normalizedRect: Rect.fromLTWH(0.0, 0.0, 0.2, 0.2),
   ),
   FindTarget(
     id: 'b',
+    iconId: 'star',
     labelKey: 'target.b',
     normalizedRect: Rect.fromLTWH(0.5, 0.5, 0.2, 0.2),
   ),
