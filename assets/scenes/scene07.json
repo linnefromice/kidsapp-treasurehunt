@@ -1,0 +1,20 @@
+{
+  "id": "scene07",
+  "titleKey": "scene.scene07.title",
+  "imageAsset": "assets/scenes/scene07.png",
+  "targets": [
+    { "id": "star",  "iconId": "star",  "labelKey": "target.star",  "left": 0.120, "top": 0.140, "width": 0.12, "height": 0.14 },
+    { "id": "heart", "iconId": "heart", "labelKey": "target.heart", "left": 0.740, "top": 0.180, "width": 0.12, "height": 0.14 },
+    { "id": "apple", "iconId": "apple", "labelKey": "target.apple", "left": 0.400, "top": 0.320, "width": 0.12, "height": 0.14 },
+    { "id": "duck",  "iconId": "duck",  "labelKey": "target.duck",  "left": 0.640, "top": 0.520, "width": 0.12, "height": 0.14 },
+    { "id": "ball",  "iconId": "ball",  "labelKey": "target.ball",  "left": 0.180, "top": 0.620, "width": 0.12, "height": 0.14 }
+  ],
+  "dummies": [
+    { "id": "key7",    "iconId": "key",    "left": 0.500, "top": 0.160, "width": 0.11, "height": 0.13 },
+    { "id": "car7",    "iconId": "car",    "left": 0.850, "top": 0.400, "width": 0.11, "height": 0.13 },
+    { "id": "anchor7", "iconId": "anchor", "left": 0.300, "top": 0.500, "width": 0.11, "height": 0.13 },
+    { "id": "bug7",    "iconId": "bug",    "left": 0.555, "top": 0.700, "width": 0.11, "height": 0.13 },
+    { "id": "rabbit7", "iconId": "rabbit", "left": 0.800, "top": 0.660, "width": 0.11, "height": 0.13 },
+    { "id": "leaf7",   "iconId": "leaf",   "left": 0.120, "top": 0.400, "width": 0.11, "height": 0.13 }
+  ]
+}

@@ -7,6 +7,10 @@ Widget sceneBackground(String sceneId) => switch (sceneId) {
   'scene03' => const _PaintedScene(painter: _CityPainter()),
   'scene04' => const _PaintedScene(painter: _MountainPainter()),
   'scene05' => const _PaintedScene(painter: _NightPainter()),
+  'scene06' => const _PaintedScene(painter: _DesertPainter()),
+  'scene07' => const _PaintedScene(painter: _SpacePainter()),
+  'scene08' => const _PaintedScene(painter: _UnderseaPainter()),
+  'scene09' => const _PaintedScene(painter: _SnowPainter()),
   _ => const ColoredBox(color: Color(0xFF87CEEB)),
 };
 
@@ -713,4 +717,534 @@ class _NightPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_NightPainter old) => false;
+}
+
+// ──────────────────────────────────────────
+// scene06: さばく
+// ──────────────────────────────────────────
+class _DesertPainter extends CustomPainter {
+  const _DesertPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Warm desert sky
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height * 0.55),
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFFFCC80), Color(0xFFFFE0B2)],
+        ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.55)),
+    );
+
+    // Sand
+    canvas.drawRect(
+      Rect.fromLTWH(0, size.height * 0.55, size.width, size.height * 0.45),
+      Paint()
+        ..shader =
+            const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFFF6C56B), Color(0xFFE0A23E)],
+            ).createShader(
+              Rect.fromLTWH(
+                0,
+                size.height * 0.55,
+                size.width,
+                size.height * 0.45,
+              ),
+            ),
+    );
+
+    // Sun
+    canvas.drawCircle(
+      Offset(size.width * 0.20, size.height * 0.14),
+      size.width * 0.06,
+      Paint()..color = const Color(0xFFFFB300),
+    );
+
+    // Rolling dunes (lighter ridges across the sand)
+    _drawDune(canvas, size, 0.58, const Color(0xFFEFB95B));
+    _drawDune(canvas, size, 0.70, const Color(0xFFE8AC47));
+    _drawDune(canvas, size, 0.83, const Color(0xFFDB9A33));
+
+    // Cacti
+    _drawCactus(canvas, size, 0.18, 0.74, 0.10);
+    _drawCactus(canvas, size, 0.82, 0.68, 0.12);
+    _drawCactus(canvas, size, 0.50, 0.82, 0.08);
+  }
+
+  void _drawDune(Canvas canvas, Size size, double topY, Color color) {
+    final y = topY * size.height;
+    final path = Path()..moveTo(0, y);
+    final segW = size.width / 3;
+    for (int i = 0; i < 3; i++) {
+      path.quadraticBezierTo(
+        (i + 0.5) * segW,
+        y - size.height * 0.05,
+        (i + 1.0) * segW,
+        y,
+      );
+    }
+    path
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+    canvas.drawPath(path, Paint()..color = color);
+  }
+
+  void _drawCactus(Canvas canvas, Size size, double cx, double cy, double h) {
+    final x = cx * size.width;
+    final y = cy * size.height;
+    final height = h * size.height;
+    final w = height * 0.26;
+    const green = Color(0xFF2E7D32);
+    final paint = Paint()..color = green;
+    // Main stem
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(x - w / 2, y - height, w, height),
+        Radius.circular(w / 2),
+      ),
+      paint,
+    );
+    // Left arm
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(x - w * 1.4, y - height * 0.65, w * 0.7, height * 0.30),
+        Radius.circular(w * 0.35),
+      ),
+      paint,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(x - w * 1.1, y - height * 0.75, w * 0.55, height * 0.32),
+        Radius.circular(w * 0.3),
+      ),
+      paint,
+    );
+    // Right arm
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(x + w * 0.7, y - height * 0.55, w * 0.7, height * 0.26),
+        Radius.circular(w * 0.35),
+      ),
+      paint,
+    );
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(x + w * 0.55, y - height * 0.66, w * 0.55, height * 0.30),
+        Radius.circular(w * 0.3),
+      ),
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(_DesertPainter old) => false;
+}
+
+// ──────────────────────────────────────────
+// scene07: うちゅう
+// ──────────────────────────────────────────
+class _SpacePainter extends CustomPainter {
+  const _SpacePainter();
+
+  static const List<List<double>> _kStars = [
+    [0.05, 0.06],
+    [0.14, 0.14],
+    [0.24, 0.04],
+    [0.33, 0.20],
+    [0.45, 0.08],
+    [0.55, 0.16],
+    [0.66, 0.05],
+    [0.74, 0.13],
+    [0.85, 0.07],
+    [0.94, 0.18],
+    [0.10, 0.40],
+    [0.30, 0.52],
+    [0.50, 0.46],
+    [0.70, 0.60],
+    [0.90, 0.44],
+    [0.20, 0.72],
+    [0.42, 0.80],
+    [0.60, 0.74],
+    [0.82, 0.84],
+    [0.96, 0.66],
+  ];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Deep space gradient
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF0B0033), Color(0xFF1A0A52), Color(0xFF311B92)],
+        ).createShader(Rect.fromLTWH(0, 0, size.width, size.height)),
+    );
+
+    // Stars (two sizes for depth)
+    final starPaint = Paint()..color = Colors.white.withValues(alpha: 0.90);
+    for (var i = 0; i < _kStars.length; i++) {
+      final s = _kStars[i];
+      canvas.drawCircle(
+        Offset(s[0] * size.width, s[1] * size.height),
+        i.isEven ? 2.6 : 1.6,
+        starPaint,
+      );
+    }
+
+    // Big planet with ring
+    final planet = Offset(size.width * 0.80, size.height * 0.26);
+    final pr = size.width * 0.10;
+    canvas.drawCircle(planet, pr, Paint()..color = const Color(0xFFEF6C00));
+    canvas.drawCircle(
+      Offset(planet.dx - pr * 0.3, planet.dy - pr * 0.3),
+      pr * 0.45,
+      Paint()..color = const Color(0xFFFFB74D),
+    );
+    // Ring
+    canvas.save();
+    canvas.translate(planet.dx, planet.dy);
+    canvas.rotate(-0.4);
+    canvas.drawOval(
+      Rect.fromCenter(center: Offset.zero, width: pr * 3.4, height: pr * 0.9),
+      Paint()
+        ..color = const Color(0xFFFFE0B2).withValues(alpha: 0.7)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = pr * 0.18,
+    );
+    canvas.restore();
+
+    // Small moon
+    canvas.drawCircle(
+      Offset(size.width * 0.16, size.height * 0.20),
+      size.width * 0.04,
+      Paint()..color = const Color(0xFFB0BEC5),
+    );
+    canvas.drawCircle(
+      Offset(size.width * 0.15, size.height * 0.19),
+      size.width * 0.012,
+      Paint()..color = const Color(0xFF90A4AE),
+    );
+
+    // Crater ground at the bottom (a planet surface)
+    final groundTop = size.height * 0.86;
+    final ground = Path()
+      ..moveTo(0, groundTop)
+      ..quadraticBezierTo(
+        size.width * 0.5,
+        groundTop - size.height * 0.05,
+        size.width,
+        groundTop,
+      )
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+    canvas.drawPath(ground, Paint()..color = const Color(0xFF4527A0));
+  }
+
+  @override
+  bool shouldRepaint(_SpacePainter old) => false;
+}
+
+// ──────────────────────────────────────────
+// scene08: うみのなか
+// ──────────────────────────────────────────
+class _UnderseaPainter extends CustomPainter {
+  const _UnderseaPainter();
+
+  static const List<List<double>> _kBubbles = [
+    [0.12, 0.20, 6],
+    [0.20, 0.34, 4],
+    [0.38, 0.12, 5],
+    [0.52, 0.28, 7],
+    [0.64, 0.16, 4],
+    [0.78, 0.30, 6],
+    [0.88, 0.18, 5],
+    [0.30, 0.50, 5],
+    [0.70, 0.52, 4],
+  ];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Fully submerged: teal near the surface to deep navy below
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFF26C6DA),
+            Color(0xFF0097A7),
+            Color(0xFF01579B),
+            Color(0xFF002F6C),
+          ],
+          stops: [0.0, 0.35, 0.70, 1.0],
+        ).createShader(Rect.fromLTWH(0, 0, size.width, size.height)),
+    );
+
+    // Light rays from the surface
+    final rayPaint = Paint()..color = Colors.white.withValues(alpha: 0.08);
+    for (final cx in [0.25, 0.55, 0.80]) {
+      final x = cx * size.width;
+      final ray = Path()
+        ..moveTo(x, 0)
+        ..lineTo(x + size.width * 0.10, 0)
+        ..lineTo(x + size.width * 0.02, size.height * 0.75)
+        ..lineTo(x - size.width * 0.06, size.height * 0.75)
+        ..close();
+      canvas.drawPath(ray, rayPaint);
+    }
+
+    // Sandy sea floor
+    final floorTop = size.height * 0.82;
+    final floor = Path()
+      ..moveTo(0, floorTop)
+      ..quadraticBezierTo(
+        size.width * 0.30,
+        floorTop - size.height * 0.04,
+        size.width * 0.55,
+        floorTop,
+      )
+      ..quadraticBezierTo(
+        size.width * 0.80,
+        floorTop + size.height * 0.04,
+        size.width,
+        floorTop - size.height * 0.01,
+      )
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+    canvas.drawPath(floor, Paint()..color = const Color(0xFFE0C27C));
+
+    // Seaweed on the floor
+    // baseY pinned to the floor top (0.82) so stems grow from the surface.
+    _drawSeaweed(canvas, size, 0.10, 0.82, 0.16);
+    _drawSeaweed(canvas, size, 0.16, 0.82, 0.12);
+    _drawSeaweed(canvas, size, 0.86, 0.82, 0.18);
+    _drawSeaweed(canvas, size, 0.92, 0.82, 0.13);
+
+    // Bubbles
+    for (final b in _kBubbles) {
+      final paint = Paint()
+        ..color = Colors.white.withValues(alpha: 0.35)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.5;
+      canvas.drawCircle(
+        Offset(b[0] * size.width, b[1] * size.height),
+        b[2].toDouble(),
+        paint,
+      );
+    }
+  }
+
+  void _drawSeaweed(
+    Canvas canvas,
+    Size size,
+    double cx,
+    double baseY,
+    double h,
+  ) {
+    final x = cx * size.width;
+    final by = baseY * size.height;
+    final height = h * size.height;
+    final paint = Paint()
+      ..color = const Color(0xFF2E7D32)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = size.width * 0.012
+      ..strokeCap = StrokeCap.round;
+    final path = Path()
+      ..moveTo(x, by)
+      ..quadraticBezierTo(
+        x - size.width * 0.03,
+        by - height * 0.4,
+        x,
+        by - height * 0.6,
+      )
+      ..quadraticBezierTo(
+        x + size.width * 0.03,
+        by - height * 0.8,
+        x,
+        by - height,
+      );
+    canvas.drawPath(path, paint);
+  }
+
+  @override
+  bool shouldRepaint(_UnderseaPainter old) => false;
+}
+
+// ──────────────────────────────────────────
+// scene09: ゆきやま
+// ──────────────────────────────────────────
+class _SnowPainter extends CustomPainter {
+  const _SnowPainter();
+
+  static const List<List<double>> _kFlakes = [
+    [0.08, 0.10],
+    [0.18, 0.22],
+    [0.28, 0.08],
+    [0.40, 0.18],
+    [0.52, 0.06],
+    [0.62, 0.20],
+    [0.72, 0.10],
+    [0.84, 0.24],
+    [0.92, 0.12],
+    [0.14, 0.40],
+    [0.34, 0.46],
+    [0.50, 0.38],
+    [0.68, 0.48],
+    [0.88, 0.42],
+  ];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Pale winter sky
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height),
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFB3E5FC), Color(0xFFE1F5FE)],
+        ).createShader(Rect.fromLTWH(0, 0, size.width, size.height)),
+    );
+
+    // Pale sun
+    canvas.drawCircle(
+      Offset(size.width * 0.84, size.height * 0.14),
+      size.width * 0.05,
+      Paint()..color = const Color(0xFFFFF59D),
+    );
+
+    // Snowy mountains. Outer bases intentionally bleed past the canvas edges
+    // (clipped by widget bounds) for a full-width silhouette on landscape.
+    _drawSnowMountain(canvas, size, 0.22, 0.45, 0.32);
+    _drawSnowMountain(canvas, size, 0.74, 0.40, 0.34);
+    _drawSnowMountain(canvas, size, 0.50, 0.52, 0.28);
+
+    // Snow field
+    final fieldTop = size.height * 0.72;
+    final field = Path()
+      ..moveTo(0, fieldTop)
+      ..quadraticBezierTo(
+        size.width * 0.5,
+        fieldTop - size.height * 0.04,
+        size.width,
+        fieldTop,
+      )
+      ..lineTo(size.width, size.height)
+      ..lineTo(0, size.height)
+      ..close();
+    canvas.drawPath(field, Paint()..color = Colors.white);
+
+    // Snowy pine trees
+    _drawSnowyPine(canvas, size, 0.14, 0.74, 0.13);
+    _drawSnowyPine(canvas, size, 0.60, 0.78, 0.15);
+    _drawSnowyPine(canvas, size, 0.88, 0.73, 0.12);
+
+    // Falling snowflakes
+    final flake = Paint()..color = Colors.white.withValues(alpha: 0.95);
+    for (var i = 0; i < _kFlakes.length; i++) {
+      final f = _kFlakes[i];
+      canvas.drawCircle(
+        Offset(f[0] * size.width, f[1] * size.height),
+        i.isEven ? 3.0 : 2.0,
+        flake,
+      );
+    }
+  }
+
+  void _drawSnowMountain(
+    Canvas canvas,
+    Size size,
+    double peakX,
+    double peakY,
+    double halfWidth,
+  ) {
+    final px = peakX * size.width;
+    final py = peakY * size.height;
+    final body = Path()
+      ..moveTo(px, py)
+      ..lineTo((peakX - halfWidth) * size.width, size.height)
+      ..lineTo((peakX + halfWidth) * size.width, size.height)
+      ..close();
+    canvas.drawPath(body, Paint()..color = const Color(0xFF90A4AE));
+
+    // Snow cap
+    final capH = halfWidth * 0.30;
+    final cap = Path()
+      ..moveTo(px, py)
+      ..lineTo((peakX - capH) * size.width, (peakY + capH * 0.9) * size.height)
+      ..quadraticBezierTo(
+        px,
+        (peakY + capH * 0.5) * size.height,
+        (peakX + capH) * size.width,
+        (peakY + capH * 0.9) * size.height,
+      )
+      ..close();
+    canvas.drawPath(cap, Paint()..color = Colors.white);
+  }
+
+  void _drawSnowyPine(
+    Canvas canvas,
+    Size size,
+    double cx,
+    double baseY,
+    double h,
+  ) {
+    final x = cx * size.width;
+    final by = baseY * size.height;
+    final height = h * size.height;
+    final halfW = height * 0.32;
+    const green = Color(0xFF2E7D32);
+
+    // Trunk
+    canvas.drawRect(
+      Rect.fromCenter(
+        center: Offset(x, by + height * 0.05),
+        width: halfW * 0.3,
+        height: height * 0.18,
+      ),
+      Paint()..color = const Color(0xFF6D4C41),
+    );
+
+    // Three foliage tiers, each with a white snow cap on top
+    for (var i = 0; i < 3; i++) {
+      final tierTop = by - height * (1.0 - i * 0.28);
+      // 0.56 (not 0.55) keeps every tier bottom strictly above the base point.
+      final tierBot = by - height * (0.56 - i * 0.28);
+      final w = halfW * (0.55 + i * 0.22);
+      final tier = Path()
+        ..moveTo(x, tierTop)
+        ..lineTo(x - w, tierBot)
+        ..lineTo(x + w, tierBot)
+        ..close();
+      canvas.drawPath(tier, Paint()..color = green);
+      // Snow on the tier
+      final snow = Path()
+        ..moveTo(x, tierTop)
+        ..lineTo(x - w * 0.5, tierTop + (tierBot - tierTop) * 0.5)
+        ..quadraticBezierTo(
+          x,
+          tierTop + (tierBot - tierTop) * 0.3,
+          x + w * 0.5,
+          tierTop + (tierBot - tierTop) * 0.5,
+        )
+        ..close();
+      canvas.drawPath(
+        snow,
+        Paint()..color = Colors.white.withValues(alpha: 0.9),
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_SnowPainter old) => false;
 }

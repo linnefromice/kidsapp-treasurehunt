@@ -11,7 +11,11 @@ void main() {
     expect(nextSceneId('scene02'), 'scene03');
     expect(nextSceneId('scene03'), 'scene04');
     expect(nextSceneId('scene04'), 'scene05');
-    expect(nextSceneId('scene05'), isNull);
+    expect(nextSceneId('scene05'), 'scene06');
+    expect(nextSceneId('scene06'), 'scene07');
+    expect(nextSceneId('scene07'), 'scene08');
+    expect(nextSceneId('scene08'), 'scene09');
+    expect(nextSceneId('scene09'), isNull);
     expect(nextSceneId('mystery'), isNull);
   });
 
@@ -23,11 +27,19 @@ void main() {
     expect(progress.isUnlocked('scene02'), isTrue);
   });
 
-  test('completeScene on the last scene does not throw / unlock', () async {
+  test('completeScene unlocks the next on an extended-chain link', () async {
     final prefs = await SharedPreferences.getInstance();
     final progress = ProgressRepository(prefs, 'slot1');
     await completeScene(progress, 'scene05');
     expect(progress.isCleared('scene05'), isTrue);
-    expect(progress.isUnlocked('scene05'), isFalse);
+    expect(progress.isUnlocked('scene06'), isTrue);
+  });
+
+  test('completeScene on the last scene does not throw / unlock', () async {
+    final prefs = await SharedPreferences.getInstance();
+    final progress = ProgressRepository(prefs, 'slot1');
+    await completeScene(progress, 'scene09');
+    expect(progress.isCleared('scene09'), isTrue);
+    expect(progress.isUnlocked('scene09'), isFalse);
   });
 }
