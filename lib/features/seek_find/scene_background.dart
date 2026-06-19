@@ -1,7 +1,15 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/scene_ambient.dart';
 
-Widget sceneBackground(String sceneId) => switch (sceneId) {
+/// シーン背景。静止画レイヤ（[_PaintedScene]）の上に環境アニメ層
+/// （[sceneAmbient]）を重ねる。静止画はそのまま、その上で雲・光・雪などが緩く動く。
+Widget sceneBackground(String sceneId) => Stack(
+  fit: StackFit.expand,
+  children: [_sceneBase(sceneId), sceneAmbient(sceneId)],
+);
+
+Widget _sceneBase(String sceneId) => switch (sceneId) {
   'scene01' => const _PaintedScene(painter: _ForestPainter()),
   'scene02' => const _PaintedScene(painter: _OceanPainter()),
   'scene03' => const _PaintedScene(painter: _CityPainter()),
