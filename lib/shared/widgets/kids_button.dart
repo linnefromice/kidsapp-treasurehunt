@@ -21,7 +21,9 @@ class _KidsButtonState extends State<KidsButton> {
 
   bool _pressed = false;
 
-  void _setPressed(bool value) => setState(() => _pressed = value);
+  void _setPressed(bool value) {
+    if (mounted) setState(() => _pressed = value);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +35,6 @@ class _KidsButtonState extends State<KidsButton> {
 
     return Semantics(
       button: true,
-      label: widget.label,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTapDown: (_) => _setPressed(true),
@@ -97,6 +98,14 @@ class _KidsButtonState extends State<KidsButton> {
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
                         color: scheme.onPrimary,
+                        // ツヤのグラデで明るくなる上部でも読めるよう軽い影で担保。
+                        shadows: const [
+                          Shadow(
+                            color: Colors.black38,
+                            blurRadius: 2,
+                            offset: Offset(0, 1),
+                          ),
+                        ],
                       ),
                     ),
                   ),
