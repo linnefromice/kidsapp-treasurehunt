@@ -32,6 +32,27 @@ void main() {
     expect(id, 'a');
   });
 
+  test('hits a tap just outside the original rect but inside the scaled one', () {
+    // 'a' rect right edge is x=0.2 (original). 0.21 is outside the raw rect but
+    // inside the 1.15x display-scaled rect, so the enlarged target should hit.
+    final id = findHitTargetId(
+      scenePoint: const Offset(168, 60), // normalized (0.21, 0.1)
+      sceneSize: sceneSize,
+      targets: _targets,
+      foundIds: const {},
+    );
+    expect(id, 'a');
+  });
+
+  test('scaledTreasureRect enlarges around the center', () {
+    const rect = Rect.fromLTWH(0.2, 0.2, 0.2, 0.2); // center (0.3, 0.3)
+    final scaled = scaledTreasureRect(rect);
+    expect(scaled.center.dx, closeTo(0.3, 1e-9));
+    expect(scaled.center.dy, closeTo(0.3, 1e-9));
+    expect(scaled.width, closeTo(0.2 * kTreasureDisplayScale, 1e-9));
+    expect(scaled.height, closeTo(0.2 * kTreasureDisplayScale, 1e-9));
+  });
+
   test('returns null when tap is on empty space', () {
     final id = findHitTargetId(
       scenePoint: const Offset(720, 60), // normalized (0.9, 0.1) -> empty

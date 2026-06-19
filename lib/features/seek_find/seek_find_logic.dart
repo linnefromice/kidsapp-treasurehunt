@@ -3,6 +3,18 @@ import 'dart:ui';
 
 import 'package:kidsapp_treasurehunt/features/seek_find/models/find_target.dart';
 
+/// 宝アイコンを元の正規化 Rect から一律に拡大する表示倍率。
+/// 表示（Positioned レイアウト）と当たり判定（[findHitTargetId]）の両方で
+/// この同じ値を使うことで「見えている大きさ = 押せる大きさ」を保つ。
+const double kTreasureDisplayScale = 1.15;
+
+/// [normalizedRect] を中心を保ったまま [kTreasureDisplayScale] 倍に拡大する。
+Rect scaledTreasureRect(Rect normalizedRect) => Rect.fromCenter(
+  center: normalizedRect.center,
+  width: normalizedRect.width * kTreasureDisplayScale,
+  height: normalizedRect.height * kTreasureDisplayScale,
+);
+
 /// シーン座標 [scenePoint](GestureDetector の localPosition)を正規化し、
 /// まだ見つかっていない最初のヒット対象 id を返す。空振りは null。
 String? findHitTargetId({
@@ -22,7 +34,8 @@ String? findHitTargetId({
     if (foundIds.contains(target.id)) {
       continue;
     }
-    if (target.normalizedRect.contains(normalized)) {
+    // 表示と同じ拡大率で判定し、見た目どおりの当たり判定にする。
+    if (scaledTreasureRect(target.normalizedRect).contains(normalized)) {
       return target.id;
     }
   }
