@@ -24,19 +24,51 @@ Future<ProviderContainer> _pumpApp(
 }
 
 void main() {
-  testWidgets('tapping a new slot creates it and enters the map', (
+  testWidgets('empty slots are blank (no avatar) with a placeholder', (
     tester,
   ) async {
-    final c = await _pumpApp(tester, {});
+    await _pumpApp(tester, {});
 
-    await tester.tap(find.byKey(const ValueKey('slot-card.slot1')));
-    // Use pump() instead of pumpAndSettle(): TreasureMapScreen has a
-    // repeating pulse animation that never settles.
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
+    // 未作成スロットは固定アバターを出さず、白紙プレースホルダを表示する。
+    expect(find.byKey(const ValueKey('slot-empty.slot1')), findsOneWidget);
+    expect(find.byKey(const ValueKey('slot-avatar.slot1')), findsNothing);
+    expect(find.byKey(const ValueKey('slot-new.slot1')), findsOneWidget);
+  });
 
-    expect(c.read(saveSlotControllerProvider).contains('slot1'), isTrue);
-    expect(find.text('たからの ちず'), findsOneWidget); // 宝の地図ホーム
+  testWidgets(
+    'tapping a new slot lets you pick an emoji, then enters the map',
+    (tester) async {
+      final c = await _pumpApp(tester, {});
+
+      // 白紙スロットをタップ -> 絵文字ピッカーが開く。
+      await tester.tap(find.byKey(const ValueKey('slot-card.slot1')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('emoji-picker')), findsOneWidget);
+
+      // 絵文字を選ぶ -> スロット作成 + 地図へ。
+      await tester.tap(find.byKey(const ValueKey('emoji-pick.🦊')));
+      // Use pump() instead of pumpAndSettle(): TreasureMapScreen has a
+      // repeating pulse animation that never settles.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      final state = c.read(saveSlotControllerProvider);
+      expect(state.containsKey('slot1'), isTrue);
+      expect(state['slot1'], '🦊');
+      expect(find.text('たからの ちず'), findsOneWidget); // 宝の地図ホーム
+    },
+  );
+
+  testWidgets('a created slot shows its chosen emoji avatar', (tester) async {
+    await _pumpApp(tester, {
+      'save.createdSlotIds': ['slot2'],
+      'save.avatar.slot2': '🐼',
+      'progress.slot2.unlockedSceneIds': ['scene01'],
+    });
+
+    expect(find.byKey(const ValueKey('slot-avatar.slot2')), findsOneWidget);
+    expect(find.text('🐼'), findsOneWidget);
+    expect(find.byKey(const ValueKey('slot-empty.slot2')), findsNothing);
   });
 
   testWidgets('reset requires parental gate and uncreates the slot', (
@@ -54,7 +86,7 @@ void main() {
     await tester.tap(find.text('OK'));
     await tester.pumpAndSettle();
 
-    expect(c.read(saveSlotControllerProvider).contains('slot1'), isFalse);
+    expect(c.read(saveSlotControllerProvider).containsKey('slot1'), isFalse);
     expect(find.byKey(const ValueKey('slot-new.slot1')), findsOneWidget);
   });
 

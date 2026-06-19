@@ -19,12 +19,16 @@ void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   test(
-    'createSlot marks created and unlocks first scene for that slot',
+    'createSlot stores the chosen avatar and unlocks first scene for that slot',
     () async {
       final c = await _container();
-      await c.read(saveSlotControllerProvider.notifier).createSlot('slot1');
+      await c
+          .read(saveSlotControllerProvider.notifier)
+          .createSlot('slot1', '🦊');
 
-      expect(c.read(saveSlotControllerProvider).contains('slot1'), isTrue);
+      final state = c.read(saveSlotControllerProvider);
+      expect(state.containsKey('slot1'), isTrue);
+      expect(state['slot1'], '🦊'); // 選んだ絵文字がアバターとして保持される
       c.read(activeSlotProvider.notifier).select('slot1');
       expect(c.read(progressRepositoryProvider).isUnlocked('scene01'), isTrue);
     },
@@ -33,8 +37,8 @@ void main() {
   test('slots have independent progress', () async {
     final c = await _container();
     final ctrl = c.read(saveSlotControllerProvider.notifier);
-    await ctrl.createSlot('slot1');
-    await ctrl.createSlot('slot2');
+    await ctrl.createSlot('slot1', '🐶');
+    await ctrl.createSlot('slot2', '🐱');
 
     c.read(activeSlotProvider.notifier).select('slot1');
     await c.read(progressRepositoryProvider).markCleared('scene01');
@@ -45,15 +49,28 @@ void main() {
     expect(c.read(progressRepositoryProvider).isCleared('scene01'), isFalse);
   });
 
-  test('resetSlot clears progress and uncreates', () async {
+  test('resetSlot clears progress, avatar, and uncreates', () async {
     final c = await _container();
     final ctrl = c.read(saveSlotControllerProvider.notifier);
-    await ctrl.createSlot('slot1');
+    await ctrl.createSlot('slot1', '🦊');
     await ctrl.resetSlot('slot1');
 
-    expect(c.read(saveSlotControllerProvider).contains('slot1'), isFalse);
+    expect(c.read(saveSlotControllerProvider).containsKey('slot1'), isFalse);
     final prefs = c.read(sharedPreferencesProvider);
     expect(prefs.getStringList('progress.slot1.unlockedSceneIds'), isNull);
+    expect(c.read(saveSlotRepositoryProvider).avatarOf('slot1'), isNull);
+  });
+
+  test('build falls back to default avatar for legacy slots', () async {
+    // この機能以前に作られた（アバター未保存の）スロットを再現。
+    SharedPreferences.setMockInitialValues({
+      'save.createdSlotIds': ['slot1'],
+    });
+    final c = await _container();
+
+    final state = c.read(saveSlotControllerProvider);
+    expect(state.containsKey('slot1'), isTrue);
+    expect(state['slot1'], kDefaultAvatar);
   });
 
   test('enterFreeMode unlocks all catalog scenes in free namespace', () async {
@@ -74,7 +91,7 @@ void main() {
   test('enterFreeMode does not affect real slots', () async {
     final c = await _container();
     final ctrl = c.read(saveSlotControllerProvider.notifier);
-    await ctrl.createSlot('slot1');
+    await ctrl.createSlot('slot1', '🐶');
     await ctrl.enterFreeMode();
 
     c.read(activeSlotProvider.notifier).select('slot1');

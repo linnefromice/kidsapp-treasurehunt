@@ -34,28 +34,38 @@ final saveSlotRepositoryProvider = Provider<SaveSlotRepository>(
   (ref) => SaveSlotRepository(ref.watch(sharedPreferencesProvider)),
 );
 
-/// 作成済みスロット id 集合 + 生成/リセットのライフサイクル。
-class SaveSlotController extends Notifier<Set<String>> {
+/// 作成済みスロット（slotId → アバター絵文字）+ 生成/リセットのライフサイクル。
+/// キー集合が「作成済みスロット id」、値が選択されたアバター絵文字。
+class SaveSlotController extends Notifier<Map<String, String>> {
   @override
-  Set<String> build() =>
-      ref.read(saveSlotRepositoryProvider).createdSlotIds().toSet();
+  Map<String, String> build() {
+    final repo = ref.read(saveSlotRepositoryProvider);
+    return {
+      for (final id in repo.createdSlotIds())
+        id: repo.avatarOf(id) ?? kDefaultAvatar,
+    };
+  }
 
-  Future<void> createSlot(String slotId) async {
-    await ref.read(saveSlotRepositoryProvider).markCreated(slotId);
+  Future<void> createSlot(String slotId, String emoji) async {
+    final repo = ref.read(saveSlotRepositoryProvider);
+    await repo.markCreated(slotId);
+    await repo.setAvatar(slotId, emoji);
     await ProgressRepository(
       ref.read(sharedPreferencesProvider),
       slotId,
     ).ensureInitialUnlock(kFirstSceneId);
-    state = {...state, slotId};
+    state = {...state, slotId: emoji};
   }
 
   Future<void> resetSlot(String slotId) async {
-    await ref.read(saveSlotRepositoryProvider).removeCreated(slotId);
+    final repo = ref.read(saveSlotRepositoryProvider);
+    await repo.removeCreated(slotId);
+    await repo.removeAvatar(slotId);
     await ProgressRepository(
       ref.read(sharedPreferencesProvider),
       slotId,
     ).clearAll();
-    state = state.where((id) => id != slotId).toSet();
+    state = {...state}..remove(slotId);
   }
 
   /// フリーモード入場: 専用スロットで全カタログシーンを解放する（冪等・毎回再シード）。
@@ -68,7 +78,9 @@ class SaveSlotController extends Notifier<Set<String>> {
 }
 
 final saveSlotControllerProvider =
-    NotifierProvider<SaveSlotController, Set<String>>(SaveSlotController.new);
+    NotifierProvider<SaveSlotController, Map<String, String>>(
+      SaveSlotController.new,
+    );
 
 /// アクティブスロットにスコープした進捗 Repository。既存画面はこれを使うだけでよい。
 final progressRepositoryProvider = Provider<ProgressRepository>((ref) {

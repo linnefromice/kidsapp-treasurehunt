@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:kidsapp_treasurehunt/features/save_slots/widgets/emoji_picker_dialog.dart';
 import 'package:kidsapp_treasurehunt/providers.dart';
 import 'package:kidsapp_treasurehunt/save_slots_catalog.dart';
 import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
@@ -26,7 +27,7 @@ class SlotSelectScreen extends ConsumerWidget {
               _SlotCard(
                 slot: slot,
                 localeCode: localeCode,
-                isCreated: created.contains(slot.id),
+                avatar: created[slot.id],
               ),
             _FreeModeCard(localeCode: localeCode),
           ],
@@ -40,12 +41,16 @@ class _SlotCard extends ConsumerWidget {
   const _SlotCard({
     required this.slot,
     required this.localeCode,
-    required this.isCreated,
+    required this.avatar,
   });
 
   final SaveSlot slot;
   final String localeCode;
-  final bool isCreated;
+
+  /// 選択済みアバター絵文字。未作成（白紙）のスロットは null。
+  final String? avatar;
+
+  bool get isCreated => avatar != null;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -62,13 +67,7 @@ class _SlotCard extends ConsumerWidget {
               Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    slot.avatar,
-                    size: 88,
-                    color: isCreated
-                        ? Colors.amber.shade700
-                        : Colors.grey.shade400,
-                  ),
+                  _Avatar(avatar: avatar, slotId: slot.id),
                   const SizedBox(height: 12),
                   Text(
                     isCreated
@@ -102,7 +101,12 @@ class _SlotCard extends ConsumerWidget {
 
   Future<void> _enter(BuildContext context, WidgetRef ref) async {
     if (!isCreated) {
-      await ref.read(saveSlotControllerProvider.notifier).createSlot(slot.id);
+      // 白紙スロット: まずアバター絵文字を選ばせてから作成する。
+      final emoji = await EmojiPickerDialog.show(context, localeCode);
+      if (emoji == null || !context.mounted) return;
+      await ref
+          .read(saveSlotControllerProvider.notifier)
+          .createSlot(slot.id, emoji);
     }
     if (!context.mounted) return;
     ref.read(activeSlotProvider.notifier).select(slot.id);
@@ -114,6 +118,43 @@ class _SlotCard extends ConsumerWidget {
     if (ok) {
       await ref.read(saveSlotControllerProvider.notifier).resetSlot(slot.id);
     }
+  }
+}
+
+/// スロットのアバター表示。作成済みは選んだ絵文字、白紙は破線枠＋「＋」。
+class _Avatar extends StatelessWidget {
+  const _Avatar({required this.avatar, required this.slotId});
+
+  final String? avatar;
+  final String slotId;
+
+  @override
+  Widget build(BuildContext context) {
+    final emoji = avatar;
+    if (emoji != null) {
+      return SizedBox(
+        width: 88,
+        height: 88,
+        child: Center(
+          child: Text(
+            emoji,
+            key: ValueKey('slot-avatar.$slotId'),
+            style: const TextStyle(fontSize: 64),
+          ),
+        ),
+      );
+    }
+    // 白紙プレースホルダ（固定アバターを出さない）。
+    return Container(
+      key: ValueKey('slot-empty.$slotId'),
+      width: 88,
+      height: 88,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.shade400, width: 3),
+      ),
+      child: Icon(Icons.add, size: 48, color: Colors.grey.shade400),
+    );
   }
 }
 
