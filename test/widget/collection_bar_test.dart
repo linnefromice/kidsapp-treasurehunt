@@ -94,7 +94,7 @@ void main() {
     expect(find.byKey(const ValueKey('count.apple')), findsNothing);
   });
 
-  testWidgets('lights the grouped slot only when all duplicates are found', (
+  testWidgets('lights the grouped slot and shows a check when all are found', (
     tester,
   ) async {
     await _pump(
@@ -108,6 +108,15 @@ void main() {
 
     expect(find.byKey(const ValueKey('found.heart')), findsOneWidget);
     expect(find.byKey(const ValueKey('unfound.heart')), findsNothing);
-    expect(find.text('2/2'), findsOneWidget);
+    // Completed badge swaps the fraction for a language-independent check.
+    expect(find.byKey(const ValueKey('count.heart')), findsOneWidget);
+    expect(find.text('2/2'), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byKey(const ValueKey('count.heart')),
+        matching: find.byIcon(Icons.check),
+      ),
+      findsOneWidget,
+    );
   });
 }

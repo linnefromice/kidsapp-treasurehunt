@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/find_target.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/models/icon_group.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/target_icons.dart';
 
 /// 画面下の図鑑。同じアイコンの宝が複数あっても横並びにはせず、iconId ごとに
 /// 1枠へまとめ、見つけた数を「found/total」でカウントアップ表示する。
-/// 全部見つけた枠だけ点灯する。
+/// その枠の宝を全て見つけたら点灯し、バッジはチェックマークに変わる。
 class CollectionBar extends StatelessWidget {
   const CollectionBar({
     super.key,
@@ -17,7 +18,7 @@ class CollectionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final groups = _groupByIcon(targets, foundIds);
+    final groups = groupTargetsByIcon(targets, foundIds);
     return Container(
       padding: const EdgeInsets.all(12),
       color: Colors.black.withValues(alpha: 0.05),
@@ -36,50 +37,11 @@ class CollectionBar extends StatelessWidget {
   }
 }
 
-/// iconId 単位の収集状況。初出順を保つため List で返す。
-class _IconGroup {
-  const _IconGroup({
-    required this.iconId,
-    required this.found,
-    required this.total,
-  });
-
-  final String iconId;
-  final int found;
-  final int total;
-
-  bool get isComplete => found >= total;
-  bool get hasMultiple => total > 1;
-}
-
-/// targets を iconId ごとに集計する。初出順を維持し、found は foundIds に
-/// 含まれる target を数える。表示と判定の両方が同じ集計を使えるよう純関数。
-List<_IconGroup> _groupByIcon(List<FindTarget> targets, Set<String> foundIds) {
-  final order = <String>[];
-  final total = <String, int>{};
-  final found = <String, int>{};
-  for (final t in targets) {
-    if (!total.containsKey(t.iconId)) {
-      order.add(t.iconId);
-      total[t.iconId] = 0;
-      found[t.iconId] = 0;
-    }
-    total[t.iconId] = total[t.iconId]! + 1;
-    if (foundIds.contains(t.id)) {
-      found[t.iconId] = found[t.iconId]! + 1;
-    }
-  }
-  return [
-    for (final iconId in order)
-      _IconGroup(iconId: iconId, found: found[iconId]!, total: total[iconId]!),
-  ];
-}
-
 /// 図鑑1枠。アイコン本体（完成で点灯）+ 複数探しのときだけカウントバッジ。
 class _CollectionSlot extends StatelessWidget {
   const _CollectionSlot({required this.group});
 
-  final _IconGroup group;
+  final IconGroup group;
 
   @override
   Widget build(BuildContext context) {
@@ -115,6 +77,7 @@ class _CollectionSlot extends StatelessWidget {
                 key: ValueKey('count.${group.iconId}'),
                 found: group.found,
                 total: group.total,
+                complete: complete,
               ),
             ),
         ],
@@ -123,29 +86,45 @@ class _CollectionSlot extends StatelessWidget {
   }
 }
 
-/// 「found/total」のカウントアップバッジ。濃い茶背景 + 白文字でコントラスト確保。
+/// カウントアップバッジ。途中は「found/total」、完成したらチェックマーク。
+/// 濃い茶背景 + 白文字/白アイコンでコントラストを確保し、読み上げ用に
+/// Semantics ラベルを付ける（数字を読めない年齢でも音で進捗が分かる）。
 class _CountBadge extends StatelessWidget {
-  const _CountBadge({super.key, required this.found, required this.total});
+  const _CountBadge({
+    super.key,
+    required this.found,
+    required this.total,
+    required this.complete,
+  });
 
   final int found;
   final int total;
+  final bool complete;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(
-        color: Colors.brown.shade700,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white, width: 2),
-      ),
-      child: Text(
-        '$found/$total',
-        style: const TextStyle(
-          color: Colors.white,
-          fontSize: 13,
-          fontWeight: FontWeight.bold,
+    return Semantics(
+      label: complete ? 'ぜんぶ みつけた' : '$found / $total こ みつけた',
+      excludeSemantics: true,
+      child: Container(
+        padding: complete
+            ? const EdgeInsets.all(3)
+            : const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+        decoration: BoxDecoration(
+          color: Colors.brown.shade700,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white, width: 2),
         ),
+        child: complete
+            ? const Icon(Icons.check, color: Colors.white, size: 16)
+            : Text(
+                '$found/$total',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
       ),
     );
   }

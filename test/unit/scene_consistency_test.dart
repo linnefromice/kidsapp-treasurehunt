@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/target_icons.dart';
 import 'package:kidsapp_treasurehunt/scenes_catalog.dart';
 
 /// 全シーンが満たすべき整合性の不変条件を検証する。
@@ -15,13 +16,21 @@ void main() {
       .map((e) => e.id)
       .toList(growable: false);
 
+  Future<SceneDef> load(String sceneId) async {
+    try {
+      return await SceneDef.loadAsset(sceneId);
+    } on Object catch (e) {
+      fail('Could not load scene asset "$sceneId": $e');
+    }
+  }
+
   test('catalog exposes every playable scene', () {
     expect(sceneIds, isNotEmpty);
   });
 
   for (final sceneId in sceneIds) {
     test('$sceneId: dummy icons never collide with target icons', () async {
-      final scene = await SceneDef.loadAsset(sceneId);
+      final scene = await load(sceneId);
 
       final targetIcons = scene.targets.map((t) => t.iconId).toSet();
       final dummyIcons = scene.dummies.map((d) => d.iconId).toSet();
@@ -38,7 +47,7 @@ void main() {
     });
 
     test('$sceneId: ids are unique across targets and dummies', () async {
-      final scene = await SceneDef.loadAsset(sceneId);
+      final scene = await load(sceneId);
       final ids = [
         ...scene.targets.map((t) => t.id),
         ...scene.dummies.map((d) => d.id),
@@ -47,6 +56,22 @@ void main() {
         ids.toSet(),
         hasLength(ids.length),
         reason: 'Duplicate id found in $sceneId: $ids',
+      );
+    });
+
+    test('$sceneId: every icon id is a known icon (no "?" fallback)', () async {
+      final scene = await load(sceneId);
+      final unknown = [
+        ...scene.targets.map((t) => t.iconId),
+        ...scene.dummies.map((d) => d.iconId),
+      ].where((id) => !hasTargetIcon(id)).toSet();
+
+      expect(
+        unknown,
+        isEmpty,
+        reason:
+            'Unknown icon id(s) $unknown in $sceneId render as a "?" '
+            '(help_outline). Add them to target_icons.dart.',
       );
     });
   }
