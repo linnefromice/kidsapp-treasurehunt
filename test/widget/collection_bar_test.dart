@@ -17,11 +17,20 @@ Future<void> _pump(
   WidgetTester tester, {
   required List<FindTarget> targets,
   required Set<String> foundIds,
+  EdgeInsets systemPadding = EdgeInsets.zero,
 }) {
+  // SafeArea は MediaQuery.paddingOf(context)（= padding）を消費するため、
+  // ここで padding を与えれば SafeArea がそのぶん中身を inset する。
   return tester.pumpWidget(
     MaterialApp(
-      home: Scaffold(
-        body: CollectionBar(targets: targets, foundIds: foundIds),
+      home: MediaQuery(
+        data: MediaQueryData(padding: systemPadding),
+        child: Scaffold(
+          body: Align(
+            alignment: Alignment.bottomCenter,
+            child: CollectionBar(targets: targets, foundIds: foundIds),
+          ),
+        ),
       ),
     ),
   );
@@ -92,6 +101,25 @@ void main() {
 
     // Single-count groups get no badge.
     expect(find.byKey(const ValueKey('count.apple')), findsNothing);
+  });
+
+  testWidgets('keeps slots clear of the bottom system inset (SafeArea)', (
+    tester,
+  ) async {
+    const bottomInset = 80.0;
+    await _pump(
+      tester,
+      targets: [_target('apple')],
+      foundIds: const {},
+      systemPadding: const EdgeInsets.only(bottom: bottomInset),
+    );
+
+    final screenBottom = tester.getSize(find.byType(MaterialApp)).height;
+    final slotBottom = tester
+        .getRect(find.byKey(const ValueKey('slot.apple')))
+        .bottom;
+    // The slot must sit above the system navigation inset, not under it.
+    expect(slotBottom, lessThanOrEqualTo(screenBottom - bottomInset));
   });
 
   testWidgets('lights the grouped slot and shows a check when all are found', (
