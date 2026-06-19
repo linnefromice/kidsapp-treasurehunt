@@ -15,4 +15,20 @@ void main() {
     await tester.pump(const Duration(milliseconds: 700));
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('disposes its controller cleanly when removed from the tree', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: Scaffold(body: HintGlow(color: Colors.teal)),
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 200));
+    // hinting が false に戻った状況を再現: ツリーから取り除く。
+    await tester.pumpWidget(const MaterialApp(home: Scaffold()));
+    await tester.pump(const Duration(milliseconds: 200));
+    expect(find.byType(HintGlow), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 }

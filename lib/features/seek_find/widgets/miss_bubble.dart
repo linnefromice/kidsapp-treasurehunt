@@ -18,8 +18,10 @@ class _MissBubbleState extends State<MissBubble>
     duration: const Duration(milliseconds: 600),
   )..forward();
 
-  late final Animation<double> _scale = Tween<double>(begin: 0.3, end: 1.2)
-      .animate(CurvedAnimation(parent: _c, curve: Curves.easeOut));
+  late final Animation<double> _scale = Tween<double>(
+    begin: 0.3,
+    end: 1.2,
+  ).animate(CurvedAnimation(parent: _c, curve: Curves.easeOut));
 
   late final Animation<double> _opacity = TweenSequence<double>([
     TweenSequenceItem(tween: Tween(begin: 0.0, end: 0.55), weight: 15),

@@ -19,8 +19,9 @@ import 'package:kidsapp_treasurehunt/scenes_catalog.dart';
 import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
 import 'package:kidsapp_treasurehunt/shared/widgets/kids_button.dart';
 
-/// 何秒ごとに未発見の宝を 1 つヒント点滅させるか。
-const Duration _kHintInterval = Duration(seconds: 5);
+/// 操作が無いまま何秒経過したら未発見の宝を 1 つヒント点滅させるか
+/// （アイドル時のみ。タップ/なぞりのたびにカウントはリセットされ、急かさない）。
+const Duration _kHintIdleDelay = Duration(seconds: 8);
 
 class SeekFindScreen extends ConsumerWidget {
   const SeekFindScreen({super.key, required this.sceneId});
@@ -55,18 +56,26 @@ class _SceneViewState extends ConsumerState<_SceneView> {
   final List<({Offset position, Key key})> _missBubbles = [];
   final math.Random _random = math.Random();
   Timer? _hintTimer;
+  Timer? _hintClearTimer;
   String? _hintingId;
 
   @override
   void initState() {
     super.initState();
-    _hintTimer = Timer.periodic(_kHintInterval, (_) => _showHint());
+    _scheduleHint();
   }
 
   @override
   void dispose() {
     _hintTimer?.cancel();
+    _hintClearTimer?.cancel();
     super.dispose();
+  }
+
+  /// アイドル計測を仕切り直す。タップ/なぞりのたびに呼ばれ、操作中はヒントを出さない。
+  void _scheduleHint() {
+    _hintTimer?.cancel();
+    _hintTimer = Timer(_kHintIdleDelay, _showHint);
   }
 
   void _showHint() {
@@ -80,12 +89,14 @@ class _SceneViewState extends ConsumerState<_SceneView> {
       random: _random,
     );
     if (id == null) {
-      return;
+      return; // 全て発見済み: 再スケジュールせず自然に停止
     }
     setState(() => _hintingId = id);
-    Future.delayed(kHintGlowDuration, () {
+    _hintClearTimer?.cancel();
+    _hintClearTimer = Timer(kHintGlowDuration, () {
       if (mounted) {
         setState(() => _hintingId = null);
+        _scheduleHint(); // 光が消えたら、次のアイドル待ちを再開
       }
     });
   }
@@ -154,6 +165,7 @@ class _SceneViewState extends ConsumerState<_SceneView> {
                             width: t.normalizedRect.width * sceneSize.width,
                             height: t.normalizedRect.height * sceneSize.height,
                             child: _TargetView(
+                              key: ValueKey(t.id),
                               iconId: t.iconId,
                               found: found.contains(t.id),
                               hinting: _hintingId == t.id,
@@ -179,10 +191,14 @@ class _SceneViewState extends ConsumerState<_SceneView> {
   Future<void> _handleComplete(String sceneId) async {
     await completeScene(ref.read(progressRepositoryProvider), sceneId);
     await ref.read(audioServiceProvider).playComplete();
-    if (mounted) setState(() => _completed = true);
+    if (mounted) {
+      _hintTimer?.cancel();
+      setState(() => _completed = true);
+    }
   }
 
   void _handleHit(Offset localPosition, Size sceneSize) {
+    _scheduleHint(); // 操作があった = アイドルではない。ヒント待ちをリセット
     final scene = widget.scene;
     final found = ref.read(foundControllerProvider(scene.id));
     final hitId = findHitTargetId(
@@ -203,6 +219,7 @@ class _SceneViewState extends ConsumerState<_SceneView> {
 
 class _TargetView extends StatelessWidget {
   const _TargetView({
+    super.key,
     required this.iconId,
     required this.found,
     this.hinting = false,
