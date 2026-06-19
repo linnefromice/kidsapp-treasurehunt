@@ -19,19 +19,27 @@ class CollectionBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final groups = groupTargetsByIcon(targets, foundIds);
+    // 背景色は画面端まで伸ばしつつ、中身だけを下端/左右のシステムインセット
+    // （Android ナビゲーションバー等）ぶん押し上げる。top は上のシーン領域が
+    // 守るので除外する。
     return Container(
-      padding: const EdgeInsets.all(12),
       color: Colors.black.withValues(alpha: 0.05),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          for (final g in groups)
-            Padding(
-              key: ValueKey('slot.${g.iconId}'),
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: _CollectionSlot(group: g),
-            ),
-        ],
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              for (final g in groups)
+                Padding(
+                  key: ValueKey('slot.${g.iconId}'),
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: _CollectionSlot(group: g),
+                ),
+            ],
+          ),
+        ),
       ),
     );
   }
