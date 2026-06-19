@@ -29,6 +29,12 @@ class ProgressRepository {
     await _prefs.setStringList(_unlockedKey, next.toList());
   }
 
+  /// 渡したシーンをまとめて解放する（フリーモードの全解放に使用・冪等）。
+  Future<void> unlockAll(List<String> sceneIds) async {
+    final next = unlockedSceneIds().toSet()..addAll(sceneIds);
+    await _prefs.setStringList(_unlockedKey, next.toList());
+  }
+
   Future<void> markCleared(String sceneId) async {
     final next = clearedSceneIds().toSet()..add(sceneId);
     await _prefs.setStringList(_clearedKey, next.toList());

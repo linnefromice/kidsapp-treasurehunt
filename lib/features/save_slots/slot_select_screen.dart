@@ -28,6 +28,7 @@ class SlotSelectScreen extends ConsumerWidget {
                 localeCode: localeCode,
                 isCreated: created.contains(slot.id),
               ),
+            _FreeModeCard(localeCode: localeCode),
           ],
         ),
       ),
@@ -113,5 +114,45 @@ class _SlotCard extends ConsumerWidget {
     if (ok) {
       await ref.read(saveSlotControllerProvider.notifier).resetSlot(slot.id);
     }
+  }
+}
+
+/// 全マップ解放モード（フリーモード）の入場カード。リセットや保護者ゲートは持たない。
+class _FreeModeCard extends ConsumerWidget {
+  const _FreeModeCard({required this.localeCode});
+
+  final String localeCode;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Card(
+      child: InkWell(
+        key: const ValueKey('slot-card.free'),
+        onTap: () => _enter(context, ref),
+        child: SizedBox(
+          width: 160,
+          height: 200,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.auto_awesome, size: 88, color: Colors.amber.shade700),
+              const SizedBox(height: 12),
+              Text(
+                tr(localeCode, 'slot.free'),
+                key: const ValueKey('slot-free'),
+                style: const TextStyle(fontSize: 18),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _enter(BuildContext context, WidgetRef ref) async {
+    await ref.read(saveSlotControllerProvider.notifier).enterFreeMode();
+    if (!context.mounted) return;
+    ref.read(activeSlotProvider.notifier).select(kFreeModeSlotId);
+    context.go('/');
   }
 }

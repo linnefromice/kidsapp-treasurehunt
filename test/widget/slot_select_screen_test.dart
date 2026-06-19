@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kidsapp_treasurehunt/app.dart';
 import 'package:kidsapp_treasurehunt/providers.dart';
+import 'package:kidsapp_treasurehunt/scenes_catalog.dart';
 
 Future<ProviderContainer> _pumpApp(
   WidgetTester tester,
@@ -55,5 +56,37 @@ void main() {
 
     expect(c.read(saveSlotControllerProvider).contains('slot1'), isFalse);
     expect(find.byKey(const ValueKey('slot-new.slot1')), findsOneWidget);
+  });
+
+  testWidgets('free mode card is shown on the slot select screen', (
+    tester,
+  ) async {
+    await _pumpApp(tester, {});
+
+    expect(find.byKey(const ValueKey('slot-card.free')), findsOneWidget);
+    expect(find.byKey(const ValueKey('slot-free')), findsOneWidget);
+    expect(find.text('フリーモード'), findsOneWidget);
+  });
+
+  testWidgets('tapping free mode enters the map with every scene unlocked', (
+    tester,
+  ) async {
+    await _pumpApp(tester, {});
+
+    await tester.tap(find.byKey(const ValueKey('slot-card.free')));
+    // Use pump() instead of pumpAndSettle(): TreasureMapScreen has a
+    // repeating pulse animation that never settles.
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    expect(find.text('たからの ちず'), findsOneWidget); // 宝の地図ホーム
+    // 全シーンが解放済み = ロック状態のノードが 1 つも無い。
+    for (final entry in kSceneCatalog) {
+      expect(
+        find.byKey(ValueKey('node-locked.${entry.id}')),
+        findsNothing,
+        reason: '${entry.id} should not be locked in free mode',
+      );
+    }
   });
 }
