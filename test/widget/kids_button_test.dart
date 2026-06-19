@@ -22,4 +22,30 @@ void main() {
     await tester.tap(find.byType(KidsButton));
     expect(tapped, isTrue);
   });
+
+  testWidgets('sinks on press-down and fires once on release', (tester) async {
+    var taps = 0;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: Center(
+            child: KidsButton(label: 'GO', onPressed: () => taps++),
+          ),
+        ),
+      ),
+    );
+
+    // Press-and-hold should animate the sink without firing yet.
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.byType(KidsButton)),
+    );
+    await tester.pump(const Duration(milliseconds: 40));
+    expect(taps, 0);
+    expect(tester.takeException(), isNull);
+
+    // Releasing fires onPressed exactly once.
+    await gesture.up();
+    await tester.pumpAndSettle();
+    expect(taps, 1);
+  });
 }
