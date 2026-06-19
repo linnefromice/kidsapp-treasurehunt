@@ -7,6 +7,7 @@ class SaveSlotRepository {
   final SharedPreferences _prefs;
 
   static const _createdKey = 'save.createdSlotIds';
+  static const _avatarPrefix = 'save.avatar.';
 
   List<String> createdSlotIds() =>
       _prefs.getStringList(_createdKey) ?? const [];
@@ -21,5 +22,16 @@ class SaveSlotRepository {
   Future<void> removeCreated(String slotId) async {
     final next = createdSlotIds().toSet()..remove(slotId);
     await _prefs.setStringList(_createdKey, next.toList());
+  }
+
+  /// スロットのアバター絵文字（未設定は null）。
+  String? avatarOf(String slotId) => _prefs.getString('$_avatarPrefix$slotId');
+
+  Future<void> setAvatar(String slotId, String emoji) async {
+    await _prefs.setString('$_avatarPrefix$slotId', emoji);
+  }
+
+  Future<void> removeAvatar(String slotId) async {
+    await _prefs.remove('$_avatarPrefix$slotId');
   }
 }

@@ -24,19 +24,69 @@ Future<ProviderContainer> _pumpApp(
 }
 
 void main() {
-  testWidgets('tapping a new slot creates it and enters the map', (
+  testWidgets('empty slots are blank (no avatar) with a placeholder', (
+    tester,
+  ) async {
+    await _pumpApp(tester, {});
+
+    // 未作成スロットは固定アバターを出さず、白紙プレースホルダを表示する。
+    expect(find.byKey(const ValueKey('slot-empty.slot1')), findsOneWidget);
+    expect(find.byKey(const ValueKey('slot-avatar.slot1')), findsNothing);
+    expect(find.byKey(const ValueKey('slot-new.slot1')), findsOneWidget);
+  });
+
+  testWidgets(
+    'tapping a new slot lets you pick an emoji, then enters the map',
+    (tester) async {
+      final c = await _pumpApp(tester, {});
+
+      // 白紙スロットをタップ -> 絵文字ピッカーが開く。
+      await tester.tap(find.byKey(const ValueKey('slot-card.slot1')));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('emoji-picker')), findsOneWidget);
+
+      // 絵文字を選ぶ -> スロット作成 + 地図へ。
+      await tester.tap(find.byKey(const ValueKey('emoji-pick.🦊')));
+      // Use pump() instead of pumpAndSettle(): TreasureMapScreen has a
+      // repeating pulse animation that never settles.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      final state = c.read(saveSlotControllerProvider);
+      expect(state.containsKey('slot1'), isTrue);
+      expect(state['slot1'], '🦊');
+      expect(find.text('たからの ちず'), findsOneWidget); // 宝の地図ホーム
+    },
+  );
+
+  testWidgets('a created slot shows its chosen emoji avatar', (tester) async {
+    await _pumpApp(tester, {
+      'save.createdSlotIds': ['slot2'],
+      'save.avatar.slot2': '🐼',
+      'progress.slot2.unlockedSceneIds': ['scene01'],
+    });
+
+    expect(find.byKey(const ValueKey('slot-avatar.slot2')), findsOneWidget);
+    expect(find.text('🐼'), findsOneWidget);
+    expect(find.byKey(const ValueKey('slot-empty.slot2')), findsNothing);
+  });
+
+  testWidgets('canceling the emoji picker keeps the slot uncreated', (
     tester,
   ) async {
     final c = await _pumpApp(tester, {});
 
     await tester.tap(find.byKey(const ValueKey('slot-card.slot1')));
-    // Use pump() instead of pumpAndSettle(): TreasureMapScreen has a
-    // repeating pulse animation that never settles.
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 100));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('emoji-picker')), findsOneWidget);
 
-    expect(c.read(saveSlotControllerProvider).contains('slot1'), isTrue);
-    expect(find.text('たからの ちず'), findsOneWidget); // 宝の地図ホーム
+    // 戻るボタンで閉じる -> スロットは未作成のまま白紙が維持される。
+    await tester.tap(find.byKey(const ValueKey('emoji-cancel')));
+    await tester.pumpAndSettle();
+
+    expect(c.read(saveSlotControllerProvider).containsKey('slot1'), isFalse);
+    expect(find.byKey(const ValueKey('slot-empty.slot1')), findsOneWidget);
+    expect(find.byKey(const ValueKey('slot-new.slot1')), findsOneWidget);
   });
 
   testWidgets('reset requires parental gate and uncreates the slot', (
@@ -44,18 +94,23 @@ void main() {
   ) async {
     final c = await _pumpApp(tester, {
       'save.createdSlotIds': ['slot1'],
+      'save.avatar.slot1': '🐶',
       'progress.slot1.unlockedSceneIds': ['scene01'],
     });
 
     expect(find.byKey(const ValueKey('slot-continue.slot1')), findsOneWidget);
+    expect(find.byKey(const ValueKey('slot-avatar.slot1')), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('slot-reset.slot1')));
     await tester.pumpAndSettle(); // 保護者ゲートのダイアログ表示
     await tester.tap(find.text('OK'));
     await tester.pumpAndSettle();
 
-    expect(c.read(saveSlotControllerProvider).contains('slot1'), isFalse);
+    expect(c.read(saveSlotControllerProvider).containsKey('slot1'), isFalse);
     expect(find.byKey(const ValueKey('slot-new.slot1')), findsOneWidget);
+    // アバターは消え、白紙プレースホルダへ戻る。
+    expect(find.byKey(const ValueKey('slot-avatar.slot1')), findsNothing);
+    expect(find.byKey(const ValueKey('slot-empty.slot1')), findsOneWidget);
   });
 
   testWidgets('free mode card is shown on the slot select screen', (
