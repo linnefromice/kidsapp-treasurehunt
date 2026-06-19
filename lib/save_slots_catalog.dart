@@ -12,3 +12,7 @@ const List<SaveSlot> kSaveSlots = [
   SaveSlot('slot2', Icons.cruelty_free),
   SaveSlot('slot3', Icons.flutter_dash),
 ];
+
+/// フリーモード（全マップ解放モード）専用スロット id。
+/// 3 つの実スロットとは進捗キーの名前空間が独立する（`progress.free.*`）。
+const String kFreeModeSlotId = 'free';

@@ -6,6 +6,7 @@ import 'package:kidsapp_treasurehunt/data/progress_repository.dart';
 import 'package:kidsapp_treasurehunt/data/save_slot_repository.dart';
 import 'package:kidsapp_treasurehunt/data/settings_repository.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
+import 'package:kidsapp_treasurehunt/save_slots_catalog.dart';
 import 'package:kidsapp_treasurehunt/scenes_catalog.dart';
 import 'package:kidsapp_treasurehunt/shared/audio/audio_service.dart';
 
@@ -55,6 +56,14 @@ class SaveSlotController extends Notifier<Set<String>> {
       slotId,
     ).clearAll();
     state = state.where((id) => id != slotId).toSet();
+  }
+
+  /// フリーモード入場: 専用スロットで全カタログシーンを解放する（冪等・毎回再シード）。
+  Future<void> enterFreeMode() async {
+    await ProgressRepository(
+      ref.read(sharedPreferencesProvider),
+      kFreeModeSlotId,
+    ).unlockAll(kSceneCatalog.map((e) => e.id).toList());
   }
 }
 

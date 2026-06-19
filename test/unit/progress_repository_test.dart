@@ -41,4 +41,26 @@ void main() {
     expect(r.unlockedSceneIds(), isEmpty);
     expect(r.clearedSceneIds(), isEmpty);
   });
+
+  test('unlockAll unlocks every passed scene', () async {
+    final r = await _repo('free');
+    await r.unlockAll(['scene01', 'scene02', 'scene03']);
+    expect(r.isUnlocked('scene01'), isTrue);
+    expect(r.isUnlocked('scene02'), isTrue);
+    expect(r.isUnlocked('scene03'), isTrue);
+  });
+
+  test('unlockAll is idempotent', () async {
+    final r = await _repo('free');
+    await r.unlockAll(['scene01', 'scene02']);
+    await r.unlockAll(['scene01', 'scene02']);
+    expect(r.unlockedSceneIds()..sort(), ['scene01', 'scene02']);
+  });
+
+  test('unlockAll merges with already unlocked scenes', () async {
+    final r = await _repo('free');
+    await r.unlock('scene01');
+    await r.unlockAll(['scene02', 'scene03']);
+    expect(r.unlockedSceneIds()..sort(), ['scene01', 'scene02', 'scene03']);
+  });
 }
