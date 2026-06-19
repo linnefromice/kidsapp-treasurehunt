@@ -5,18 +5,20 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:kidsapp_treasurehunt/data/progress_repository.dart';
-import 'package:kidsapp_treasurehunt/features/seek_find/hard_mode.dart';
 import 'package:kidsapp_treasurehunt/features/treasure_map/widgets/treasure_map_canvas.dart';
 import 'package:kidsapp_treasurehunt/providers.dart';
 import 'package:kidsapp_treasurehunt/scenes_catalog.dart';
+import 'package:kidsapp_treasurehunt/shared/game_mode.dart';
 import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
 
-/// 「現在地」= まだクリアしていない最初の解放済みシーンの index。
+/// 選択中モードでの「現在地」= まだクリアしていない最初の解放済みシーンの index。
 /// 全クリア / 先頭未解放なら null（マーチング足跡を出さない）。
-int? _currentNodeIndex(ProgressRepository progress) {
+int? _currentNodeIndex(ProgressRepository progress, GameMode mode) {
   for (var i = 0; i < kSceneCatalog.length; i++) {
     final e = kSceneCatalog[i];
-    if (progress.isUnlocked(e.id) && !progress.isCleared(e.id)) return i;
+    if (progress.isUnlocked(mode, e.id) && !progress.isCleared(mode, e.id)) {
+      return i;
+    }
   }
   return null;
 }
@@ -29,31 +31,44 @@ class TreasureMapScreen extends ConsumerStatefulWidget {
 }
 
 class _TreasureMapScreenState extends ConsumerState<TreasureMapScreen> {
-  GameMode _mode = GameMode.normal;
+  GameMode _mode = GameMode.easy;
+
+  @override
+  void initState() {
+    super.initState();
+    // 既存スロット救済: 各モードの初期解放（scene01）が無ければ遅延シードする。
+    // スロット生成時に 3 モード分シード済みのため、通常は冪等で no-op。
+    WidgetsBinding.instance.addPostFrameCallback((_) => _ensureSeeded());
+  }
+
+  Future<void> _ensureSeeded() async {
+    // アクティブスロット未選択なら progressRepositoryProvider は throw する。
+    // この postFrameCallback は unawaited のため、ここで握って no-op にする
+    // （ルート遷移の境界でスロットが外れた瞬間などを防御）。
+    if (!mounted || ref.read(activeSlotProvider) == null) return;
+    final progress = ref.read(progressRepositoryProvider);
+    var seeded = false;
+    for (final mode in GameMode.values) {
+      if (progress.unlockedSceneIds(mode).isEmpty) {
+        await progress.ensureInitialUnlock(mode, kFirstSceneId);
+        seeded = true;
+      }
+    }
+    if (seeded && mounted) setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
     final progress = ref.watch(progressRepositoryProvider);
     final localeCode = ref.watch(localeControllerProvider).languageCode;
 
-    // ハードモードは全シーンクリア後のみ解放。未解放なら強制的に通常モード扱い
-    // （スロットをまたいでも安全側に倒れるよう、表示直前にも判定する）。
-    final hardUnlocked = allScenesCleared(progress);
-    final hard = hardUnlocked && _mode == GameMode.hard;
-
-    // 軌跡（羊皮紙の一本道）は常に通常クリアを反映。バッジ/カウンタはモード依存。
-    final normalClearedIds = kSceneCatalog
-        .where((e) => progress.isCleared(e.id))
+    final isHard = _mode == GameMode.hard;
+    // バッジ・カウンタ・軌跡・現在地はすべて選択中モードの進捗を反映する。
+    final clearedForMode = kSceneCatalog
+        .where((e) => progress.isCleared(_mode, e.id))
         .map((e) => e.id)
         .toSet();
-    final clearedForMode = hard
-        ? kSceneCatalog
-              .where((e) => progress.isHardCleared(e.id))
-              .map((e) => e.id)
-              .toSet()
-        : normalClearedIds;
-    // 通常モードのみマーチング足跡（次に進む先の誘導）。ハードは全ノード解放済み。
-    final currentIndex = hard ? null : _currentNodeIndex(progress);
+    final currentIndex = _currentNodeIndex(progress, _mode);
 
     return Scaffold(
       appBar: AppBar(
@@ -72,7 +87,7 @@ class _TreasureMapScreenState extends ConsumerState<TreasureMapScreen> {
               child: Text(
                 '${tr(localeCode, 'home.cleared')} '
                 '${clearedForMode.length}/${kSceneCatalog.length} '
-                '${hard ? '🏆🔥' : '🏆'}',
+                '${isHard ? '🏆🔥' : '🏆'}',
                 style: const TextStyle(fontSize: 16),
               ),
             ),
@@ -96,11 +111,11 @@ class _TreasureMapScreenState extends ConsumerState<TreasureMapScreen> {
                   painter: const ParchmentPainter(),
                 ),
               ),
-              // 2. 曲線ルート + クリア済み区間の足跡（クリア時のみ再描画・隔離）
+              // 2. 曲線ルート + クリア済み区間の足跡（選択中モードのクリアを反映）
               RepaintBoundary(
                 child: CustomPaint(
                   size: size,
-                  painter: TrailPainter(clearedIds: normalClearedIds),
+                  painter: TrailPainter(clearedIds: clearedForMode),
                 ),
               ),
               // 3. 現在地へ向かう足跡（アニメ・隔離）。現在地が無ければ描かない。
@@ -121,30 +136,27 @@ class _TreasureMapScreenState extends ConsumerState<TreasureMapScreen> {
                   child: _MapNode(
                     entry: entry,
                     localeCode: localeCode,
-                    // ハードは全シーン解放済みなので常にタップ可能。
-                    unlocked: hard || progress.isUnlocked(entry.id),
+                    unlocked: progress.isUnlocked(_mode, entry.id),
                     cleared: clearedForMode.contains(entry.id),
-                    onTap: hard
-                        ? () => context.go('/hunt/${entry.id}?mode=hard')
-                        : progress.isUnlocked(entry.id)
-                        ? () => context.go('/hunt/${entry.id}')
+                    onTap: progress.isUnlocked(_mode, entry.id)
+                        ? () =>
+                              context.go('/hunt/${entry.id}?mode=${_mode.name}')
                         : null,
                   ),
                 ),
-              // 5. モード切替トグル（全シーンクリア後のみ表示）
-              if (hardUnlocked)
-                Positioned(
-                  top: 8,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: _ModeToggle(
-                      mode: _mode,
-                      localeCode: localeCode,
-                      onChanged: (m) => setState(() => _mode = m),
-                    ),
+              // 5. モード切替トグル（Easy / Normal / Hard を常時表示）
+              Positioned(
+                top: 8,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: _ModeToggle(
+                    mode: _mode,
+                    localeCode: localeCode,
+                    onChanged: (m) => setState(() => _mode = m),
                   ),
                 ),
+              ),
             ],
           );
         },
@@ -153,7 +165,7 @@ class _TreasureMapScreenState extends ConsumerState<TreasureMapScreen> {
   }
 }
 
-/// 「ふつう / むずかしい」を切り替えるピル型トグル。全シーンクリア後のみ地図に現れる。
+/// 「やさしい / ふつう / むずかしい」を切り替えるピル型トグル。常時表示。
 class _ModeToggle extends StatelessWidget {
   const _ModeToggle({
     required this.mode,
@@ -177,6 +189,13 @@ class _ModeToggle extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            _ModeChip(
+              keyValue: 'mode-easy',
+              label: tr(localeCode, 'home.modeEasy'),
+              selected: mode == GameMode.easy,
+              onTap: () => onChanged(GameMode.easy),
+            ),
+            const SizedBox(width: 4),
             _ModeChip(
               keyValue: 'mode-normal',
               label: tr(localeCode, 'home.modeNormal'),
@@ -212,24 +231,29 @@ class _ModeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      key: ValueKey(keyValue),
-      onTap: onTap,
-      child: Container(
-        // タッチターゲット 60dp 以上を確保（子供向け UX 基準）。
-        constraints: const BoxConstraints(minWidth: 96, minHeight: 60),
-        alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        decoration: BoxDecoration(
-          color: selected ? Colors.amber.shade600 : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-            color: selected ? Colors.white : Colors.brown.shade700,
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      child: GestureDetector(
+        key: ValueKey(keyValue),
+        onTap: onTap,
+        child: Container(
+          // タッチターゲット 60dp 以上を確保（子供向け UX 基準）。
+          constraints: const BoxConstraints(minWidth: 96, minHeight: 60),
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: selected ? Colors.amber.shade600 : Colors.transparent,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+              color: selected ? Colors.white : Colors.brown.shade700,
+            ),
           ),
         ),
       ),

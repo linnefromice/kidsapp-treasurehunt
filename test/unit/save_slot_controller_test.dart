@@ -5,6 +5,7 @@ import 'package:kidsapp_treasurehunt/data/progress_repository.dart';
 import 'package:kidsapp_treasurehunt/providers.dart';
 import 'package:kidsapp_treasurehunt/save_slots_catalog.dart';
 import 'package:kidsapp_treasurehunt/scenes_catalog.dart';
+import 'package:kidsapp_treasurehunt/shared/game_mode.dart';
 
 Future<ProviderContainer> _container() async {
   final prefs = await SharedPreferences.getInstance();
@@ -30,7 +31,15 @@ void main() {
       expect(state.containsKey('slot1'), isTrue);
       expect(state['slot1'], '🦊'); // 選んだ絵文字がアバターとして保持される
       c.read(activeSlotProvider.notifier).select('slot1');
-      expect(c.read(progressRepositoryProvider).isUnlocked('scene01'), isTrue);
+      // 3 モードとも scene01 が初期解放される（最初からどのモードも選べる）。
+      final progress = c.read(progressRepositoryProvider);
+      for (final mode in GameMode.values) {
+        expect(
+          progress.isUnlocked(mode, 'scene01'),
+          isTrue,
+          reason: 'scene01 should be unlocked in $mode',
+        );
+      }
     },
   );
 
@@ -41,12 +50,20 @@ void main() {
     await ctrl.createSlot('slot2', '🐱');
 
     c.read(activeSlotProvider.notifier).select('slot1');
-    await c.read(progressRepositoryProvider).markCleared('scene01');
+    await c
+        .read(progressRepositoryProvider)
+        .markCleared(GameMode.easy, 'scene01');
 
     c.read(activeSlotProvider.notifier).select('slot1');
-    expect(c.read(progressRepositoryProvider).isCleared('scene01'), isTrue);
+    expect(
+      c.read(progressRepositoryProvider).isCleared(GameMode.easy, 'scene01'),
+      isTrue,
+    );
     c.read(activeSlotProvider.notifier).select('slot2');
-    expect(c.read(progressRepositoryProvider).isCleared('scene01'), isFalse);
+    expect(
+      c.read(progressRepositoryProvider).isCleared(GameMode.easy, 'scene01'),
+      isFalse,
+    );
   });
 
   test('resetSlot clears progress, avatar, and uncreates', () async {
@@ -57,7 +74,21 @@ void main() {
 
     expect(c.read(saveSlotControllerProvider).containsKey('slot1'), isFalse);
     final prefs = c.read(sharedPreferencesProvider);
-    expect(prefs.getStringList('progress.slot1.unlockedSceneIds'), isNull);
+    // 全モードの解放/クリアキーが消えていること（clearAll が全モードを掃除）。
+    for (final key in [
+      'progress.slot1.unlockedSceneIds',
+      'progress.slot1.clearedSceneIds',
+      'progress.slot1.normal.unlockedSceneIds',
+      'progress.slot1.normal.clearedSceneIds',
+      'progress.slot1.hard.unlockedSceneIds',
+      'progress.slot1.hardClearedSceneIds',
+    ]) {
+      expect(
+        prefs.getStringList(key),
+        isNull,
+        reason: '$key should be cleared',
+      );
+    }
     expect(c.read(saveSlotRepositoryProvider).avatarOf('slot1'), isNull);
   });
 
@@ -80,11 +111,13 @@ void main() {
     final prefs = c.read(sharedPreferencesProvider);
     final freeRepo = ProgressRepository(prefs, kFreeModeSlotId);
     for (final entry in kSceneCatalog) {
-      expect(
-        freeRepo.isUnlocked(entry.id),
-        isTrue,
-        reason: '${entry.id} should be unlocked in free mode',
-      );
+      for (final mode in GameMode.values) {
+        expect(
+          freeRepo.isUnlocked(mode, entry.id),
+          isTrue,
+          reason: '${entry.id} should be unlocked in free mode ($mode)',
+        );
+      }
     }
   });
 
@@ -96,7 +129,7 @@ void main() {
 
     c.read(activeSlotProvider.notifier).select('slot1');
     final progress = c.read(progressRepositoryProvider);
-    expect(progress.isUnlocked('scene01'), isTrue);
-    expect(progress.isUnlocked('scene09'), isFalse);
+    expect(progress.isUnlocked(GameMode.easy, 'scene01'), isTrue);
+    expect(progress.isUnlocked(GameMode.easy, 'scene09'), isFalse);
   });
 }

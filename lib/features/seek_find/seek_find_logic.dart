@@ -1,24 +1,46 @@
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:kidsapp_treasurehunt/features/seek_find/models/dummy_item.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/find_target.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
+import 'package:kidsapp_treasurehunt/shared/game_mode.dart';
 
 /// 宝アイコンを元の正規化 Rect から一律に拡大する表示倍率。
 /// 表示（Positioned レイアウト）と当たり判定（[findHitTargetId]）の両方で
 /// この同じ値を使うことで「見えている大きさ = 押せる大きさ」を保つ。
+/// 難易度では変えない（全モード共通サイズ）。
 const double kTreasureDisplayScale = 1.15;
 
-/// [normalizedRect] を中心を保ったまま [scale] 倍に拡大/縮小する。
-/// 既定は [kTreasureDisplayScale]（通常モード）。ハードモードは小さい [scale] を渡す。
+/// Normal / Hard の探索エリア（論理キャンバス）をビューポートの何倍にするか。
+/// 1.0 より大きいので画面に収まらず、パンして表示部分をずらす必要が生まれる。
+const double kLargeAreaFactor = 1.7;
+
+/// Normal / Hard でディテール確認用に許す最大拡大率（[InteractiveViewer.maxScale]）。
+/// 最小は 1.0 固定（全体を一望できないよう、これ以上は縮小不可＝必ずパンが要る）。
+const double kLargeAreaMaxScale = 2.5;
+
+/// モード別に描画するおとり（デコイ）の集合を返す純粋関数。
+///
+/// - [GameMode.easy]: シーン定義の [SceneDef.dummies] のみ（現行 Normal と同じ）。
+/// - [GameMode.normal] / [GameMode.hard]: [SceneDef.dummies] ＋
+///   [SceneDef.hardDummies] を**すべて**おとりとして描画する（昇格はしない）。
+///
+/// 探す宝（[SceneDef.targets]）はモード間で不変。難易度はおとりの量で調整する。
+List<DummyItem> decoysForMode(SceneDef scene, GameMode mode) =>
+    mode == GameMode.easy
+    ? scene.dummies
+    : [...scene.dummies, ...scene.hardDummies];
+
+/// [normalizedRect] を中心を保ったまま [kTreasureDisplayScale] 倍に拡大する。
+/// 表示と当たり判定の両方が同じ倍率を使うことで、難易度に依らず
+/// 「見えている大きさ = 押せる大きさ」を保つ（全モード共通サイズ）。
 /// 端に置かれた宝では結果が [0,1] をわずかに超えうるが、タップ座標は常に
 /// シーン内に収まるため当たり判定は安全。
-Rect scaledTreasureRect(
-  Rect normalizedRect, {
-  double scale = kTreasureDisplayScale,
-}) => Rect.fromCenter(
+Rect scaledTreasureRect(Rect normalizedRect) => Rect.fromCenter(
   center: normalizedRect.center,
-  width: normalizedRect.width * scale,
-  height: normalizedRect.height * scale,
+  width: normalizedRect.width * kTreasureDisplayScale,
+  height: normalizedRect.height * kTreasureDisplayScale,
 );
 
 /// シーン座標 [scenePoint](GestureDetector の localPosition)を正規化し、
@@ -30,7 +52,6 @@ String? findHitTargetId({
   required Size sceneSize,
   required List<FindTarget> targets,
   required Set<String> foundIds,
-  double scale = kTreasureDisplayScale,
   Set<String> hiddenIds = const {},
 }) {
   if (sceneSize.width <= 0 || sceneSize.height <= 0) {
@@ -45,10 +66,7 @@ String? findHitTargetId({
       continue;
     }
     // 表示と同じ拡大率で判定し、見た目どおりの当たり判定にする。
-    if (scaledTreasureRect(
-      target.normalizedRect,
-      scale: scale,
-    ).contains(normalized)) {
+    if (scaledTreasureRect(target.normalizedRect).contains(normalized)) {
       return target.id;
     }
   }
@@ -56,14 +74,13 @@ String? findHitTargetId({
 }
 
 /// [scenePoint] が [hiddenIds]（点滅で消失中の宝）のいずれかの表示矩形内にあるか。
-/// 表示と同じ [scale] で判定する。消失中の宝をタップしたとき空振り（ミスバブル）
+/// 表示と同じ拡大率で判定する。消失中の宝をタップしたとき空振り（ミスバブル）
 /// 扱いにせず「無反応」にするために使う（失敗を罰しない）。空の場所のタップとは区別する。
 bool isPointOnHiddenTarget({
   required Offset scenePoint,
   required Size sceneSize,
   required List<FindTarget> targets,
   required Set<String> hiddenIds,
-  double scale = kTreasureDisplayScale,
 }) {
   if (hiddenIds.isEmpty || sceneSize.width <= 0 || sceneSize.height <= 0) {
     return false;
@@ -76,10 +93,7 @@ bool isPointOnHiddenTarget({
     if (!hiddenIds.contains(target.id)) {
       continue;
     }
-    if (scaledTreasureRect(
-      target.normalizedRect,
-      scale: scale,
-    ).contains(normalized)) {
+    if (scaledTreasureRect(target.normalizedRect).contains(normalized)) {
       return true;
     }
   }

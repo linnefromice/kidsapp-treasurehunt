@@ -2,11 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:kidsapp_treasurehunt/features/save_slots/slot_select_screen.dart';
-import 'package:kidsapp_treasurehunt/features/seek_find/hard_mode.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/seek_find_screen.dart';
 import 'package:kidsapp_treasurehunt/features/settings/settings_screen.dart';
 import 'package:kidsapp_treasurehunt/features/treasure_map/treasure_map_screen.dart';
 import 'package:kidsapp_treasurehunt/providers.dart';
+import 'package:kidsapp_treasurehunt/shared/game_mode.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(

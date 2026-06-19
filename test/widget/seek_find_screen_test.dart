@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/seek_find_screen.dart';
 import 'package:kidsapp_treasurehunt/providers.dart';
 import 'package:kidsapp_treasurehunt/shared/audio/audio_service.dart';
+import 'package:kidsapp_treasurehunt/shared/game_mode.dart';
 
 // scene01.json の target 正規化中心 (left+width/2, top+height/2)。
 const _sceneCenters = {
@@ -100,7 +101,7 @@ void main() {
       await tester.pumpAndSettle();
 
       final progress = container.read(progressRepositoryProvider);
-      expect(progress.isCleared('scene01'), isTrue);
+      expect(progress.isCleared(GameMode.easy, 'scene01'), isTrue);
       expect(find.text('みつけたね！'), findsOneWidget);
     });
 

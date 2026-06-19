@@ -9,6 +9,7 @@ import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
 import 'package:kidsapp_treasurehunt/save_slots_catalog.dart';
 import 'package:kidsapp_treasurehunt/scenes_catalog.dart';
 import 'package:kidsapp_treasurehunt/shared/audio/audio_service.dart';
+import 'package:kidsapp_treasurehunt/shared/game_mode.dart';
 
 /// main で実インスタンスに override する。
 final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
@@ -55,10 +56,14 @@ class SaveSlotController extends Notifier<Map<String, String>> {
     final repo = ref.read(saveSlotRepositoryProvider);
     await repo.markCreated(slotId);
     await repo.setAvatar(slotId, emoji);
-    await ProgressRepository(
+    // 3 モードとも最初から選べるよう、各モードの初期解放（scene01）をシードする。
+    final progress = ProgressRepository(
       ref.read(sharedPreferencesProvider),
       slotId,
-    ).ensureInitialUnlock(kFirstSceneId);
+    );
+    for (final mode in GameMode.values) {
+      await progress.ensureInitialUnlock(mode, kFirstSceneId);
+    }
     state = {...state, slotId: emoji};
   }
 
@@ -76,12 +81,17 @@ class SaveSlotController extends Notifier<Map<String, String>> {
     };
   }
 
-  /// フリーモード入場: 専用スロットで全カタログシーンを解放する（冪等・毎回再シード）。
+  /// フリーモード入場: 専用スロットで全カタログシーンを全モード解放する
+  /// （冪等・毎回再シード）。
   Future<void> enterFreeMode() async {
-    await ProgressRepository(
+    final progress = ProgressRepository(
       ref.read(sharedPreferencesProvider),
       kFreeModeSlotId,
-    ).unlockAll(kSceneCatalog.map((e) => e.id).toList());
+    );
+    final allIds = kSceneCatalog.map((e) => e.id).toList();
+    for (final mode in GameMode.values) {
+      await progress.unlockAll(mode, allIds);
+    }
   }
 }
 

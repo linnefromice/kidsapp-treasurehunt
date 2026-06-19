@@ -1,60 +1,75 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// 進捗（解放/クリア）の永続化窓口。セーブスロット単位でキーを名前空間化する。
+import 'package:kidsapp_treasurehunt/shared/game_mode.dart';
+
+/// 進捗（解放/クリア）の永続化窓口。セーブスロット単位 ＋ [GameMode] 単位で
+/// キーを名前空間化し、難易度ごとに独立した解放・クリアを管理する。
+///
+/// 既存セーブを保つため Easy はレガシーキーを流用する（移行コード不要）:
+/// - 解放:   easy=`progress.<slot>.unlockedSceneIds` /
+///           normal=`...normal.unlockedSceneIds` / hard=`...hard.unlockedSceneIds`
+/// - クリア: easy=`progress.<slot>.clearedSceneIds` /
+///           normal=`...normal.clearedSceneIds` / hard=`...hardClearedSceneIds`
 class ProgressRepository {
   ProgressRepository(this._prefs, this._slotId);
 
   final SharedPreferences _prefs;
   final String _slotId;
 
-  String get _unlockedKey => 'progress.$_slotId.unlockedSceneIds';
-  String get _clearedKey => 'progress.$_slotId.clearedSceneIds';
-  String get _hardClearedKey => 'progress.$_slotId.hardClearedSceneIds';
+  String _unlockedKey(GameMode mode) => switch (mode) {
+    GameMode.easy => 'progress.$_slotId.unlockedSceneIds',
+    GameMode.normal => 'progress.$_slotId.normal.unlockedSceneIds',
+    GameMode.hard => 'progress.$_slotId.hard.unlockedSceneIds',
+  };
 
-  List<String> unlockedSceneIds() =>
-      _prefs.getStringList(_unlockedKey) ?? const [];
-  List<String> clearedSceneIds() =>
-      _prefs.getStringList(_clearedKey) ?? const [];
+  String _clearedKey(GameMode mode) => switch (mode) {
+    GameMode.easy => 'progress.$_slotId.clearedSceneIds',
+    GameMode.normal => 'progress.$_slotId.normal.clearedSceneIds',
+    // 既存セーブ互換のため hard クリアだけ旧キー名を流用する（`hard.` 接頭ではない）。
+    // unlock 側は新形式 `hard.unlockedSceneIds` なので、ここの非対称は意図的。
+    GameMode.hard => 'progress.$_slotId.hardClearedSceneIds',
+  };
 
-  /// ハードモードでクリア済みのシーン id（通常クリアとは独立して管理）。
-  List<String> hardClearedSceneIds() =>
-      _prefs.getStringList(_hardClearedKey) ?? const [];
+  List<String> unlockedSceneIds(GameMode mode) =>
+      _prefs.getStringList(_unlockedKey(mode)) ?? const [];
 
-  bool isUnlocked(String sceneId) => unlockedSceneIds().contains(sceneId);
-  bool isCleared(String sceneId) => clearedSceneIds().contains(sceneId);
-  bool isHardCleared(String sceneId) => hardClearedSceneIds().contains(sceneId);
+  List<String> clearedSceneIds(GameMode mode) =>
+      _prefs.getStringList(_clearedKey(mode)) ?? const [];
 
-  Future<void> ensureInitialUnlock(String firstSceneId) async {
-    if (unlockedSceneIds().isEmpty) {
-      await _prefs.setStringList(_unlockedKey, [firstSceneId]);
+  bool isUnlocked(GameMode mode, String sceneId) =>
+      unlockedSceneIds(mode).contains(sceneId);
+
+  bool isCleared(GameMode mode, String sceneId) =>
+      clearedSceneIds(mode).contains(sceneId);
+
+  /// このモードの解放セットが空のときだけ [firstSceneId] を初期解放する（冪等）。
+  Future<void> ensureInitialUnlock(GameMode mode, String firstSceneId) async {
+    if (unlockedSceneIds(mode).isEmpty) {
+      await _prefs.setStringList(_unlockedKey(mode), [firstSceneId]);
     }
   }
 
-  Future<void> unlock(String sceneId) async {
-    final next = unlockedSceneIds().toSet()..add(sceneId);
-    await _prefs.setStringList(_unlockedKey, next.toList());
+  Future<void> unlock(GameMode mode, String sceneId) async {
+    final next = unlockedSceneIds(mode).toSet()..add(sceneId);
+    await _prefs.setStringList(_unlockedKey(mode), next.toList());
   }
 
   /// 渡したシーンをまとめて解放する（フリーモードの全解放に使用・冪等）。
-  Future<void> unlockAll(List<String> sceneIds) async {
-    final next = unlockedSceneIds().toSet()..addAll(sceneIds);
-    await _prefs.setStringList(_unlockedKey, next.toList());
+  Future<void> unlockAll(GameMode mode, List<String> sceneIds) async {
+    final next = unlockedSceneIds(mode).toSet()..addAll(sceneIds);
+    await _prefs.setStringList(_unlockedKey(mode), next.toList());
   }
 
-  Future<void> markCleared(String sceneId) async {
-    final next = clearedSceneIds().toSet()..add(sceneId);
-    await _prefs.setStringList(_clearedKey, next.toList());
+  Future<void> markCleared(GameMode mode, String sceneId) async {
+    final next = clearedSceneIds(mode).toSet()..add(sceneId);
+    await _prefs.setStringList(_clearedKey(mode), next.toList());
   }
 
-  Future<void> markHardCleared(String sceneId) async {
-    final next = hardClearedSceneIds().toSet()..add(sceneId);
-    await _prefs.setStringList(_hardClearedKey, next.toList());
-  }
-
-  /// このスロットの進捗キーを削除する（リセット用）。ハードクリアも一緒に消す。
+  /// このスロットの進捗キーを全モード分削除する（リセット用）。
   Future<void> clearAll() async {
-    await _prefs.remove(_unlockedKey);
-    await _prefs.remove(_clearedKey);
-    await _prefs.remove(_hardClearedKey);
+    for (final mode in GameMode.values) {
+      await _prefs.remove(_unlockedKey(mode));
+      await _prefs.remove(_clearedKey(mode));
+    }
   }
 }

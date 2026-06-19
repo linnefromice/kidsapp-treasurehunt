@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:kidsapp_treasurehunt/data/progress_repository.dart';
+import 'package:kidsapp_treasurehunt/shared/game_mode.dart';
 
 /// ホームの宝の地図に並べるシーン。MVP は scene01 のみ最初から解放。
 class SceneCatalogEntry {
@@ -92,23 +93,15 @@ String? nextSceneId(String id) {
 }
 
 /// シーンクリア時の進行処理: クリア記録 + 次シーン解放（最後なら no-op）。
-Future<void> completeScene(ProgressRepository progress, String sceneId) async {
-  await progress.markCleared(sceneId);
-  final next = nextSceneId(sceneId);
-  if (next != null) {
-    await progress.unlock(next);
-  }
-}
-
-/// 全シーンが通常モードでクリア済みか（= ハードモード解放条件）。
-bool allScenesCleared(ProgressRepository progress) =>
-    kSceneCatalog.every((e) => progress.isCleared(e.id));
-
-/// ハードモードのシーンクリア時の進行処理。ハードは全シーン解放済みのため、
-/// 次解放チェーンは不要でハードクリア記録のみ行う。
-Future<void> completeHardScene(
+/// 解放チェーンはモードごとに独立した一本道（[GameMode] ごとに別々の進捗）。
+Future<void> completeScene(
   ProgressRepository progress,
+  GameMode mode,
   String sceneId,
 ) async {
-  await progress.markHardCleared(sceneId);
+  await progress.markCleared(mode, sceneId);
+  final next = nextSceneId(sceneId);
+  if (next != null) {
+    await progress.unlock(mode, next);
+  }
 }
