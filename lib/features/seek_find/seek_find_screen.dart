@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -11,11 +12,15 @@ import 'package:kidsapp_treasurehunt/features/seek_find/seek_find_logic.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/target_icons.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/collection_bar.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/found_burst.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/widgets/hint_glow.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/miss_bubble.dart';
 import 'package:kidsapp_treasurehunt/providers.dart';
 import 'package:kidsapp_treasurehunt/scenes_catalog.dart';
 import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
 import 'package:kidsapp_treasurehunt/shared/widgets/kids_button.dart';
+
+/// 何秒ごとに未発見の宝を 1 つヒント点滅させるか。
+const Duration _kHintInterval = Duration(seconds: 5);
 
 class SeekFindScreen extends ConsumerWidget {
   const SeekFindScreen({super.key, required this.sceneId});
@@ -48,6 +53,42 @@ class _SceneView extends ConsumerStatefulWidget {
 class _SceneViewState extends ConsumerState<_SceneView> {
   bool _completed = false;
   final List<({Offset position, Key key})> _missBubbles = [];
+  final math.Random _random = math.Random();
+  Timer? _hintTimer;
+  String? _hintingId;
+
+  @override
+  void initState() {
+    super.initState();
+    _hintTimer = Timer.periodic(_kHintInterval, (_) => _showHint());
+  }
+
+  @override
+  void dispose() {
+    _hintTimer?.cancel();
+    super.dispose();
+  }
+
+  void _showHint() {
+    if (!mounted || _completed || _hintingId != null) {
+      return;
+    }
+    final found = ref.read(foundControllerProvider(widget.scene.id));
+    final id = pickHintTargetId(
+      targets: widget.scene.targets,
+      foundIds: found,
+      random: _random,
+    );
+    if (id == null) {
+      return;
+    }
+    setState(() => _hintingId = id);
+    Future.delayed(kHintGlowDuration, () {
+      if (mounted) {
+        setState(() => _hintingId = null);
+      }
+    });
+  }
 
   void _addMissBubble(Offset position) {
     final key = UniqueKey();
@@ -115,6 +156,7 @@ class _SceneViewState extends ConsumerState<_SceneView> {
                             child: _TargetView(
                               iconId: t.iconId,
                               found: found.contains(t.id),
+                              hinting: _hintingId == t.id,
                             ),
                           ),
                         for (final b in _missBubbles)
@@ -125,10 +167,7 @@ class _SceneViewState extends ConsumerState<_SceneView> {
                 },
               ),
             ),
-            CollectionBar(
-              targets: scene.targets,
-              foundIds: found,
-            ),
+            CollectionBar(targets: scene.targets, foundIds: found),
           ],
         ),
         if (_completed)
@@ -163,10 +202,15 @@ class _SceneViewState extends ConsumerState<_SceneView> {
 }
 
 class _TargetView extends StatelessWidget {
-  const _TargetView({required this.iconId, required this.found});
+  const _TargetView({
+    required this.iconId,
+    required this.found,
+    this.hinting = false,
+  });
 
   final String iconId;
   final bool found;
+  final bool hinting;
 
   @override
   Widget build(BuildContext context) {
@@ -175,7 +219,10 @@ class _TargetView extends StatelessWidget {
       // Clip.none lets FoundBurst sparks radiate beyond the target bounds
       clipBehavior: Clip.none,
       children: [
-        if (found) RepaintBoundary(child: _FoundGlow(color: targetColor(iconId))),
+        if (found)
+          RepaintBoundary(child: _FoundGlow(color: targetColor(iconId))),
+        if (!found && hinting)
+          RepaintBoundary(child: HintGlow(color: targetColor(iconId))),
         FittedBox(
           fit: BoxFit.contain,
           child: Icon(
