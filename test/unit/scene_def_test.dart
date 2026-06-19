@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/models/dummy_item.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/find_target.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
 
@@ -91,6 +92,19 @@ void main() {
         ],
       });
       expect(def.dummies.first.scale, 1.0);
+    });
+
+    test('dummy scale rejects non-positive / non-finite values', () {
+      DummyItem make(double s) => DummyItem(
+        id: 'd',
+        iconId: 'leaf',
+        normalizedRect: Rect.zero,
+        scale: s,
+      );
+      expect(() => make(0), throwsA(isA<AssertionError>()));
+      expect(() => make(-1), throwsA(isA<AssertionError>()));
+      expect(() => make(double.infinity), throwsA(isA<AssertionError>()));
+      expect(() => make(double.nan), throwsA(isA<AssertionError>()));
     });
 
     test('dummy scale is parsed when present', () {

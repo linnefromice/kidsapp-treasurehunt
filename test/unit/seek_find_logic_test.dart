@@ -55,6 +55,12 @@ void main() {
 
   test('scaledTreasureRect itemScale defaults to no extra scaling', () {
     const rect = Rect.fromLTWH(0.2, 0.2, 0.2, 0.2);
+    // 引数省略時は kTreasureDisplayScale のみ（追加倍率なし）。
+    expect(
+      scaledTreasureRect(rect).width,
+      closeTo(0.2 * kTreasureDisplayScale, 1e-9),
+    );
+    // 明示 1.0 は省略時と完全一致（宝の経路が不変であることの担保）。
     expect(
       scaledTreasureRect(rect, itemScale: 1.0).width,
       closeTo(scaledTreasureRect(rect).width, 1e-9),

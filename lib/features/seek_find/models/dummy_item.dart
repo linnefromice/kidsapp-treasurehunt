@@ -7,7 +7,11 @@ class DummyItem {
     required this.iconId,
     required this.normalizedRect,
     this.scale = 1.0,
-  });
+  }) : assert(
+         scale > 0 && scale < double.infinity,
+         'DummyItem scale must be positive and finite (got $scale). '
+         '0/負/NaN/Infinity はゼロ面積や反転矩形を生み、おとりが無言で消える。',
+       );
 
   final String id;
   final String iconId;
