@@ -3,9 +3,11 @@
   "titleKey": "scene.scene01.title",
   "imageAsset": "assets/scenes/scene01.png",
   "targets": [
-    { "id": "apple",  "labelKey": "target.apple",  "left": 0.110, "top": 0.165, "width": 0.11, "height": 0.13 },
-    { "id": "duck",   "labelKey": "target.duck",   "left": 0.610, "top": 0.320, "width": 0.11, "height": 0.13 },
-    { "id": "star",   "labelKey": "target.star",   "left": 0.410, "top": 0.700, "width": 0.11, "height": 0.13 }
+    { "id": "apple",   "iconId": "apple", "labelKey": "target.apple", "left": 0.110, "top": 0.165, "width": 0.12, "height": 0.14 },
+    { "id": "duck",    "iconId": "duck",  "labelKey": "target.duck",  "left": 0.610, "top": 0.320, "width": 0.12, "height": 0.14 },
+    { "id": "star",    "iconId": "star",  "labelKey": "target.star",  "left": 0.410, "top": 0.700, "width": 0.12, "height": 0.14 },
+    { "id": "heart_1", "iconId": "heart", "labelKey": "target.heart", "left": 0.800, "top": 0.450, "width": 0.12, "height": 0.14 },
+    { "id": "heart_2", "iconId": "heart", "labelKey": "target.heart", "left": 0.840, "top": 0.730, "width": 0.12, "height": 0.14 }
   ],
   "dummies": [
     { "id": "leaf1",   "iconId": "leaf",   "left": 0.315, "top": 0.200, "width": 0.11, "height": 0.13 },

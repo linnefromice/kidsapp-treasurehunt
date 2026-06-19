@@ -3,10 +3,10 @@
   "titleKey": "scene.scene02.title",
   "imageAsset": "assets/scenes/scene02.png",
   "targets": [
-    { "id": "apple",  "labelKey": "target.apple",  "left": 0.130, "top": 0.200, "width": 0.11, "height": 0.13 },
-    { "id": "ball",   "labelKey": "target.ball",   "left": 0.630, "top": 0.240, "width": 0.11, "height": 0.13 },
-    { "id": "star",   "labelKey": "target.star",   "left": 0.290, "top": 0.640, "width": 0.11, "height": 0.13 },
-    { "id": "flower", "labelKey": "target.flower", "left": 0.710, "top": 0.660, "width": 0.11, "height": 0.13 }
+    { "id": "apple",  "iconId": "apple",  "labelKey": "target.apple",  "left": 0.130, "top": 0.200, "width": 0.12, "height": 0.14 },
+    { "id": "ball",   "iconId": "ball",   "labelKey": "target.ball",   "left": 0.630, "top": 0.240, "width": 0.12, "height": 0.14 },
+    { "id": "star",   "iconId": "star",   "labelKey": "target.star",   "left": 0.290, "top": 0.640, "width": 0.12, "height": 0.14 },
+    { "id": "flower", "iconId": "flower", "labelKey": "target.flower", "left": 0.710, "top": 0.660, "width": 0.12, "height": 0.14 }
   ],
   "dummies": [
     { "id": "anchor1",   "iconId": "anchor",   "left": 0.395, "top": 0.220, "width": 0.11, "height": 0.13 },
