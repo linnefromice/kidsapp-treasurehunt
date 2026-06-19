@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:kidsapp_treasurehunt/features/seek_find/models/find_target.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/scene_background.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/seek_find_logic.dart';
@@ -88,7 +89,15 @@ class _SceneViewState extends ConsumerState<_SceneView> {
                             top: d.normalizedRect.top * sceneSize.height,
                             width: d.normalizedRect.width * sceneSize.width,
                             height: d.normalizedRect.height * sceneSize.height,
-                            child: _TargetView(id: d.iconId, found: false),
+                            child: _TargetView(
+                              target: FindTarget(
+                                id: d.id,
+                                iconId: d.iconId,
+                                labelKey: '',
+                                normalizedRect: d.normalizedRect,
+                              ),
+                              found: false,
+                            ),
                           ),
                         for (final t in scene.targets)
                           Positioned(
@@ -97,7 +106,7 @@ class _SceneViewState extends ConsumerState<_SceneView> {
                             width: t.normalizedRect.width * sceneSize.width,
                             height: t.normalizedRect.height * sceneSize.height,
                             child: _TargetView(
-                              id: t.id,
+                              target: t,
                               found: found.contains(t.id),
                             ),
                           ),
@@ -108,7 +117,7 @@ class _SceneViewState extends ConsumerState<_SceneView> {
               ),
             ),
             CollectionBar(
-              targetIds: [for (final t in scene.targets) t.id],
+              targets: scene.targets,
               foundIds: found,
             ),
           ],
@@ -142,9 +151,9 @@ class _SceneViewState extends ConsumerState<_SceneView> {
 }
 
 class _TargetView extends StatelessWidget {
-  const _TargetView({required this.id, required this.found});
+  const _TargetView({required this.target, required this.found});
 
-  final String id;
+  final FindTarget target;
   final bool found;
 
   @override
@@ -154,17 +163,17 @@ class _TargetView extends StatelessWidget {
       // Clip.none lets FoundBurst sparks radiate beyond the target bounds
       clipBehavior: Clip.none,
       children: [
-        if (found) RepaintBoundary(child: _FoundGlow(color: targetColor(id))),
+        if (found) RepaintBoundary(child: _FoundGlow(color: targetColor(target.iconId))),
         FittedBox(
           fit: BoxFit.contain,
           child: Icon(
-            targetIcon(id),
+            targetIcon(target.iconId),
             color: found
-                ? targetColor(id)
+                ? targetColor(target.iconId)
                 : Colors.grey.shade400.withValues(alpha: 0.45),
           ),
         ),
-        if (found) FoundBurst(color: targetColor(id)),
+        if (found) FoundBurst(color: targetColor(target.iconId)),
       ],
     );
   }
