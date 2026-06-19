@@ -34,14 +34,19 @@ List<DummyItem> decoysForMode(SceneDef scene, GameMode mode) =>
 
 /// [normalizedRect] を中心を保ったまま [kTreasureDisplayScale] 倍に拡大する。
 /// 表示と当たり判定の両方が同じ倍率を使うことで、難易度に依らず
-/// 「見えている大きさ = 押せる大きさ」を保つ（全モード共通サイズ）。
-/// 端に置かれた宝では結果が [0,1] をわずかに超えうるが、タップ座標は常に
+/// 「見えている大きさ = 押せる大きさ」を保つ。
+///
+/// [itemScale] はアイテム個別の追加倍率（既定 1.0 = 等倍）。おとりの大きさを
+/// ものによって変える（Normal / Hard）用途で、描画時にのみ渡す。宝は常に既定
+/// （1.0）で呼ぶため、宝の「見えている＝押せる」不変条件には影響しない。
+/// 端に置かれたアイテムでは結果が [0,1] をわずかに超えうるが、タップ座標は常に
 /// シーン内に収まるため当たり判定は安全。
-Rect scaledTreasureRect(Rect normalizedRect) => Rect.fromCenter(
-  center: normalizedRect.center,
-  width: normalizedRect.width * kTreasureDisplayScale,
-  height: normalizedRect.height * kTreasureDisplayScale,
-);
+Rect scaledTreasureRect(Rect normalizedRect, {double itemScale = 1.0}) =>
+    Rect.fromCenter(
+      center: normalizedRect.center,
+      width: normalizedRect.width * kTreasureDisplayScale * itemScale,
+      height: normalizedRect.height * kTreasureDisplayScale * itemScale,
+    );
 
 /// シーン座標 [scenePoint](GestureDetector の localPosition)を正規化し、
 /// まだ見つかっていない最初のヒット対象 id を返す。空振りは null。

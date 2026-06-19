@@ -18,10 +18,10 @@
     { "id": "ball1",   "iconId": "ball",   "left": 0.785, "top": 0.205, "width": 0.11, "height": 0.13 }
   ],
   "hardDummies": [
-    { "id": "h_cake1",  "iconId": "cake",  "left": 0.460, "top": 0.060, "width": 0.11, "height": 0.13 },
-    { "id": "h_gift1",  "iconId": "gift",  "left": 0.270, "top": 0.800, "width": 0.11, "height": 0.13 },
-    { "id": "h_gem1",   "iconId": "gem",   "left": 0.880, "top": 0.050, "width": 0.11, "height": 0.13 },
-    { "id": "h_music1", "iconId": "music", "left": 0.020, "top": 0.040, "width": 0.11, "height": 0.13 },
-    { "id": "h_cloud1", "iconId": "cloud", "left": 0.020, "top": 0.800, "width": 0.11, "height": 0.13 }
+    { "id": "h_cake1",  "iconId": "cake",  "left": 0.460, "top": 0.060, "width": 0.11, "height": 0.13, "scale": 0.6 },
+    { "id": "h_gift1",  "iconId": "gift",  "left": 0.270, "top": 0.800, "width": 0.11, "height": 0.13, "scale": 1.3 },
+    { "id": "h_gem1",   "iconId": "gem",   "left": 0.880, "top": 0.050, "width": 0.11, "height": 0.13, "scale": 0.75 },
+    { "id": "h_music1", "iconId": "music", "left": 0.020, "top": 0.040, "width": 0.11, "height": 0.13, "scale": 1.2 },
+    { "id": "h_cloud1", "iconId": "cloud", "left": 0.020, "top": 0.800, "width": 0.11, "height": 0.13, "scale": 0.55 }
   ]
 }

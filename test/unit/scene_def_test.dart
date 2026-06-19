@@ -73,6 +73,47 @@ void main() {
       expect(def.dummies, isEmpty);
     });
 
+    test('dummy scale defaults to 1.0 when absent', () {
+      final def = SceneDef.fromJson({
+        'id': 'test',
+        'titleKey': 'k',
+        'imageAsset': 'a.png',
+        'targets': [],
+        'dummies': [
+          {
+            'id': 'd1',
+            'iconId': 'leaf',
+            'left': 0.1,
+            'top': 0.2,
+            'width': 0.15,
+            'height': 0.18,
+          },
+        ],
+      });
+      expect(def.dummies.first.scale, 1.0);
+    });
+
+    test('dummy scale is parsed when present', () {
+      final def = SceneDef.fromJson({
+        'id': 'test',
+        'titleKey': 'k',
+        'imageAsset': 'a.png',
+        'targets': [],
+        'dummies': [
+          {
+            'id': 'd1',
+            'iconId': 'leaf',
+            'left': 0.1,
+            'top': 0.2,
+            'width': 0.15,
+            'height': 0.18,
+            'scale': 0.6,
+          },
+        ],
+      });
+      expect(def.dummies.first.scale, closeTo(0.6, 1e-9));
+    });
+
     test('scene01 loads with 6 dummies', () async {
       final def = await SceneDef.loadAsset('scene01');
       expect(def.dummies.length, 6);

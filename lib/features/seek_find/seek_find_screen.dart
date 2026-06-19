@@ -263,7 +263,10 @@ class _SceneViewState extends ConsumerState<_SceneView>
                           sceneBackground(scene.id),
                           for (final d in decoys)
                             _positioned(
-                              scaledTreasureRect(d.normalizedRect),
+                              scaledTreasureRect(
+                                d.normalizedRect,
+                                itemScale: d.scale,
+                              ),
                               sceneSize,
                               child: _TargetView(
                                 iconId: d.iconId,

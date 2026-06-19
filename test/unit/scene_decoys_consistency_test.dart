@@ -87,6 +87,23 @@ void main() {
         },
       );
 
+      test('$sceneId/$mode: decoy scales stay within sane bounds', () async {
+        // おとりはタップ対象でないためタッチ下限の制約は無いが、画面外へ
+        // はみ出したり消えたりする極端値を防ぐためデータ範囲を縛る。
+        const minScale = 0.4;
+        const maxScale = 1.6;
+        final base = await load(sceneId);
+        for (final d in decoysForMode(base, mode)) {
+          expect(
+            d.scale,
+            inInclusiveRange(minScale, maxScale),
+            reason:
+                'Decoy ${d.id} in $sceneId/$mode has scale ${d.scale}, outside '
+                '[$minScale, $maxScale]. Keep decoy sizes reasonable.',
+          );
+        }
+      });
+
       test('$sceneId/$mode: every icon id is a known icon', () async {
         final base = await load(sceneId);
         final unknown = [
