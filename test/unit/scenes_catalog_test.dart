@@ -27,6 +27,14 @@ void main() {
     expect(progress.isUnlocked('scene02'), isTrue);
   });
 
+  test('completeScene unlocks the next on an extended-chain link', () async {
+    final prefs = await SharedPreferences.getInstance();
+    final progress = ProgressRepository(prefs, 'slot1');
+    await completeScene(progress, 'scene05');
+    expect(progress.isCleared('scene05'), isTrue);
+    expect(progress.isUnlocked('scene06'), isTrue);
+  });
+
   test('completeScene on the last scene does not throw / unlock', () async {
     final prefs = await SharedPreferences.getInstance();
     final progress = ProgressRepository(prefs, 'slot1');

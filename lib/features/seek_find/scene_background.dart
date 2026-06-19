@@ -1024,10 +1024,11 @@ class _UnderseaPainter extends CustomPainter {
     canvas.drawPath(floor, Paint()..color = const Color(0xFFE0C27C));
 
     // Seaweed on the floor
+    // baseY pinned to the floor top (0.82) so stems grow from the surface.
     _drawSeaweed(canvas, size, 0.10, 0.82, 0.16);
-    _drawSeaweed(canvas, size, 0.16, 0.84, 0.12);
+    _drawSeaweed(canvas, size, 0.16, 0.82, 0.12);
     _drawSeaweed(canvas, size, 0.86, 0.82, 0.18);
-    _drawSeaweed(canvas, size, 0.92, 0.85, 0.13);
+    _drawSeaweed(canvas, size, 0.92, 0.82, 0.13);
 
     // Bubbles
     for (final b in _kBubbles) {
@@ -1122,7 +1123,8 @@ class _SnowPainter extends CustomPainter {
       Paint()..color = const Color(0xFFFFF59D),
     );
 
-    // Snowy mountains
+    // Snowy mountains. Outer bases intentionally bleed past the canvas edges
+    // (clipped by widget bounds) for a full-width silhouette on landscape.
     _drawSnowMountain(canvas, size, 0.22, 0.45, 0.32);
     _drawSnowMountain(canvas, size, 0.74, 0.40, 0.34);
     _drawSnowMountain(canvas, size, 0.50, 0.52, 0.28);
@@ -1216,7 +1218,8 @@ class _SnowPainter extends CustomPainter {
     // Three foliage tiers, each with a white snow cap on top
     for (var i = 0; i < 3; i++) {
       final tierTop = by - height * (1.0 - i * 0.28);
-      final tierBot = by - height * (0.55 - i * 0.28);
+      // 0.56 (not 0.55) keeps every tier bottom strictly above the base point.
+      final tierBot = by - height * (0.56 - i * 0.28);
       final w = halfW * (0.55 + i * 0.22);
       final tier = Path()
         ..moveTo(x, tierTop)
