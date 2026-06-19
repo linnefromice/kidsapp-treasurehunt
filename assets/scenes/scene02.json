@@ -15,5 +15,12 @@
     { "id": "leaf2",     "iconId": "leaf",     "left": 0.200, "top": 0.350, "width": 0.11, "height": 0.13 },
     { "id": "rabbit2",   "iconId": "rabbit",   "left": 0.820, "top": 0.400, "width": 0.11, "height": 0.13 },
     { "id": "duck2",     "iconId": "duck",     "left": 0.500, "top": 0.380, "width": 0.11, "height": 0.13 }
+  ],
+  "hardDummies": [
+    { "id": "h_moon2",     "iconId": "moon",     "left": 0.850, "top": 0.050, "width": 0.11, "height": 0.13 },
+    { "id": "h_icecream2", "iconId": "icecream", "left": 0.860, "top": 0.800, "width": 0.11, "height": 0.13 },
+    { "id": "h_cookie2",   "iconId": "cookie",   "left": 0.020, "top": 0.050, "width": 0.11, "height": 0.13 },
+    { "id": "h_pizza2",    "iconId": "pizza",    "left": 0.300, "top": 0.020, "width": 0.11, "height": 0.13 },
+    { "id": "h_bell2",     "iconId": "bell",     "left": 0.400, "top": 0.820, "width": 0.11, "height": 0.13 }
   ]
 }

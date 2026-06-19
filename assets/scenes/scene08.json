@@ -18,5 +18,12 @@
     { "id": "leaf8",     "iconId": "leaf",     "left": 0.100, "top": 0.420, "width": 0.11, "height": 0.13 },
     { "id": "rabbit8",   "iconId": "rabbit",   "left": 0.720, "top": 0.660, "width": 0.11, "height": 0.13 },
     { "id": "car8",      "iconId": "car",      "left": 0.400, "top": 0.440, "width": 0.11, "height": 0.13 }
+  ],
+  "hardDummies": [
+    { "id": "h_music8",    "iconId": "music",    "left": 0.020, "top": 0.020, "width": 0.11, "height": 0.13 },
+    { "id": "h_cloud8",    "iconId": "cloud",    "left": 0.300, "top": 0.020, "width": 0.11, "height": 0.13 },
+    { "id": "h_moon8",     "iconId": "moon",     "left": 0.580, "top": 0.020, "width": 0.11, "height": 0.13 },
+    { "id": "h_icecream8", "iconId": "icecream", "left": 0.020, "top": 0.660, "width": 0.11, "height": 0.13 },
+    { "id": "h_cookie8",   "iconId": "cookie",   "left": 0.400, "top": 0.820, "width": 0.11, "height": 0.13 }
   ]
 }

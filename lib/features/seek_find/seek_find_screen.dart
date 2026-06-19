@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:kidsapp_treasurehunt/features/seek_find/hard_mode.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/scene_background.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/seek_find_logic.dart';
@@ -38,28 +39,45 @@ Positioned _positioned(Rect rect, Size sceneSize, {required Widget child}) {
 }
 
 class SeekFindScreen extends ConsumerWidget {
-  const SeekFindScreen({super.key, required this.sceneId});
+  const SeekFindScreen({
+    super.key,
+    required this.sceneId,
+    this.mode = GameMode.normal,
+  });
 
   final String sceneId;
+  final GameMode mode;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sceneAsync = ref.watch(sceneProvider(sceneId));
+    // ハードは全シーンクリア後のみ解放。URL 直打ち等での先取りを防ぐため、
+    // 未達なら通常モードへ降格する（解放条件はデータ経路でも担保）。
+    final progress = ref.watch(progressRepositoryProvider);
+    final effectiveMode = mode == GameMode.hard && allScenesCleared(progress)
+        ? GameMode.hard
+        : GameMode.normal;
     return Scaffold(
       appBar: AppBar(leading: BackButton(onPressed: () => context.go('/'))),
       body: sceneAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('error: $e')),
-        data: (scene) => _SceneView(scene: scene),
+        data: (scene) => _SceneView(
+          scene: effectiveMode == GameMode.hard
+              ? hardModeSceneDef(scene)
+              : scene,
+          mode: effectiveMode,
+        ),
       ),
     );
   }
 }
 
 class _SceneView extends ConsumerStatefulWidget {
-  const _SceneView({required this.scene});
+  const _SceneView({required this.scene, required this.mode});
 
   final SceneDef scene;
+  final GameMode mode;
 
   @override
   ConsumerState<_SceneView> createState() => _SceneViewState();
@@ -72,6 +90,16 @@ class _SceneViewState extends ConsumerState<_SceneView> {
   Timer? _hintTimer;
   Timer? _hintClearTimer;
   String? _hintingId;
+
+  /// 発見状態のキー。モード間で発見が混ざらないようハードは `#hard` で名前空間化。
+  String get _foundKey => widget.mode == GameMode.hard
+      ? '${widget.scene.id}#hard'
+      : widget.scene.id;
+
+  /// 表示・当たり判定の共通スケール。ハードは小さくする。
+  double get _scale => widget.mode == GameMode.hard
+      ? kHardModeDisplayScale
+      : kTreasureDisplayScale;
 
   @override
   void initState() {
@@ -96,7 +124,7 @@ class _SceneViewState extends ConsumerState<_SceneView> {
     if (!mounted || _completed || _hintingId != null) {
       return;
     }
-    final found = ref.read(foundControllerProvider(widget.scene.id));
+    final found = ref.read(foundControllerProvider(_foundKey));
     final id = pickHintTargetId(
       targets: widget.scene.targets,
       foundIds: found,
@@ -133,13 +161,13 @@ class _SceneViewState extends ConsumerState<_SceneView> {
   Widget build(BuildContext context) {
     final scene = widget.scene;
     final localeCode = ref.watch(localeControllerProvider).languageCode;
-    final found = ref.watch(foundControllerProvider(scene.id));
+    final found = ref.watch(foundControllerProvider(_foundKey));
 
-    ref.listen(foundControllerProvider(scene.id), (previous, next) {
+    ref.listen(foundControllerProvider(_foundKey), (previous, next) {
       final wasComplete = (previous?.length ?? 0) >= scene.targets.length;
       final nowComplete = next.length >= scene.targets.length;
       if (!wasComplete && nowComplete) {
-        _handleComplete(scene.id);
+        unawaited(_handleComplete(scene.id));
       }
     });
 
@@ -166,13 +194,13 @@ class _SceneViewState extends ConsumerState<_SceneView> {
                         sceneBackground(scene.id),
                         for (final d in scene.dummies)
                           _positioned(
-                            scaledTreasureRect(d.normalizedRect),
+                            scaledTreasureRect(d.normalizedRect, scale: _scale),
                             sceneSize,
                             child: _TargetView(iconId: d.iconId, found: false),
                           ),
                         for (final t in scene.targets)
                           _positioned(
-                            scaledTreasureRect(t.normalizedRect),
+                            scaledTreasureRect(t.normalizedRect, scale: _scale),
                             sceneSize,
                             child: _TargetView(
                               key: ValueKey(t.id),
@@ -199,7 +227,13 @@ class _SceneViewState extends ConsumerState<_SceneView> {
   }
 
   Future<void> _handleComplete(String sceneId) async {
-    await completeScene(ref.read(progressRepositoryProvider), sceneId);
+    if (_completed) return; // 二重発火ガード（連続通知でも完了処理は一度だけ）
+    final progress = ref.read(progressRepositoryProvider);
+    if (widget.mode == GameMode.hard) {
+      await completeHardScene(progress, sceneId);
+    } else {
+      await completeScene(progress, sceneId);
+    }
     await ref.read(audioServiceProvider).playComplete();
     if (mounted) {
       _hintTimer?.cancel();
@@ -210,18 +244,19 @@ class _SceneViewState extends ConsumerState<_SceneView> {
   void _handleHit(Offset localPosition, Size sceneSize) {
     _scheduleHint(); // 操作があった = アイドルではない。ヒント待ちをリセット
     final scene = widget.scene;
-    final found = ref.read(foundControllerProvider(scene.id));
+    final found = ref.read(foundControllerProvider(_foundKey));
     final hitId = findHitTargetId(
       scenePoint: localPosition,
       sceneSize: sceneSize,
       targets: scene.targets,
       foundIds: found,
+      scale: _scale,
     );
     if (hitId == null) {
       _addMissBubble(localPosition);
       return;
     }
-    ref.read(foundControllerProvider(scene.id).notifier).markFound(hitId);
+    ref.read(foundControllerProvider(_foundKey).notifier).markFound(hitId);
     HapticFeedback.lightImpact();
     ref.read(audioServiceProvider).playFound();
   }

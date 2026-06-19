@@ -42,4 +42,38 @@ void main() {
     expect(progress.isCleared('scene09'), isTrue);
     expect(progress.isUnlocked('scene09'), isFalse);
   });
+
+  test('allScenesCleared is false until every scene is cleared', () async {
+    final prefs = await SharedPreferences.getInstance();
+    final progress = ProgressRepository(prefs, 'slot1');
+    expect(allScenesCleared(progress), isFalse);
+
+    for (final entry in kSceneCatalog) {
+      await progress.markCleared(entry.id);
+    }
+    expect(allScenesCleared(progress), isTrue);
+  });
+
+  test('allScenesCleared is false when one scene is missing', () async {
+    final prefs = await SharedPreferences.getInstance();
+    final progress = ProgressRepository(prefs, 'slot1');
+    // Clear all but the last.
+    for (final entry in kSceneCatalog.take(kSceneCatalog.length - 1)) {
+      await progress.markCleared(entry.id);
+    }
+    expect(allScenesCleared(progress), isFalse);
+  });
+
+  test(
+    'completeHardScene records hard clear without touching unlocks',
+    () async {
+      final prefs = await SharedPreferences.getInstance();
+      final progress = ProgressRepository(prefs, 'slot1');
+      await completeHardScene(progress, 'scene01');
+      expect(progress.isHardCleared('scene01'), isTrue);
+      // Hard completion never advances the normal unlock chain.
+      expect(progress.isUnlocked('scene02'), isFalse);
+      expect(progress.isCleared('scene01'), isFalse);
+    },
+  );
 }

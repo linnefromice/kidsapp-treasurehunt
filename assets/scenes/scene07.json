@@ -16,5 +16,12 @@
     { "id": "bug7",    "iconId": "bug",    "left": 0.555, "top": 0.700, "width": 0.11, "height": 0.13 },
     { "id": "rabbit7", "iconId": "rabbit", "left": 0.800, "top": 0.660, "width": 0.11, "height": 0.13 },
     { "id": "leaf7",   "iconId": "leaf",   "left": 0.120, "top": 0.400, "width": 0.11, "height": 0.13 }
+  ],
+  "hardDummies": [
+    { "id": "h_fire7", "iconId": "fire", "left": 0.020, "top": 0.020, "width": 0.11, "height": 0.13 },
+    { "id": "h_kite7", "iconId": "kite", "left": 0.300, "top": 0.040, "width": 0.11, "height": 0.13 },
+    { "id": "h_cake7", "iconId": "cake", "left": 0.880, "top": 0.020, "width": 0.11, "height": 0.13 },
+    { "id": "h_gift7", "iconId": "gift", "left": 0.020, "top": 0.800, "width": 0.11, "height": 0.13 },
+    { "id": "h_gem7",  "iconId": "gem",  "left": 0.400, "top": 0.820, "width": 0.11, "height": 0.13 }
   ]
 }

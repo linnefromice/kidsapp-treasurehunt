@@ -99,3 +99,16 @@ Future<void> completeScene(ProgressRepository progress, String sceneId) async {
     await progress.unlock(next);
   }
 }
+
+/// 全シーンが通常モードでクリア済みか（= ハードモード解放条件）。
+bool allScenesCleared(ProgressRepository progress) =>
+    kSceneCatalog.every((e) => progress.isCleared(e.id));
+
+/// ハードモードのシーンクリア時の進行処理。ハードは全シーン解放済みのため、
+/// 次解放チェーンは不要でハードクリア記録のみ行う。
+Future<void> completeHardScene(
+  ProgressRepository progress,
+  String sceneId,
+) async {
+  await progress.markHardCleared(sceneId);
+}
