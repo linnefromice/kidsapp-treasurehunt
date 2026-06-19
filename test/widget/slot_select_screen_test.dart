@@ -71,15 +71,35 @@ void main() {
     expect(find.byKey(const ValueKey('slot-empty.slot2')), findsNothing);
   });
 
+  testWidgets('canceling the emoji picker keeps the slot uncreated', (
+    tester,
+  ) async {
+    final c = await _pumpApp(tester, {});
+
+    await tester.tap(find.byKey(const ValueKey('slot-card.slot1')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('emoji-picker')), findsOneWidget);
+
+    // 戻るボタンで閉じる -> スロットは未作成のまま白紙が維持される。
+    await tester.tap(find.byKey(const ValueKey('emoji-cancel')));
+    await tester.pumpAndSettle();
+
+    expect(c.read(saveSlotControllerProvider).containsKey('slot1'), isFalse);
+    expect(find.byKey(const ValueKey('slot-empty.slot1')), findsOneWidget);
+    expect(find.byKey(const ValueKey('slot-new.slot1')), findsOneWidget);
+  });
+
   testWidgets('reset requires parental gate and uncreates the slot', (
     tester,
   ) async {
     final c = await _pumpApp(tester, {
       'save.createdSlotIds': ['slot1'],
+      'save.avatar.slot1': '🐶',
       'progress.slot1.unlockedSceneIds': ['scene01'],
     });
 
     expect(find.byKey(const ValueKey('slot-continue.slot1')), findsOneWidget);
+    expect(find.byKey(const ValueKey('slot-avatar.slot1')), findsOneWidget);
 
     await tester.tap(find.byKey(const ValueKey('slot-reset.slot1')));
     await tester.pumpAndSettle(); // 保護者ゲートのダイアログ表示
@@ -88,6 +108,9 @@ void main() {
 
     expect(c.read(saveSlotControllerProvider).containsKey('slot1'), isFalse);
     expect(find.byKey(const ValueKey('slot-new.slot1')), findsOneWidget);
+    // アバターは消え、白紙プレースホルダへ戻る。
+    expect(find.byKey(const ValueKey('slot-avatar.slot1')), findsNothing);
+    expect(find.byKey(const ValueKey('slot-empty.slot1')), findsOneWidget);
   });
 
   testWidgets('free mode card is shown on the slot select screen', (

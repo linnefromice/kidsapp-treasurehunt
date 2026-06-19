@@ -61,4 +61,15 @@ void main() {
     expect(result(), isNull);
     expect(find.byKey(const ValueKey('emoji-picker')), findsNothing);
   });
+
+  testWidgets('tapping the back button returns null', (tester) async {
+    final result = await _openPicker(tester);
+
+    // 幼児向けの明示的な戻るボタンで閉じる。
+    await tester.tap(find.byKey(const ValueKey('emoji-cancel')));
+    await tester.pumpAndSettle();
+
+    expect(result(), isNull);
+    expect(find.byKey(const ValueKey('emoji-picker')), findsNothing);
+  });
 }

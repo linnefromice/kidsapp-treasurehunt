@@ -41,6 +41,14 @@ class EmojiPickerDialog extends StatelessWidget {
           ),
         ),
       ),
+      // 幼児にはバリアタップでの閉じ方が分かりにくいので明示的な戻るボタンを置く。
+      actions: [
+        TextButton(
+          key: const ValueKey('emoji-cancel'),
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(tr(localeCode, 'slot.cancel')),
+        ),
+      ],
     );
   }
 }
@@ -53,14 +61,20 @@ class _EmojiCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      key: ValueKey('emoji-pick.$emoji'),
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: SizedBox(
-        width: 64,
-        height: 64,
-        child: Center(child: Text(emoji, style: const TextStyle(fontSize: 36))),
+    return Semantics(
+      label: emoji,
+      button: true,
+      child: InkWell(
+        key: ValueKey('emoji-pick.$emoji'),
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: SizedBox(
+          width: 64,
+          height: 64,
+          child: Center(
+            child: Text(emoji, style: const TextStyle(fontSize: 36)),
+          ),
+        ),
       ),
     );
   }

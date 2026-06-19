@@ -31,6 +31,7 @@ const Map<String, Map<String, String>> _strings = {
     'slot.reset': 'リセット',
     'slot.free': 'フリーモード',
     'slot.pick': 'どれに する?',
+    'slot.cancel': 'もどる',
   },
   'en': {
     'app.title': 'Treasure Hunt',
@@ -64,6 +65,7 @@ const Map<String, Map<String, String>> _strings = {
     'slot.reset': 'Reset',
     'slot.free': 'Free Mode',
     'slot.pick': 'Pick one',
+    'slot.cancel': 'Back',
   },
 };
 

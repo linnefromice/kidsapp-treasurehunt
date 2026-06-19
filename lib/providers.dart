@@ -47,6 +47,11 @@ class SaveSlotController extends Notifier<Map<String, String>> {
   }
 
   Future<void> createSlot(String slotId, String emoji) async {
+    // アバターはキュレーション済みホワイトリストに限る（キッズ安全の不変条件）。
+    assert(
+      kAvatarEmojis.contains(emoji),
+      'emoji "$emoji" is not in kAvatarEmojis',
+    );
     final repo = ref.read(saveSlotRepositoryProvider);
     await repo.markCreated(slotId);
     await repo.setAvatar(slotId, emoji);
@@ -65,7 +70,10 @@ class SaveSlotController extends Notifier<Map<String, String>> {
       ref.read(sharedPreferencesProvider),
       slotId,
     ).clearAll();
-    state = {...state}..remove(slotId);
+    state = {
+      for (final e in state.entries)
+        if (e.key != slotId) e.key: e.value,
+    };
   }
 
   /// フリーモード入場: 専用スロットで全カタログシーンを解放する（冪等・毎回再シード）。
