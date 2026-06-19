@@ -15,5 +15,12 @@
     { "id": "rabbit9", "iconId": "rabbit", "left": 0.600, "top": 0.400, "width": 0.11, "height": 0.13 },
     { "id": "car9",    "iconId": "car",    "left": 0.300, "top": 0.300, "width": 0.11, "height": 0.13 },
     { "id": "bug9",    "iconId": "bug",    "left": 0.700, "top": 0.660, "width": 0.11, "height": 0.13 }
+  ],
+  "hardDummies": [
+    { "id": "h_pizza9",     "iconId": "pizza",     "left": 0.020, "top": 0.020, "width": 0.11, "height": 0.13 },
+    { "id": "h_bell9",      "iconId": "bell",      "left": 0.880, "top": 0.020, "width": 0.11, "height": 0.13 },
+    { "id": "h_lightbulb9", "iconId": "lightbulb", "left": 0.450, "top": 0.020, "width": 0.11, "height": 0.13 },
+    { "id": "h_cat9",       "iconId": "cat",       "left": 0.450, "top": 0.800, "width": 0.11, "height": 0.13 },
+    { "id": "h_sailboat9",  "iconId": "sailboat",  "left": 0.020, "top": 0.780, "width": 0.11, "height": 0.13 }
   ]
 }

@@ -9,14 +9,20 @@ class ProgressRepository {
 
   String get _unlockedKey => 'progress.$_slotId.unlockedSceneIds';
   String get _clearedKey => 'progress.$_slotId.clearedSceneIds';
+  String get _hardClearedKey => 'progress.$_slotId.hardClearedSceneIds';
 
   List<String> unlockedSceneIds() =>
       _prefs.getStringList(_unlockedKey) ?? const [];
   List<String> clearedSceneIds() =>
       _prefs.getStringList(_clearedKey) ?? const [];
 
+  /// ハードモードでクリア済みのシーン id（通常クリアとは独立して管理）。
+  List<String> hardClearedSceneIds() =>
+      _prefs.getStringList(_hardClearedKey) ?? const [];
+
   bool isUnlocked(String sceneId) => unlockedSceneIds().contains(sceneId);
   bool isCleared(String sceneId) => clearedSceneIds().contains(sceneId);
+  bool isHardCleared(String sceneId) => hardClearedSceneIds().contains(sceneId);
 
   Future<void> ensureInitialUnlock(String firstSceneId) async {
     if (unlockedSceneIds().isEmpty) {
@@ -40,9 +46,15 @@ class ProgressRepository {
     await _prefs.setStringList(_clearedKey, next.toList());
   }
 
-  /// このスロットの進捗キーを削除する（リセット用）。
+  Future<void> markHardCleared(String sceneId) async {
+    final next = hardClearedSceneIds().toSet()..add(sceneId);
+    await _prefs.setStringList(_hardClearedKey, next.toList());
+  }
+
+  /// このスロットの進捗キーを削除する（リセット用）。ハードクリアも一緒に消す。
   Future<void> clearAll() async {
     await _prefs.remove(_unlockedKey);
     await _prefs.remove(_clearedKey);
+    await _prefs.remove(_hardClearedKey);
   }
 }

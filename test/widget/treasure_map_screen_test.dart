@@ -108,4 +108,61 @@ void main() {
       expect(tester.takeException(), isNull);
     },
   );
+
+  group('hard mode toggle', () {
+    final allIds = kSceneCatalog.map((e) => e.id).toList();
+
+    testWidgets('hidden until all scenes are cleared', (tester) async {
+      await _pumpHome(tester, {
+        'progress.slot1.unlockedSceneIds': ['scene01'],
+      });
+      expect(find.byKey(const ValueKey('map-mode-toggle')), findsNothing);
+    });
+
+    testWidgets('appears once every scene is cleared, defaults to normal', (
+      tester,
+    ) async {
+      await _pumpHome(tester, {
+        'progress.slot1.unlockedSceneIds': allIds,
+        'progress.slot1.clearedSceneIds': allIds,
+      });
+      expect(find.byKey(const ValueKey('map-mode-toggle')), findsOneWidget);
+      expect(find.byKey(const ValueKey('mode-normal')), findsOneWidget);
+      expect(find.byKey(const ValueKey('mode-hard')), findsOneWidget);
+      // Normal mode: all nodes cleared, counter shows 9/9.
+      expect(
+        find.byKey(const ValueKey('node-cleared.scene01')),
+        findsOneWidget,
+      );
+      expect(find.textContaining('9/9'), findsOneWidget);
+    });
+
+    testWidgets('switching to hard reflects hard-cleared progress', (
+      tester,
+    ) async {
+      await _pumpHome(tester, {
+        'progress.slot1.unlockedSceneIds': allIds,
+        'progress.slot1.clearedSceneIds': allIds,
+        // Only scene01 hard-cleared so far.
+        'progress.slot1.hardClearedSceneIds': ['scene01'],
+      });
+
+      await tester.tap(find.byKey(const ValueKey('mode-hard')));
+      await tester.pump();
+
+      // scene01 hard-cleared; the rest are tappable "current" hard nodes.
+      expect(
+        find.byKey(const ValueKey('node-cleared.scene01')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const ValueKey('node-current.scene02')),
+        findsOneWidget,
+      );
+      // Hard counter: 1/9 with the fire marker.
+      expect(find.textContaining('1/9'), findsOneWidget);
+      expect(find.textContaining('🔥'), findsWidgets);
+      expect(tester.takeException(), isNull);
+    });
+  });
 }

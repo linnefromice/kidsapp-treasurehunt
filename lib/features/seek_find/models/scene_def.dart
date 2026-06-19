@@ -13,6 +13,7 @@ class SceneDef {
     required this.imageAsset,
     required this.targets,
     this.dummies = const [],
+    this.hardDummies = const [],
   });
 
   final String id;
@@ -20,6 +21,10 @@ class SceneDef {
   final String imageAsset;
   final List<FindTarget> targets;
   final List<DummyItem> dummies;
+
+  /// ハードモード専用の引っかけダミー（通常モードでは描画されない）。
+  /// JSON の任意フィールド `hardDummies`。未指定なら空。
+  final List<DummyItem> hardDummies;
 
   factory SceneDef.fromJson(Map<String, dynamic> json) {
     return SceneDef(
@@ -31,6 +36,11 @@ class SceneDef {
           .toList(growable: false),
       dummies: json.containsKey('dummies')
           ? (json['dummies'] as List<dynamic>)
+                .map((e) => DummyItem.fromJson(e as Map<String, dynamic>))
+                .toList(growable: false)
+          : const [],
+      hardDummies: json.containsKey('hardDummies')
+          ? (json['hardDummies'] as List<dynamic>)
                 .map((e) => DummyItem.fromJson(e as Map<String, dynamic>))
                 .toList(growable: false)
           : const [],

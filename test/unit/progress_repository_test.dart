@@ -37,9 +37,40 @@ void main() {
     final r = await _repo('slot1');
     await r.ensureInitialUnlock('scene01');
     await r.markCleared('scene01');
+    await r.markHardCleared('scene01');
     await r.clearAll();
     expect(r.unlockedSceneIds(), isEmpty);
     expect(r.clearedSceneIds(), isEmpty);
+    expect(r.hardClearedSceneIds(), isEmpty);
+  });
+
+  test('markHardCleared records a scene as hard-cleared', () async {
+    final r = await _repo('slot1');
+    expect(r.isHardCleared('scene01'), isFalse);
+    await r.markHardCleared('scene01');
+    expect(r.isHardCleared('scene01'), isTrue);
+  });
+
+  test('hard clear is independent from normal clear', () async {
+    final r = await _repo('slot1');
+    await r.markCleared('scene01');
+    // Normal-cleared but not yet hard-cleared.
+    expect(r.isCleared('scene01'), isTrue);
+    expect(r.isHardCleared('scene01'), isFalse);
+
+    await r.markHardCleared('scene01');
+    expect(r.isHardCleared('scene01'), isTrue);
+    // Hard clear must not leak into the normal-cleared set.
+    expect(r.clearedSceneIds(), ['scene01']);
+  });
+
+  test('hard clear is independent across slots', () async {
+    final prefs = await SharedPreferences.getInstance();
+    final s1 = ProgressRepository(prefs, 'slot1');
+    final s2 = ProgressRepository(prefs, 'slot2');
+    await s1.markHardCleared('scene01');
+    expect(s1.isHardCleared('scene01'), isTrue);
+    expect(s2.isHardCleared('scene01'), isFalse);
   });
 
   test('unlockAll unlocks every passed scene', () async {

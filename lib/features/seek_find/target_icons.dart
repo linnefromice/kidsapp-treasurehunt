@@ -18,6 +18,24 @@ const Map<String, IconData> _kTargetIcons = {
   'umbrella': Icons.umbrella,
   'car': Icons.directions_car,
   'key': Icons.key,
+  // ハードモード専用デコイ用アイコン（既存の宝/ダミーと形が被らない新規アイコン群。
+  // どのシーンでも target/dummy として未使用なので整合性不変条件を破らない）。
+  'cake': Icons.cake,
+  'gift': Icons.card_giftcard,
+  'gem': Icons.diamond,
+  'music': Icons.music_note,
+  'cloud': Icons.cloud,
+  'moon': Icons.bedtime,
+  'icecream': Icons.icecream,
+  'cookie': Icons.cookie,
+  'pizza': Icons.local_pizza,
+  'bell': Icons.notifications,
+  'lightbulb': Icons.lightbulb,
+  'cat': Icons.pets,
+  'sailboat': Icons.sailing,
+  'crown': Icons.emoji_events,
+  'fire': Icons.local_fire_department,
+  'kite': Icons.toys,
 };
 
 const Map<String, Color> _kTargetColors = {
@@ -35,6 +53,23 @@ const Map<String, Color> _kTargetColors = {
   'umbrella': Color(0xFFFF7043),
   'car': Color(0xFF546E7A),
   'key': Color(0xFFFFB300),
+  // ハードモード専用デコイ用カラー。
+  'cake': Color(0xFFEC407A),
+  'gift': Color(0xFFD32F2F),
+  'gem': Color(0xFF26C6DA),
+  'music': Color(0xFF7E57C2),
+  'cloud': Color(0xFF42A5F5),
+  'moon': Color(0xFF5C6BC0),
+  'icecream': Color(0xFFF06292),
+  'cookie': Color(0xFF8D6E63),
+  'pizza': Color(0xFFFFA726),
+  'bell': Color(0xFFFFCA28),
+  'lightbulb': Color(0xFFFBC02D),
+  'cat': Color(0xFF6D4C41),
+  'sailboat': Color(0xFF0277BD),
+  'crown': Color(0xFFFFD54F),
+  'fire': Color(0xFFF4511E),
+  'kite': Color(0xFF00897B),
 };
 
 IconData targetIcon(String id) => _kTargetIcons[id] ?? Icons.help_outline;
