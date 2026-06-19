@@ -67,19 +67,26 @@ class TreasureMapScreen extends ConsumerWidget {
             fit: StackFit.expand,
             children: [
               // 1. 羊皮紙背景（静的・隔離）
-              const RepaintBoundary(
-                child: CustomPaint(painter: ParchmentPainter()),
+              RepaintBoundary(
+                child: CustomPaint(
+                  size: size,
+                  painter: const ParchmentPainter(),
+                ),
               ),
               // 2. 曲線ルート + クリア済み区間の足跡（クリア時のみ再描画・隔離）
               RepaintBoundary(
                 child: CustomPaint(
+                  size: size,
                   painter: TrailPainter(clearedIds: clearedIds),
                 ),
               ),
               // 3. 現在地へ向かう足跡（アニメ・隔離）。現在地が無ければ描かない。
               if (currentIndex != null && currentIndex > 0)
                 RepaintBoundary(
-                  child: _CurrentLegFootprints(endIndex: currentIndex),
+                  child: _CurrentLegFootprints(
+                    size: size,
+                    endIndex: currentIndex,
+                  ),
                 ),
               // 4. ノード群
               for (final entry in kSceneCatalog)
@@ -109,8 +116,9 @@ class TreasureMapScreen extends ConsumerWidget {
 /// 現在地へ向かう 1 区間だけに、足跡が順番にフェードインする「マーチング」演出。
 /// 低振幅・緩ループで、進む方向をそっと誘目する（急かさない）。
 class _CurrentLegFootprints extends StatefulWidget {
-  const _CurrentLegFootprints({required this.endIndex});
+  const _CurrentLegFootprints({required this.size, required this.endIndex});
 
+  final Size size;
   final int endIndex;
 
   @override
@@ -141,6 +149,7 @@ class _CurrentLegFootprintsState extends State<_CurrentLegFootprints>
     return AnimatedBuilder(
       animation: _march,
       builder: (context, _) => CustomPaint(
+        size: widget.size,
         painter: _LegFootstepsPainter(
           t: _march.value,
           endIndex: widget.endIndex,
@@ -180,11 +189,10 @@ class _LegFootstepsPainter extends CustomPainter {
       }
       // 行進する「光の頭」が i を通過する時に最も明るく。環状の最短距離で評価。
       final raw = head - i;
-      final wrapped = [
-        raw,
-        raw - _count,
-        raw + _count,
-      ].map((v) => v.abs()).reduce(math.min);
+      final wrapped = math.min(
+        raw.abs(),
+        math.min((raw - _count).abs(), (raw + _count).abs()),
+      );
       final wave = math.exp(-(wrapped * wrapped) / 1.2);
       final alpha = (0.18 + 0.55 * wave).clamp(0.0, 0.85);
 
@@ -199,9 +207,9 @@ class _LegFootstepsPainter extends CustomPainter {
     }
   }
 
+  // `t` は毎フレーム変化する連続値のため、常に再描画が必要。
   @override
-  bool shouldRepaint(_LegFootstepsPainter oldDelegate) =>
-      oldDelegate.t != t || oldDelegate.endIndex != endIndex;
+  bool shouldRepaint(_LegFootstepsPainter oldDelegate) => true;
 }
 
 class _MapNode extends StatefulWidget {
@@ -268,16 +276,24 @@ class _MapNodeState extends State<_MapNode>
         ? Colors.orange.shade400
         : Colors.brown.shade300;
 
+    // ロックは「未踏の地」らしくセピア寄せ（白地 → 褪せた羊皮紙色）にして
+    // 自然に視線を外させる。Opacity レイヤを使わず色だけで表現（saveLayer 回避）。
+    final fill = widget.unlocked ? Colors.white : const Color(0xFFEDE3D2);
+
     Widget medallion = Container(
       width: 64,
       height: 64,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: Colors.white,
+        color: fill,
         border: Border.all(color: color, width: 4),
-        boxShadow: const [
-          BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2)),
+        boxShadow: [
+          BoxShadow(
+            color: widget.unlocked ? Colors.black26 : Colors.black12,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
         ],
       ),
       child: Icon(
@@ -296,11 +312,6 @@ class _MapNodeState extends State<_MapNode>
         ).animate(CurvedAnimation(parent: _pulse, curve: Curves.easeInOut)),
         child: medallion,
       );
-    }
-
-    // ロックは「未踏の地」らしくセピア寄せ + 半透明にし、自然に視線を外させる。
-    if (!widget.unlocked) {
-      medallion = Opacity(opacity: 0.55, child: medallion);
     }
 
     return GestureDetector(
