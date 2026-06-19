@@ -173,21 +173,40 @@ class AmbientLayer extends StatefulWidget {
 class _AmbientLayerState extends State<AmbientLayer>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
-  late final List<_AmbientGroup> _groups;
+  late _AmbientPainter _painter;
 
   @override
   void initState() {
     super.initState();
-    // 粒子の初期配置は一度だけ決定論的に生成し、以降は t だけで動かす。
-    _groups = [
-      for (final spec in widget.specs)
-        _AmbientGroup(spec, _buildParticles(spec)),
-    ];
     // 18 秒で 1 周。雲の横断・雪の落下も 1 周＝緩やかなループになる。
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 18),
     )..repeat();
+    _painter = _buildPainter(widget.specs);
+  }
+
+  @override
+  void didUpdateWidget(covariant AmbientLayer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 同じ位置で specs が差し替わった場合だけ粒子を作り直す（防御的）。
+    if (!identical(oldWidget.specs, widget.specs)) {
+      setState(() => _painter = _buildPainter(widget.specs));
+    }
+  }
+
+  /// 粒子の初期配置は一度だけ決定論的に生成し、以降は共有 `t` だけで動かす。
+  /// painter は永続化し、再描画は [_controller]（`repaint:`）が駆動する。
+  _AmbientPainter _buildPainter(List<AmbientSpec> specs) {
+    assert(
+      specs.fold<int>(0, (sum, s) => sum + s.count) <=
+          kAmbientMaxParticlesPerScene,
+      'Ambient particle budget exceeded for this scene',
+    );
+    final groups = [
+      for (final spec in specs) _AmbientGroup(spec, _buildParticles(spec)),
+    ];
+    return _AmbientPainter(progress: _controller, groups: groups);
   }
 
   @override
@@ -198,14 +217,10 @@ class _AmbientLayerState extends State<AmbientLayer>
 
   @override
   Widget build(BuildContext context) {
+    // RepaintBoundary で静止画層と分離（静止画は再描画されない）。
+    // painter を毎フレーム作り直さず、_controller を repaint リスナにして駆動する。
     return RepaintBoundary(
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, _) => CustomPaint(
-          painter: _AmbientPainter(t: _controller.value, groups: _groups),
-          child: const SizedBox.expand(),
-        ),
-      ),
+      child: CustomPaint(painter: _painter, child: const SizedBox.expand()),
     );
   }
 }
@@ -220,7 +235,9 @@ class _AmbientGroup {
 
 /// 個々の粒子の不変な基準値。動きは `t` から都度計算する。
 /// 各フィールドの解釈は kind によって異なる（位置=正規化 0..1、半径=最短辺比、
-/// `phase`=位相 0..1、`drift`=振幅/基準明度など kind 固有の係数）。
+/// `phase`=位相 0..1）。`drift` は kind 固有の係数:
+/// drift=雲の縦揺れ振幅 / mote=漂い幅 / firefly=徘徊幅 / snow=横揺れ幅 /
+/// twinkle=基準明度（bubble では未使用）。
 class _Particle {
   const _Particle({
     required this.x,
@@ -291,31 +308,49 @@ _Particle _makeParticle(AmbientKind kind, math.Random rnd) {
 }
 
 class _AmbientPainter extends CustomPainter {
-  _AmbientPainter({required this.t, required this.groups});
+  /// [progress]（0..1 ループ）を `repaint:` に渡すことで、painter を毎フレーム
+  /// 作り直さずに再描画を駆動する。`t` は paint 時に [progress] から読む。
+  _AmbientPainter({required this.progress, required this.groups})
+    : super(repaint: progress);
 
-  final double t;
+  final Animation<double> progress;
   final List<_AmbientGroup> groups;
 
   static const double _twoPi = math.pi * 2;
 
+  // 毎フレームの GC 負荷を避けるため Paint は使い回す（色/フィルタのみ差し替え）。
+  // _fill: 塗り（blur なし）/ _blur: ぼかし塗り / _stroke: 輪郭（泡）。
+  final Paint _fill = Paint();
+  final Paint _blur = Paint();
+  final Paint _stroke = Paint()..style = PaintingStyle.stroke;
+
+  // ぼかしフィルタも sigma 単位でキャッシュし、フレームごとの再生成を避ける。
+  final Map<int, MaskFilter> _blurCache = {};
+
+  MaskFilter _blurFor(double sigma) => _blurCache.putIfAbsent(
+    (sigma * 10).round(),
+    () => MaskFilter.blur(BlurStyle.normal, sigma),
+  );
+
   @override
   void paint(Canvas canvas, Size size) {
+    final t = progress.value;
     final s = size.shortestSide;
     for (final g in groups) {
       for (final p in g.particles) {
         switch (g.spec.kind) {
           case AmbientKind.drift:
-            _paintDrift(canvas, size, s, p, g.spec.color);
+            _paintDrift(canvas, t, size, s, p, g.spec.color);
           case AmbientKind.mote:
-            _paintMote(canvas, size, s, p, g.spec.color);
+            _paintMote(canvas, t, size, s, p, g.spec.color);
           case AmbientKind.firefly:
-            _paintFirefly(canvas, size, s, p, g.spec.color);
+            _paintFirefly(canvas, t, size, s, p, g.spec.color);
           case AmbientKind.bubble:
-            _paintBubble(canvas, size, s, p, g.spec.color);
+            _paintBubble(canvas, t, size, s, p, g.spec.color);
           case AmbientKind.snow:
-            _paintSnow(canvas, size, s, p, g.spec.color);
+            _paintSnow(canvas, t, size, s, p, g.spec.color);
           case AmbientKind.twinkle:
-            _paintTwinkle(canvas, size, s, p, g.spec.color);
+            _paintTwinkle(canvas, t, size, s, p, g.spec.color);
         }
       }
     }
@@ -323,35 +358,55 @@ class _AmbientPainter extends CustomPainter {
 
   /// 横断系（雲）の seamless ループ: t の 1 周で左外 → 右外を 1 往復。
   /// margin 分だけ画面外に余白を取り、巻き戻りは画面外で起きる。
-  void _paintDrift(Canvas c, Size size, double s, _Particle p, Color color) {
+  /// `drift` は微小な縦揺れ振幅（速度倍率にすると巻き戻りで継ぎ目が出るため使わない）。
+  void _paintDrift(
+    Canvas c,
+    double t,
+    Size size,
+    double s,
+    _Particle p,
+    Color color,
+  ) {
     const margin = 0.3;
     final x01 = (p.x + t) % 1.0;
     final cx = (x01 * (1 + 2 * margin) - margin) * size.width;
-    final cy = p.y * size.height;
+    final bob = p.drift * 0.025 * math.sin(_twoPi * (t + p.phase));
+    final cy = (p.y + bob) * size.height;
     final r = p.r * s;
-    final paint = Paint()
+    _blur
       ..color = color
-      ..maskFilter = MaskFilter.blur(BlurStyle.normal, r * 0.35);
-    c.drawCircle(Offset(cx, cy), r, paint);
-    c.drawCircle(Offset(cx + r * 0.8, cy + r * 0.15), r * 0.72, paint);
-    c.drawCircle(Offset(cx - r * 0.75, cy + r * 0.1), r * 0.68, paint);
-    c.drawCircle(Offset(cx, cy + r * 0.3), r * 0.8, paint);
+      ..maskFilter = _blurFor(r * 0.35);
+    c.drawCircle(Offset(cx, cy), r, _blur);
+    c.drawCircle(Offset(cx + r * 0.8, cy + r * 0.15), r * 0.72, _blur);
+    c.drawCircle(Offset(cx - r * 0.75, cy + r * 0.1), r * 0.68, _blur);
+    c.drawCircle(Offset(cx, cy + r * 0.3), r * 0.8, _blur);
   }
 
-  void _paintMote(Canvas c, Size size, double s, _Particle p, Color color) {
+  void _paintMote(
+    Canvas c,
+    double t,
+    Size size,
+    double s,
+    _Particle p,
+    Color color,
+  ) {
     final wob = _twoPi * (t + p.phase);
     final cx = (p.x + p.drift * math.sin(wob)) * size.width;
     final cy = (p.y + p.drift * 0.6 * math.cos(wob)) * size.height;
     final pulse = 0.5 + 0.5 * math.sin(_twoPi * (2 * t + p.phase));
     final a = (0.2 + 0.3 * pulse).clamp(0.0, 0.6);
-    c.drawCircle(
-      Offset(cx, cy),
-      p.r * s,
-      Paint()..color = color.withValues(alpha: a),
-    );
+    _fill.color = color.withValues(alpha: a);
+    c.drawCircle(Offset(cx, cy), p.r * s, _fill);
   }
 
-  void _paintFirefly(Canvas c, Size size, double s, _Particle p, Color color) {
+  void _paintFirefly(
+    Canvas c,
+    double t,
+    Size size,
+    double s,
+    _Particle p,
+    Color color,
+  ) {
     final wx = p.drift * math.sin(_twoPi * (t + p.phase));
     final wy = p.drift * 0.7 * math.cos(_twoPi * (t + p.phase * 1.3));
     final cx = (p.x + wx) * size.width;
@@ -359,78 +414,80 @@ class _AmbientPainter extends CustomPainter {
     final pulse = 0.5 + 0.5 * math.sin(_twoPi * (2 * t + p.phase));
     final a = (0.25 + 0.6 * pulse).clamp(0.0, 0.9);
     final r = p.r * s;
-    c.drawCircle(
-      Offset(cx, cy),
-      r * 2.2,
-      Paint()
-        ..color = color.withValues(alpha: a * 0.35)
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, r * 1.6),
-    );
-    c.drawCircle(
-      Offset(cx, cy),
-      r,
-      Paint()..color = color.withValues(alpha: a),
-    );
+    _blur
+      ..color = color.withValues(alpha: a * 0.35)
+      ..maskFilter = _blurFor(r * 1.6);
+    c.drawCircle(Offset(cx, cy), r * 2.2, _blur);
+    _fill.color = color.withValues(alpha: a);
+    c.drawCircle(Offset(cx, cy), r, _fill);
   }
 
   /// 昇る泡: t の 1 周で下外 → 上外へ 1 回上昇（seamless）。
-  void _paintBubble(Canvas c, Size size, double s, _Particle p, Color color) {
+  void _paintBubble(
+    Canvas c,
+    double t,
+    Size size,
+    double s,
+    _Particle p,
+    Color color,
+  ) {
     const margin = 0.15;
     final y01 = ((p.y - t) % 1.0 + 1.0) % 1.0;
     final cy = (y01 * (1 + 2 * margin) - margin) * size.height;
     final sway = 0.012 * math.sin(_twoPi * (2 * t + p.phase));
     final cx = (p.x + sway) * size.width;
     final r = p.r * s;
-    c.drawCircle(
-      Offset(cx, cy),
-      r,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = math.max(1.0, r * 0.12)
-        ..color = color.withValues(alpha: 0.5),
-    );
-    c.drawCircle(
-      Offset(cx - r * 0.35, cy - r * 0.35),
-      r * 0.16,
-      Paint()..color = color.withValues(alpha: 0.65),
-    );
+    _stroke
+      ..strokeWidth = math.max(1.0, r * 0.12)
+      ..color = color.withValues(alpha: 0.5);
+    c.drawCircle(Offset(cx, cy), r, _stroke);
+    _fill.color = color.withValues(alpha: 0.65);
+    c.drawCircle(Offset(cx - r * 0.35, cy - r * 0.35), r * 0.16, _fill);
   }
 
   /// 降る雪: t の 1 周で上外 → 下外へ 1 回落下（seamless）+ 横揺れ。
-  void _paintSnow(Canvas c, Size size, double s, _Particle p, Color color) {
+  void _paintSnow(
+    Canvas c,
+    double t,
+    Size size,
+    double s,
+    _Particle p,
+    Color color,
+  ) {
     const margin = 0.1;
     final y01 = (p.y + t) % 1.0;
     final cy = (y01 * (1 + 2 * margin) - margin) * size.height;
     final sway = p.drift * math.sin(_twoPi * (2 * t + p.phase));
     final cx = (p.x + sway) * size.width;
-    c.drawCircle(
-      Offset(cx, cy),
-      p.r * s,
-      Paint()..color = color.withValues(alpha: 0.85),
-    );
+    _fill.color = color.withValues(alpha: 0.85);
+    c.drawCircle(Offset(cx, cy), p.r * s, _fill);
   }
 
-  void _paintTwinkle(Canvas c, Size size, double s, _Particle p, Color color) {
+  void _paintTwinkle(
+    Canvas c,
+    double t,
+    Size size,
+    double s,
+    _Particle p,
+    Color color,
+  ) {
     final pulse = 0.5 + 0.5 * math.sin(_twoPi * (2 * t + p.phase));
     final a = (p.drift * (0.4 + 0.6 * pulse)).clamp(0.0, 1.0);
     final cx = p.x * size.width;
     final cy = p.y * size.height;
     final r = p.r * s;
-    c.drawCircle(
-      Offset(cx, cy),
-      r * 1.8,
-      Paint()
-        ..color = color.withValues(alpha: a * 0.3)
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, r),
-    );
-    c.drawCircle(
-      Offset(cx, cy),
-      r,
-      Paint()..color = color.withValues(alpha: a),
-    );
+    _blur
+      ..color = color.withValues(alpha: a * 0.3)
+      ..maskFilter = _blurFor(r);
+    c.drawCircle(Offset(cx, cy), r * 1.8, _blur);
+    _fill.color = color.withValues(alpha: a);
+    c.drawCircle(Offset(cx, cy), r, _fill);
   }
 
-  // t は毎フレーム変化する連続値のため、常に再描画が必要。
+  // 再描画は progress（repaint リスナ）が駆動する。delegate 差し替え時は
+  // groups が変わった場合のみ再描画すればよい。
   @override
-  bool shouldRepaint(_AmbientPainter oldDelegate) => true;
+  bool shouldRepaint(_AmbientPainter oldDelegate) =>
+      !identical(oldDelegate.groups, groups) ||
+      !identical(oldDelegate.progress, progress);
 }

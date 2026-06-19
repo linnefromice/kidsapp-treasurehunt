@@ -48,4 +48,18 @@ void main() {
     expect(find.byType(AmbientLayer), findsNothing);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('disposes its animation controller cleanly on removal', (
+    tester,
+  ) async {
+    await _pumpScene(tester, 'scene09');
+    expect(find.byType(AmbientLayer), findsOneWidget);
+
+    // 層を外して dispose を走らせ、ticker リーク等の例外が出ないことを確認。
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
+
+    expect(find.byType(AmbientLayer), findsNothing);
+    expect(tester.takeException(), isNull);
+  });
 }
