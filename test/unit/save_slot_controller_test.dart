@@ -31,10 +31,15 @@ void main() {
       expect(state.containsKey('slot1'), isTrue);
       expect(state['slot1'], '🦊'); // 選んだ絵文字がアバターとして保持される
       c.read(activeSlotProvider.notifier).select('slot1');
-      expect(
-        c.read(progressRepositoryProvider).isUnlocked(GameMode.easy, 'scene01'),
-        isTrue,
-      );
+      // 3 モードとも scene01 が初期解放される（最初からどのモードも選べる）。
+      final progress = c.read(progressRepositoryProvider);
+      for (final mode in GameMode.values) {
+        expect(
+          progress.isUnlocked(mode, 'scene01'),
+          isTrue,
+          reason: 'scene01 should be unlocked in $mode',
+        );
+      }
     },
   );
 
@@ -69,7 +74,21 @@ void main() {
 
     expect(c.read(saveSlotControllerProvider).containsKey('slot1'), isFalse);
     final prefs = c.read(sharedPreferencesProvider);
-    expect(prefs.getStringList('progress.slot1.unlockedSceneIds'), isNull);
+    // 全モードの解放/クリアキーが消えていること（clearAll が全モードを掃除）。
+    for (final key in [
+      'progress.slot1.unlockedSceneIds',
+      'progress.slot1.clearedSceneIds',
+      'progress.slot1.normal.unlockedSceneIds',
+      'progress.slot1.normal.clearedSceneIds',
+      'progress.slot1.hard.unlockedSceneIds',
+      'progress.slot1.hardClearedSceneIds',
+    ]) {
+      expect(
+        prefs.getStringList(key),
+        isNull,
+        reason: '$key should be cleared',
+      );
+    }
     expect(c.read(saveSlotRepositoryProvider).avatarOf('slot1'), isNull);
   });
 
@@ -92,11 +111,13 @@ void main() {
     final prefs = c.read(sharedPreferencesProvider);
     final freeRepo = ProgressRepository(prefs, kFreeModeSlotId);
     for (final entry in kSceneCatalog) {
-      expect(
-        freeRepo.isUnlocked(GameMode.easy, entry.id),
-        isTrue,
-        reason: '${entry.id} should be unlocked in free mode',
-      );
+      for (final mode in GameMode.values) {
+        expect(
+          freeRepo.isUnlocked(mode, entry.id),
+          isTrue,
+          reason: '${entry.id} should be unlocked in free mode ($mode)',
+        );
+      }
     }
   });
 

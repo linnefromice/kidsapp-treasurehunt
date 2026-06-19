@@ -25,6 +25,8 @@ class ProgressRepository {
   String _clearedKey(GameMode mode) => switch (mode) {
     GameMode.easy => 'progress.$_slotId.clearedSceneIds',
     GameMode.normal => 'progress.$_slotId.normal.clearedSceneIds',
+    // 既存セーブ互換のため hard クリアだけ旧キー名を流用する（`hard.` 接頭ではない）。
+    // unlock 側は新形式 `hard.unlockedSceneIds` なので、ここの非対称は意図的。
     GameMode.hard => 'progress.$_slotId.hardClearedSceneIds',
   };
 

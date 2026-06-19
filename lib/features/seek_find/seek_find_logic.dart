@@ -32,17 +32,15 @@ List<DummyItem> decoysForMode(SceneDef scene, GameMode mode) =>
     ? scene.dummies
     : [...scene.dummies, ...scene.hardDummies];
 
-/// [normalizedRect] を中心を保ったまま [scale] 倍に拡大/縮小する。
-/// 既定は [kTreasureDisplayScale]（通常モード）。ハードモードは小さい [scale] を渡す。
+/// [normalizedRect] を中心を保ったまま [kTreasureDisplayScale] 倍に拡大する。
+/// 表示と当たり判定の両方が同じ倍率を使うことで、難易度に依らず
+/// 「見えている大きさ = 押せる大きさ」を保つ（全モード共通サイズ）。
 /// 端に置かれた宝では結果が [0,1] をわずかに超えうるが、タップ座標は常に
 /// シーン内に収まるため当たり判定は安全。
-Rect scaledTreasureRect(
-  Rect normalizedRect, {
-  double scale = kTreasureDisplayScale,
-}) => Rect.fromCenter(
+Rect scaledTreasureRect(Rect normalizedRect) => Rect.fromCenter(
   center: normalizedRect.center,
-  width: normalizedRect.width * scale,
-  height: normalizedRect.height * scale,
+  width: normalizedRect.width * kTreasureDisplayScale,
+  height: normalizedRect.height * kTreasureDisplayScale,
 );
 
 /// シーン座標 [scenePoint](GestureDetector の localPosition)を正規化し、
@@ -54,7 +52,6 @@ String? findHitTargetId({
   required Size sceneSize,
   required List<FindTarget> targets,
   required Set<String> foundIds,
-  double scale = kTreasureDisplayScale,
   Set<String> hiddenIds = const {},
 }) {
   if (sceneSize.width <= 0 || sceneSize.height <= 0) {
@@ -69,10 +66,7 @@ String? findHitTargetId({
       continue;
     }
     // 表示と同じ拡大率で判定し、見た目どおりの当たり判定にする。
-    if (scaledTreasureRect(
-      target.normalizedRect,
-      scale: scale,
-    ).contains(normalized)) {
+    if (scaledTreasureRect(target.normalizedRect).contains(normalized)) {
       return target.id;
     }
   }
@@ -80,14 +74,13 @@ String? findHitTargetId({
 }
 
 /// [scenePoint] が [hiddenIds]（点滅で消失中の宝）のいずれかの表示矩形内にあるか。
-/// 表示と同じ [scale] で判定する。消失中の宝をタップしたとき空振り（ミスバブル）
+/// 表示と同じ拡大率で判定する。消失中の宝をタップしたとき空振り（ミスバブル）
 /// 扱いにせず「無反応」にするために使う（失敗を罰しない）。空の場所のタップとは区別する。
 bool isPointOnHiddenTarget({
   required Offset scenePoint,
   required Size sceneSize,
   required List<FindTarget> targets,
   required Set<String> hiddenIds,
-  double scale = kTreasureDisplayScale,
 }) {
   if (hiddenIds.isEmpty || sceneSize.width <= 0 || sceneSize.height <= 0) {
     return false;
@@ -100,10 +93,7 @@ bool isPointOnHiddenTarget({
     if (!hiddenIds.contains(target.id)) {
       continue;
     }
-    if (scaledTreasureRect(
-      target.normalizedRect,
-      scale: scale,
-    ).contains(normalized)) {
+    if (scaledTreasureRect(target.normalizedRect).contains(normalized)) {
       return true;
     }
   }

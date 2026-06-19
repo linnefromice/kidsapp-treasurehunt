@@ -88,7 +88,10 @@ class _SceneViewState extends ConsumerState<_SceneView>
   AnimationController? _blinkClock;
 
   /// 発見状態のキー。モード間で発見が混ざらないようモードごとに名前空間化する
-  /// （Easy はレガシー互換のため素の sceneId）。
+  /// （Easy はレガシー互換のため素の sceneId）。これは画面セッション内の
+  /// インメモリ状態（`foundControllerProvider`）専用で、永続キーとは別物。
+  /// `foundControllerProvider` は autoDispose のため画面を離れると破棄され、
+  /// Easy↔Normal を行き来しても Easy の素の sceneId が Normal の値を引かない。
   String get _foundKey => switch (widget.mode) {
     GameMode.easy => widget.scene.id,
     GameMode.normal => '${widget.scene.id}#normal',

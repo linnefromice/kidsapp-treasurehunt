@@ -42,6 +42,10 @@ class _TreasureMapScreenState extends ConsumerState<TreasureMapScreen> {
   }
 
   Future<void> _ensureSeeded() async {
+    // アクティブスロット未選択なら progressRepositoryProvider は throw する。
+    // この postFrameCallback は unawaited のため、ここで握って no-op にする
+    // （ルート遷移の境界でスロットが外れた瞬間などを防御）。
+    if (!mounted || ref.read(activeSlotProvider) == null) return;
     final progress = ref.read(progressRepositoryProvider);
     var seeded = false;
     for (final mode in GameMode.values) {
@@ -227,24 +231,29 @@ class _ModeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      key: ValueKey(keyValue),
-      onTap: onTap,
-      child: Container(
-        // タッチターゲット 60dp 以上を確保（子供向け UX 基準）。
-        constraints: const BoxConstraints(minWidth: 96, minHeight: 60),
-        alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        decoration: BoxDecoration(
-          color: selected ? Colors.amber.shade600 : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: selected ? FontWeight.bold : FontWeight.normal,
-            color: selected ? Colors.white : Colors.brown.shade700,
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      child: GestureDetector(
+        key: ValueKey(keyValue),
+        onTap: onTap,
+        child: Container(
+          // タッチターゲット 60dp 以上を確保（子供向け UX 基準）。
+          constraints: const BoxConstraints(minWidth: 96, minHeight: 60),
+          alignment: Alignment.center,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          decoration: BoxDecoration(
+            color: selected ? Colors.amber.shade600 : Colors.transparent,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: selected ? FontWeight.bold : FontWeight.normal,
+              color: selected ? Colors.white : Colors.brown.shade700,
+            ),
           ),
         ),
       ),

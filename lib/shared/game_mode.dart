@@ -10,7 +10,8 @@ enum GameMode { easy, normal, hard }
 /// `'normal'`→[GameMode.normal] / `'hard'`→[GameMode.hard] /
 /// それ以外（未指定・不明含む）→ [GameMode.easy]（最もやさしい既定）。
 GameMode gameModeFromQuery(String? raw) => switch (raw) {
+  'easy' => GameMode.easy,
   'normal' => GameMode.normal,
   'hard' => GameMode.hard,
-  _ => GameMode.easy,
+  _ => GameMode.easy, // 未指定・不明は最もやさしい既定にフォールバック
 };
