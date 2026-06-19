@@ -25,7 +25,8 @@ import 'package:kidsapp_treasurehunt/shared/widgets/kids_button.dart';
 const Duration _kHintIdleDelay = Duration(seconds: 8);
 
 /// 正規化 Rect（0.0–1.0）をシーンの実ピクセルへ変換した [Positioned] を作る。
-/// 宝とダミーで共通の配置ロジック。
+/// 宝とダミーで共通の配置ロジック。[rect] は呼び出し側で
+/// [scaledTreasureRect] 済みの矩形を渡す（拡大不要なときのみ素の正規化 Rect）。
 Positioned _positioned(Rect rect, Size sceneSize, {required Widget child}) {
   return Positioned(
     left: rect.left * sceneSize.width,

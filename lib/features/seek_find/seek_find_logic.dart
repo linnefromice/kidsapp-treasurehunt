@@ -9,6 +9,8 @@ import 'package:kidsapp_treasurehunt/features/seek_find/models/find_target.dart'
 const double kTreasureDisplayScale = 1.15;
 
 /// [normalizedRect] を中心を保ったまま [kTreasureDisplayScale] 倍に拡大する。
+/// 端に置かれた宝では結果が [0,1] をわずかに超えうるが、タップ座標は常に
+/// シーン内に収まるため当たり判定は安全。
 Rect scaledTreasureRect(Rect normalizedRect) => Rect.fromCenter(
   center: normalizedRect.center,
   width: normalizedRect.width * kTreasureDisplayScale,

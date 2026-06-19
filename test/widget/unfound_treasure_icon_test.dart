@@ -23,9 +23,7 @@ void main() {
     expect(icon.icon, targetIcon('apple'));
   });
 
-  testWidgets('gradient runs light (top) to dark (bottom) for contrast', (
-    tester,
-  ) async {
+  test('gradient runs light (top) to dark (bottom) for contrast', () {
     const gradient = UnfoundTreasureIcon.grayGradient;
     expect(gradient.begin, Alignment.topCenter);
     expect(gradient.end, Alignment.bottomCenter);

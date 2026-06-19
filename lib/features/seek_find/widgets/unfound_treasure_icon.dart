@@ -22,12 +22,17 @@ class UnfoundTreasureIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ShaderMask(
-      shaderCallback: grayGradient.createShader,
-      blendMode: BlendMode.srcIn,
-      // srcIn はアイコンの不透明部分をグラデで置き換える。child の色は無視されるが
-      // アルファ形状は使うため、不透明な白を渡してシルエットを確実に残す。
-      child: Icon(targetIcon(iconId), color: Colors.white),
+    // ShaderMask は描画ごとに saveLayer を伴う。宝は静的なので RepaintBoundary で
+    // ラスタをキャッシュし、ズーム/パンや近くのループアニメ再描画の影響を切り離す
+    // （_FoundGlow / HintGlow と同じ方針）。
+    return RepaintBoundary(
+      child: ShaderMask(
+        shaderCallback: grayGradient.createShader,
+        blendMode: BlendMode.srcIn,
+        // srcIn はアイコンの不透明部分をグラデで置き換える。child の色は無視されるが
+        // アルファ形状は使うため、不透明な白を渡してシルエットを確実に残す。
+        child: Icon(targetIcon(iconId), color: Colors.white),
+      ),
     );
   }
 }
