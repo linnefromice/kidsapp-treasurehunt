@@ -14,6 +14,7 @@ import 'package:kidsapp_treasurehunt/features/seek_find/widgets/collection_bar.d
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/found_burst.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/hint_glow.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/miss_bubble.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/widgets/unfound_treasure_icon.dart';
 import 'package:kidsapp_treasurehunt/providers.dart';
 import 'package:kidsapp_treasurehunt/scenes_catalog.dart';
 import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
@@ -22,6 +23,18 @@ import 'package:kidsapp_treasurehunt/shared/widgets/kids_button.dart';
 /// 操作が無いまま何秒経過したら未発見の宝を 1 つヒント点滅させるか
 /// （アイドル時のみ。タップ/なぞりのたびにカウントはリセットされ、急かさない）。
 const Duration _kHintIdleDelay = Duration(seconds: 8);
+
+/// 正規化 Rect（0.0–1.0）をシーンの実ピクセルへ変換した [Positioned] を作る。
+/// 宝とダミーで共通の配置ロジック。
+Positioned _positioned(Rect rect, Size sceneSize, {required Widget child}) {
+  return Positioned(
+    left: rect.left * sceneSize.width,
+    top: rect.top * sceneSize.height,
+    width: rect.width * sceneSize.width,
+    height: rect.height * sceneSize.height,
+    child: child,
+  );
+}
 
 class SeekFindScreen extends ConsumerWidget {
   const SeekFindScreen({super.key, required this.sceneId});
@@ -151,19 +164,15 @@ class _SceneViewState extends ConsumerState<_SceneView> {
                       children: [
                         sceneBackground(scene.id),
                         for (final d in scene.dummies)
-                          Positioned(
-                            left: d.normalizedRect.left * sceneSize.width,
-                            top: d.normalizedRect.top * sceneSize.height,
-                            width: d.normalizedRect.width * sceneSize.width,
-                            height: d.normalizedRect.height * sceneSize.height,
+                          _positioned(
+                            scaledTreasureRect(d.normalizedRect),
+                            sceneSize,
                             child: _TargetView(iconId: d.iconId, found: false),
                           ),
                         for (final t in scene.targets)
-                          Positioned(
-                            left: t.normalizedRect.left * sceneSize.width,
-                            top: t.normalizedRect.top * sceneSize.height,
-                            width: t.normalizedRect.width * sceneSize.width,
-                            height: t.normalizedRect.height * sceneSize.height,
+                          _positioned(
+                            scaledTreasureRect(t.normalizedRect),
+                            sceneSize,
                             child: _TargetView(
                               key: ValueKey(t.id),
                               iconId: t.iconId,
@@ -242,12 +251,9 @@ class _TargetView extends StatelessWidget {
           RepaintBoundary(child: HintGlow(color: targetColor(iconId))),
         FittedBox(
           fit: BoxFit.contain,
-          child: Icon(
-            targetIcon(iconId),
-            color: found
-                ? targetColor(iconId)
-                : Colors.grey.shade400.withValues(alpha: 0.45),
-          ),
+          child: found
+              ? Icon(targetIcon(iconId), color: targetColor(iconId))
+              : UnfoundTreasureIcon(iconId: iconId),
         ),
         if (found) FoundBurst(color: targetColor(iconId)),
       ],
