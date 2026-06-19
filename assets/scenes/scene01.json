@@ -14,7 +14,7 @@
     { "id": "rabbit1", "iconId": "rabbit", "left": 0.695, "top": 0.625, "width": 0.11, "height": 0.13 },
     { "id": "bug1",    "iconId": "bug",    "left": 0.065, "top": 0.570, "width": 0.11, "height": 0.13 },
     { "id": "flower1", "iconId": "flower", "left": 0.545, "top": 0.475, "width": 0.11, "height": 0.13 },
-    { "id": "heart1",  "iconId": "heart",  "left": 0.175, "top": 0.400, "width": 0.11, "height": 0.13 },
+    { "id": "key1",    "iconId": "key",    "left": 0.175, "top": 0.400, "width": 0.11, "height": 0.13 },
     { "id": "ball1",   "iconId": "ball",   "left": 0.785, "top": 0.205, "width": 0.11, "height": 0.13 }
   ]
 }

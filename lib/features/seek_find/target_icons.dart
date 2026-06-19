@@ -39,3 +39,7 @@ const Map<String, Color> _kTargetColors = {
 
 IconData targetIcon(String id) => _kTargetIcons[id] ?? Icons.help_outline;
 Color targetColor(String id) => _kTargetColors[id] ?? const Color(0xFF9E9E9E);
+
+/// 既知のアイコン id か。未知の id は targetIcon で `?`（help_outline）に
+/// フォールバックし子供が認識できないため、シーン整合性テストで弾く。
+bool hasTargetIcon(String id) => _kTargetIcons.containsKey(id);
