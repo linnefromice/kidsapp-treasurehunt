@@ -16,7 +16,11 @@ class SceneCatalogEntry {
       id == 'scene02' ||
       id == 'scene03' ||
       id == 'scene04' ||
-      id == 'scene05';
+      id == 'scene05' ||
+      id == 'scene06' ||
+      id == 'scene07' ||
+      id == 'scene08' ||
+      id == 'scene09';
 }
 
 const String kFirstSceneId = 'scene01';
@@ -27,32 +31,56 @@ const List<SceneCatalogEntry> kSceneCatalog = [
   SceneCatalogEntry(
     'scene01',
     'scene.scene01.title',
-    Offset(0.14, 0.40),
+    Offset(0.080, 0.40),
     Icons.park,
   ),
   SceneCatalogEntry(
     'scene02',
     'scene.scene02.title',
-    Offset(0.32, 0.64),
+    Offset(0.185, 0.64),
     Icons.water,
   ),
   SceneCatalogEntry(
     'scene03',
     'scene.scene03.title',
-    Offset(0.50, 0.40),
+    Offset(0.290, 0.40),
     Icons.cloud,
   ),
   SceneCatalogEntry(
     'scene04',
     'scene.scene04.title',
-    Offset(0.68, 0.64),
+    Offset(0.395, 0.64),
     Icons.yard,
   ),
   SceneCatalogEntry(
     'scene05',
     'scene.scene05.title',
-    Offset(0.86, 0.40),
+    Offset(0.500, 0.40),
     Icons.nights_stay,
+  ),
+  SceneCatalogEntry(
+    'scene06',
+    'scene.scene06.title',
+    Offset(0.605, 0.64),
+    Icons.wb_sunny,
+  ),
+  SceneCatalogEntry(
+    'scene07',
+    'scene.scene07.title',
+    Offset(0.710, 0.40),
+    Icons.rocket_launch,
+  ),
+  SceneCatalogEntry(
+    'scene08',
+    'scene.scene08.title',
+    Offset(0.815, 0.64),
+    Icons.scuba_diving,
+  ),
+  SceneCatalogEntry(
+    'scene09',
+    'scene.scene09.title',
+    Offset(0.920, 0.40),
+    Icons.ac_unit,
   ),
 ];
 
