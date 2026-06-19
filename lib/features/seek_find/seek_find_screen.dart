@@ -51,14 +51,22 @@ class SeekFindScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sceneAsync = ref.watch(sceneProvider(sceneId));
+    // ハードは全シーンクリア後のみ解放。URL 直打ち等での先取りを防ぐため、
+    // 未達なら通常モードへ降格する（解放条件はデータ経路でも担保）。
+    final progress = ref.watch(progressRepositoryProvider);
+    final effectiveMode = mode == GameMode.hard && allScenesCleared(progress)
+        ? GameMode.hard
+        : GameMode.normal;
     return Scaffold(
       appBar: AppBar(leading: BackButton(onPressed: () => context.go('/'))),
       body: sceneAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('error: $e')),
         data: (scene) => _SceneView(
-          scene: mode == GameMode.hard ? hardModeSceneDef(scene) : scene,
-          mode: mode,
+          scene: effectiveMode == GameMode.hard
+              ? hardModeSceneDef(scene)
+              : scene,
+          mode: effectiveMode,
         ),
       ),
     );
@@ -159,7 +167,7 @@ class _SceneViewState extends ConsumerState<_SceneView> {
       final wasComplete = (previous?.length ?? 0) >= scene.targets.length;
       final nowComplete = next.length >= scene.targets.length;
       if (!wasComplete && nowComplete) {
-        _handleComplete(scene.id);
+        unawaited(_handleComplete(scene.id));
       }
     });
 
@@ -219,6 +227,7 @@ class _SceneViewState extends ConsumerState<_SceneView> {
   }
 
   Future<void> _handleComplete(String sceneId) async {
+    if (_completed) return; // 二重発火ガード（連続通知でも完了処理は一度だけ）
     final progress = ref.read(progressRepositoryProvider);
     if (widget.mode == GameMode.hard) {
       await completeHardScene(progress, sceneId);
