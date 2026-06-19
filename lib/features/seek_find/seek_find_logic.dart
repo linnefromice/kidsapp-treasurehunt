@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:ui';
 
 import 'package:kidsapp_treasurehunt/features/seek_find/models/find_target.dart';
@@ -26,4 +27,20 @@ String? findHitTargetId({
     }
   }
   return null;
+}
+
+/// まだ見つかっていない宝の中からランダムに 1 つ選び、ヒント表示用の id を返す。
+/// 未発見の対象が無い（全て発見済み）場合は null。
+String? pickHintTargetId({
+  required List<FindTarget> targets,
+  required Set<String> foundIds,
+  required Random random,
+}) {
+  final unfound = targets
+      .where((t) => !foundIds.contains(t.id))
+      .toList(growable: false);
+  if (unfound.isEmpty) {
+    return null;
+  }
+  return unfound[random.nextInt(unfound.length)].id;
 }
