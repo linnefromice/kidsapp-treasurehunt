@@ -73,6 +73,74 @@ void main() {
     expect(id, isNull);
   });
 
+  test('skips targets that are currently hidden (hard-mode blink)', () {
+    // 'a' contains (0.1, 0.1), but it is blinking-hidden -> not hittable.
+    final id = findHitTargetId(
+      scenePoint: const Offset(80, 60),
+      sceneSize: sceneSize,
+      targets: _targets,
+      foundIds: const {},
+      hiddenIds: const {'a'},
+    );
+    expect(id, isNull);
+  });
+
+  test('hidden set does not affect visible targets', () {
+    // 'a' is hidden but the tap is inside 'b' (visible) -> hits 'b'.
+    final id = findHitTargetId(
+      scenePoint: const Offset(480, 360), // normalized (0.6, 0.6) inside 'b'
+      sceneSize: sceneSize,
+      targets: _targets,
+      foundIds: const {},
+      hiddenIds: const {'a'},
+    );
+    expect(id, 'b');
+  });
+
+  group('isPointOnHiddenTarget', () {
+    test('true when the tap falls on a currently-hidden target', () {
+      // (0.1, 0.1) is inside 'a'; 'a' is hidden -> on a hidden target.
+      final on = isPointOnHiddenTarget(
+        scenePoint: const Offset(80, 60),
+        sceneSize: sceneSize,
+        targets: _targets,
+        hiddenIds: const {'a'},
+      );
+      expect(on, isTrue);
+    });
+
+    test('false when the tap falls on empty space', () {
+      final on = isPointOnHiddenTarget(
+        scenePoint: const Offset(720, 60), // normalized (0.9, 0.1) -> empty
+        sceneSize: sceneSize,
+        targets: _targets,
+        hiddenIds: const {'a'},
+      );
+      expect(on, isFalse);
+    });
+
+    test('false when the tapped target is visible (not in hiddenIds)', () {
+      // (0.1, 0.1) inside 'a' but only 'b' is hidden -> not on a hidden one.
+      final on = isPointOnHiddenTarget(
+        scenePoint: const Offset(80, 60),
+        sceneSize: sceneSize,
+        targets: _targets,
+        hiddenIds: const {'b'},
+      );
+      expect(on, isFalse);
+    });
+
+    test('false when hiddenIds is empty', () {
+      final on = isPointOnHiddenTarget(
+        scenePoint: const Offset(80, 60),
+        sceneSize: sceneSize,
+        targets: _targets,
+        hiddenIds: const {},
+      );
+      expect(on, isFalse);
+    });
+  });
+
   test('returns null for non-positive scene size', () {
     final id = findHitTargetId(
       scenePoint: const Offset(80, 60),
@@ -135,6 +203,63 @@ void main() {
         random: Random(0),
       );
       expect(id, isNull);
+    });
+  });
+
+  group('treasureBlinkOpacity', () {
+    test('is fully visible at the start of a target cycle', () {
+      // slot 0 at clock 0.0 -> phase 0.0 -> visible plateau.
+      expect(
+        treasureBlinkOpacity(slot: 0, count: 4, clock: 0.0),
+        closeTo(1.0, 1e-9),
+      );
+    });
+
+    test('is fully hidden in the disappear window', () {
+      // slot 0 at clock 0.85 -> phase 0.85 -> hidden interval [0.78, 0.92).
+      expect(
+        treasureBlinkOpacity(slot: 0, count: 4, clock: 0.85),
+        closeTo(0.0, 1e-9),
+      );
+    });
+
+    test('fades through the visible threshold (half-faded = 0.5)', () {
+      // slot 0 at clock 0.74 -> phase 0.74 -> midpoint of [0.70, 0.78) fade-out.
+      expect(
+        treasureBlinkOpacity(slot: 0, count: 4, clock: 0.74),
+        closeTo(0.5, 1e-9),
+      );
+    });
+
+    test('fades back through the visible threshold on reappear (= 0.5)', () {
+      // slot 0 at clock 0.96 -> phase 0.96 -> midpoint of [0.92, 1.0) fade-in.
+      // This is the point where a vanished target becomes hittable again.
+      expect(
+        treasureBlinkOpacity(slot: 0, count: 4, clock: 0.96),
+        closeTo(0.5, 1e-9),
+      );
+    });
+
+    test('staggers phase so not all targets vanish at once', () {
+      // At clock 0.85 slot 0 is hidden, but slot 1 (offset 0.25) is visible.
+      const clock = 0.85;
+      expect(
+        treasureBlinkOpacity(slot: 0, count: 4, clock: clock),
+        closeTo(0.0, 1e-9),
+      );
+      expect(
+        treasureBlinkOpacity(slot: 1, count: 4, clock: clock),
+        closeTo(1.0, 1e-9),
+        reason: 'a different phase must keep some treasure on screen',
+      );
+    });
+
+    test('guards against zero/negative count (no division by zero)', () {
+      // offset becomes 0; result follows the clock phase directly.
+      expect(
+        treasureBlinkOpacity(slot: 0, count: 0, clock: 0.0),
+        closeTo(1.0, 1e-9),
+      );
     });
   });
 }
