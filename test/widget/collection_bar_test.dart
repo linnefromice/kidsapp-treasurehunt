@@ -17,12 +17,14 @@ Future<void> _pump(
   WidgetTester tester, {
   required List<FindTarget> targets,
   required Set<String> foundIds,
-  EdgeInsets viewPadding = EdgeInsets.zero,
+  EdgeInsets systemPadding = EdgeInsets.zero,
 }) {
+  // SafeArea は MediaQuery.paddingOf(context)（= padding）を消費するため、
+  // ここで padding を与えれば SafeArea がそのぶん中身を inset する。
   return tester.pumpWidget(
     MaterialApp(
       home: MediaQuery(
-        data: MediaQueryData(padding: viewPadding),
+        data: MediaQueryData(padding: systemPadding),
         child: Scaffold(
           body: Align(
             alignment: Alignment.bottomCenter,
@@ -109,7 +111,7 @@ void main() {
       tester,
       targets: [_target('apple')],
       foundIds: const {},
-      viewPadding: const EdgeInsets.only(bottom: bottomInset),
+      systemPadding: const EdgeInsets.only(bottom: bottomInset),
     );
 
     final screenBottom = tester.getSize(find.byType(MaterialApp)).height;
