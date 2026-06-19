@@ -21,10 +21,10 @@
     { "id": "key5",      "iconId": "key",      "left": 0.360, "top": 0.680, "width": 0.11, "height": 0.13 }
   ],
   "hardDummies": [
-    { "id": "h_cloud5",    "iconId": "cloud",    "left": 0.020, "top": 0.800, "width": 0.11, "height": 0.13 },
-    { "id": "h_moon5",     "iconId": "moon",     "left": 0.660, "top": 0.780, "width": 0.11, "height": 0.13 },
-    { "id": "h_icecream5", "iconId": "icecream", "left": 0.880, "top": 0.020, "width": 0.11, "height": 0.13 },
-    { "id": "h_cookie5",   "iconId": "cookie",   "left": 0.620, "top": 0.020, "width": 0.11, "height": 0.13 },
-    { "id": "h_pizza5",    "iconId": "pizza",    "left": 0.400, "top": 0.020, "width": 0.11, "height": 0.13 }
+    { "id": "h_cloud5",    "iconId": "cloud",    "left": 0.020, "top": 0.800, "width": 0.11, "height": 0.13, "scale": 0.55 },
+    { "id": "h_moon5",     "iconId": "moon",     "left": 0.660, "top": 0.780, "width": 0.11, "height": 0.13, "scale": 0.6 },
+    { "id": "h_icecream5", "iconId": "icecream", "left": 0.880, "top": 0.020, "width": 0.11, "height": 0.13, "scale": 1.3 },
+    { "id": "h_cookie5",   "iconId": "cookie",   "left": 0.620, "top": 0.020, "width": 0.11, "height": 0.13, "scale": 0.75 },
+    { "id": "h_pizza5",    "iconId": "pizza",    "left": 0.400, "top": 0.020, "width": 0.11, "height": 0.13, "scale": 1.2 }
   ]
 }

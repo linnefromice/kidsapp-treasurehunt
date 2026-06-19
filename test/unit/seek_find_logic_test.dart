@@ -53,6 +53,30 @@ void main() {
     expect(scaled.height, closeTo(0.2 * kTreasureDisplayScale, 1e-9));
   });
 
+  test('scaledTreasureRect itemScale defaults to no extra scaling', () {
+    const rect = Rect.fromLTWH(0.2, 0.2, 0.2, 0.2);
+    // 引数省略時は kTreasureDisplayScale のみ（追加倍率なし）。
+    expect(
+      scaledTreasureRect(rect).width,
+      closeTo(0.2 * kTreasureDisplayScale, 1e-9),
+    );
+    // 明示 1.0 は省略時と完全一致（宝の経路が不変であることの担保）。
+    expect(
+      scaledTreasureRect(rect, itemScale: 1.0).width,
+      closeTo(scaledTreasureRect(rect).width, 1e-9),
+    );
+  });
+
+  test('scaledTreasureRect itemScale multiplies size around center', () {
+    const rect = Rect.fromLTWH(0.2, 0.2, 0.2, 0.2); // center (0.3, 0.3)
+    final scaled = scaledTreasureRect(rect, itemScale: 0.5);
+    // 中心は不変、サイズは kTreasureDisplayScale * itemScale 倍。
+    expect(scaled.center.dx, closeTo(0.3, 1e-9));
+    expect(scaled.center.dy, closeTo(0.3, 1e-9));
+    expect(scaled.width, closeTo(0.2 * kTreasureDisplayScale * 0.5, 1e-9));
+    expect(scaled.height, closeTo(0.2 * kTreasureDisplayScale * 0.5, 1e-9));
+  });
+
   test('returns null when tap is on empty space', () {
     final id = findHitTargetId(
       scenePoint: const Offset(720, 60), // normalized (0.9, 0.1) -> empty

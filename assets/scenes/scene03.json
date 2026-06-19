@@ -18,10 +18,10 @@
     { "id": "leaf3",     "iconId": "leaf",     "left": 0.150, "top": 0.530, "width": 0.11, "height": 0.13 }
   ],
   "hardDummies": [
-    { "id": "h_lightbulb3", "iconId": "lightbulb", "left": 0.020, "top": 0.450, "width": 0.11, "height": 0.13 },
-    { "id": "h_cat3",       "iconId": "cat",       "left": 0.880, "top": 0.050, "width": 0.11, "height": 0.13 },
-    { "id": "h_sailboat3",  "iconId": "sailboat",  "left": 0.850, "top": 0.780, "width": 0.11, "height": 0.13 },
-    { "id": "h_crown3",     "iconId": "crown",     "left": 0.450, "top": 0.040, "width": 0.11, "height": 0.13 },
-    { "id": "h_fire3",      "iconId": "fire",      "left": 0.450, "top": 0.800, "width": 0.11, "height": 0.13 }
+    { "id": "h_lightbulb3", "iconId": "lightbulb", "left": 0.020, "top": 0.450, "width": 0.11, "height": 0.13, "scale": 0.75 },
+    { "id": "h_cat3",       "iconId": "cat",       "left": 0.880, "top": 0.050, "width": 0.11, "height": 0.13, "scale": 1.2 },
+    { "id": "h_sailboat3",  "iconId": "sailboat",  "left": 0.850, "top": 0.780, "width": 0.11, "height": 0.13, "scale": 0.55 },
+    { "id": "h_crown3",     "iconId": "crown",     "left": 0.450, "top": 0.040, "width": 0.11, "height": 0.13, "scale": 0.6 },
+    { "id": "h_fire3",      "iconId": "fire",      "left": 0.450, "top": 0.800, "width": 0.11, "height": 0.13, "scale": 1.3 }
   ]
 }

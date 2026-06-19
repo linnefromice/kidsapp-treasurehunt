@@ -1,5 +1,6 @@
 import 'dart:ui';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/models/dummy_item.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/find_target.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
 
@@ -71,6 +72,60 @@ void main() {
         'targets': [],
       });
       expect(def.dummies, isEmpty);
+    });
+
+    test('dummy scale defaults to 1.0 when absent', () {
+      final def = SceneDef.fromJson({
+        'id': 'test',
+        'titleKey': 'k',
+        'imageAsset': 'a.png',
+        'targets': [],
+        'dummies': [
+          {
+            'id': 'd1',
+            'iconId': 'leaf',
+            'left': 0.1,
+            'top': 0.2,
+            'width': 0.15,
+            'height': 0.18,
+          },
+        ],
+      });
+      expect(def.dummies.first.scale, 1.0);
+    });
+
+    test('dummy scale rejects non-positive / non-finite values', () {
+      DummyItem make(double s) => DummyItem(
+        id: 'd',
+        iconId: 'leaf',
+        normalizedRect: Rect.zero,
+        scale: s,
+      );
+      expect(() => make(0), throwsA(isA<AssertionError>()));
+      expect(() => make(-1), throwsA(isA<AssertionError>()));
+      expect(() => make(double.infinity), throwsA(isA<AssertionError>()));
+      expect(() => make(double.nan), throwsA(isA<AssertionError>()));
+    });
+
+    test('dummy scale is parsed when present', () {
+      final def = SceneDef.fromJson({
+        'id': 'test',
+        'titleKey': 'k',
+        'imageAsset': 'a.png',
+        'targets': [],
+        'dummies': [
+          {
+            'id': 'd1',
+            'iconId': 'leaf',
+            'left': 0.1,
+            'top': 0.2,
+            'width': 0.15,
+            'height': 0.18,
+            'scale': 0.6,
+          },
+        ],
+      });
+      expect(def.dummies.first.scale, closeTo(0.6, 1e-9));
     });
 
     test('scene01 loads with 6 dummies', () async {

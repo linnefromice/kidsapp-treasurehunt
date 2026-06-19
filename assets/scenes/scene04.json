@@ -18,10 +18,10 @@
     { "id": "anchor4",   "iconId": "anchor",   "left": 0.680, "top": 0.420, "width": 0.11, "height": 0.13 }
   ],
   "hardDummies": [
-    { "id": "h_kite4",  "iconId": "kite",  "left": 0.300, "top": 0.030, "width": 0.11, "height": 0.13 },
-    { "id": "h_cake4",  "iconId": "cake",  "left": 0.880, "top": 0.030, "width": 0.11, "height": 0.13 },
-    { "id": "h_gift4",  "iconId": "gift",  "left": 0.500, "top": 0.800, "width": 0.11, "height": 0.13 },
-    { "id": "h_gem4",   "iconId": "gem",   "left": 0.880, "top": 0.780, "width": 0.11, "height": 0.13 },
-    { "id": "h_music4", "iconId": "music", "left": 0.020, "top": 0.780, "width": 0.11, "height": 0.13 }
+    { "id": "h_kite4",  "iconId": "kite",  "left": 0.300, "top": 0.030, "width": 0.11, "height": 0.13, "scale": 1.2 },
+    { "id": "h_cake4",  "iconId": "cake",  "left": 0.880, "top": 0.030, "width": 0.11, "height": 0.13, "scale": 0.55 },
+    { "id": "h_gift4",  "iconId": "gift",  "left": 0.500, "top": 0.800, "width": 0.11, "height": 0.13, "scale": 0.6 },
+    { "id": "h_gem4",   "iconId": "gem",   "left": 0.880, "top": 0.780, "width": 0.11, "height": 0.13, "scale": 1.3 },
+    { "id": "h_music4", "iconId": "music", "left": 0.020, "top": 0.780, "width": 0.11, "height": 0.13, "scale": 0.75 }
   ]
 }
