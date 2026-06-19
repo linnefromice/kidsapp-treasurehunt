@@ -57,6 +57,7 @@ const Map<String, Map<String, String>> _strings = {
     'slot.new': 'New',
     'slot.continue': 'Continue',
     'slot.reset': 'Reset',
+    'slot.free': 'Free Mode',
   },
 };
 
