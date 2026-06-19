@@ -111,21 +111,18 @@ class _TrailPainter extends CustomPainter {
       final done = progress.isCleared(a.id);
       final paint = Paint()
         ..color = done ? Colors.brown.shade600 : Colors.brown.shade200
-        ..strokeWidth = 3
+        ..strokeWidth = 4
         ..strokeCap = StrokeCap.round
         ..style = PaintingStyle.stroke;
-      _drawBezierDashed(canvas, p0, p1, paint);
+      _drawDashedLine(canvas, p0, p1, paint);
     }
   }
 
-  void _drawBezierDashed(Canvas canvas, Offset p0, Offset p1, Paint paint) {
-    final midY = (p0.dy + p1.dy) / 2;
-    final cp1 = Offset(p0.dx, midY);
-    final cp2 = Offset(p1.dx, midY);
-
+  /// ノード間をまっすぐな破線でつなぐ（飛び石のような分かりやすい一本道）。
+  void _drawDashedLine(Canvas canvas, Offset p0, Offset p1, Paint paint) {
     final fullPath = Path()
       ..moveTo(p0.dx, p0.dy)
-      ..cubicTo(cp1.dx, cp1.dy, cp2.dx, cp2.dy, p1.dx, p1.dy);
+      ..lineTo(p1.dx, p1.dy);
 
     final pathMetrics = fullPath.computeMetrics().toList();
     if (pathMetrics.isEmpty) return;

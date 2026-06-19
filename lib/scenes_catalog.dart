@@ -21,35 +21,37 @@ class SceneCatalogEntry {
 
 const String kFirstSceneId = 'scene01';
 
+// マップ上の位置は左→右に x を単調増加させた緩やかな波。
+// x が常に増えるため連結線が交差せず、シンプルな一本道に見える。
 const List<SceneCatalogEntry> kSceneCatalog = [
   SceneCatalogEntry(
     'scene01',
     'scene.scene01.title',
-    Offset(0.20, 0.32),
+    Offset(0.14, 0.40),
     Icons.park,
   ),
   SceneCatalogEntry(
     'scene02',
     'scene.scene02.title',
-    Offset(0.52, 0.60),
+    Offset(0.32, 0.64),
     Icons.water,
   ),
   SceneCatalogEntry(
     'scene03',
     'scene.scene03.title',
-    Offset(0.82, 0.30),
+    Offset(0.50, 0.40),
     Icons.cloud,
   ),
   SceneCatalogEntry(
     'scene04',
     'scene.scene04.title',
-    Offset(0.30, 0.72),
+    Offset(0.68, 0.64),
     Icons.yard,
   ),
   SceneCatalogEntry(
     'scene05',
     'scene.scene05.title',
-    Offset(0.65, 0.85),
+    Offset(0.86, 0.40),
     Icons.nights_stay,
   ),
 ];
