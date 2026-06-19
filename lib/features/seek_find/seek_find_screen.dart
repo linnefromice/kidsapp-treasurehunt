@@ -6,7 +6,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:kidsapp_treasurehunt/features/seek_find/hard_mode.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/scene_background.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/seek_find_logic.dart';
@@ -18,6 +17,7 @@ import 'package:kidsapp_treasurehunt/features/seek_find/widgets/miss_bubble.dart
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/unfound_treasure_icon.dart';
 import 'package:kidsapp_treasurehunt/providers.dart';
 import 'package:kidsapp_treasurehunt/scenes_catalog.dart';
+import 'package:kidsapp_treasurehunt/shared/game_mode.dart';
 import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
 import 'package:kidsapp_treasurehunt/shared/widgets/kids_button.dart';
 
@@ -42,7 +42,7 @@ class SeekFindScreen extends ConsumerWidget {
   const SeekFindScreen({
     super.key,
     required this.sceneId,
-    this.mode = GameMode.normal,
+    this.mode = GameMode.easy,
   });
 
   final String sceneId;
@@ -51,23 +51,14 @@ class SeekFindScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sceneAsync = ref.watch(sceneProvider(sceneId));
-    // ハードは全シーンクリア後のみ解放。URL 直打ち等での先取りを防ぐため、
-    // 未達なら通常モードへ降格する（解放条件はデータ経路でも担保）。
-    final progress = ref.watch(progressRepositoryProvider);
-    final effectiveMode = mode == GameMode.hard && allScenesCleared(progress)
-        ? GameMode.hard
-        : GameMode.normal;
+    // 3 モードとも最初から選べるため、URL のモードをそのまま採用する
+    // （難易度はおとり量・探索エリアの広さ・点滅で表現し、宝の数は不変）。
     return Scaffold(
       appBar: AppBar(leading: BackButton(onPressed: () => context.go('/'))),
       body: sceneAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('error: $e')),
-        data: (scene) => _SceneView(
-          scene: effectiveMode == GameMode.hard
-              ? hardModeSceneDef(scene)
-              : scene,
-          mode: effectiveMode,
-        ),
+        data: (scene) => _SceneView(scene: scene, mode: mode),
       ),
     );
   }
@@ -96,15 +87,16 @@ class _SceneViewState extends ConsumerState<_SceneView>
   /// 通常モードでは生成せず null のまま（点滅なし）。
   AnimationController? _blinkClock;
 
-  /// 発見状態のキー。モード間で発見が混ざらないようハードは `#hard` で名前空間化。
-  String get _foundKey => widget.mode == GameMode.hard
-      ? '${widget.scene.id}#hard'
-      : widget.scene.id;
+  /// 発見状態のキー。モード間で発見が混ざらないようモードごとに名前空間化する
+  /// （Easy はレガシー互換のため素の sceneId）。
+  String get _foundKey => switch (widget.mode) {
+    GameMode.easy => widget.scene.id,
+    GameMode.normal => '${widget.scene.id}#normal',
+    GameMode.hard => '${widget.scene.id}#hard',
+  };
 
-  /// 表示・当たり判定の共通スケール。ハードは小さくする。
-  double get _scale => widget.mode == GameMode.hard
-      ? kHardModeDisplayScale
-      : kTreasureDisplayScale;
+  /// Normal / Hard はビューポートより大きい探索エリア（パン必須）。
+  bool get _isLargeArea => widget.mode != GameMode.easy;
 
   @override
   void initState() {
@@ -234,32 +226,63 @@ class _SceneViewState extends ConsumerState<_SceneView>
             Expanded(
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  final sceneSize = Size(
+                  final viewport = Size(
                     constraints.maxWidth,
                     constraints.maxHeight,
                   );
-                  return GestureDetector(
+                  // Normal / Hard はビューポートより広い論理キャンバスにして、
+                  // パンで表示部分をずらさないと全体が見えないようにする。
+                  final sceneSize = _isLargeArea
+                      ? Size(
+                          viewport.width * kLargeAreaFactor,
+                          viewport.height * kLargeAreaFactor,
+                        )
+                      : viewport;
+                  final decoys = decoysForMode(scene, widget.mode);
+                  final content = GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onTapDown: (d) => _handleHit(d.localPosition, sceneSize),
-                    onPanStart: (d) => _handleHit(d.localPosition, sceneSize),
-                    onPanUpdate: (d) => _handleHit(d.localPosition, sceneSize),
-                    child: Stack(
-                      key: const ValueKey('scene-content'),
-                      fit: StackFit.expand,
-                      children: [
-                        sceneBackground(scene.id),
-                        for (final d in scene.dummies)
-                          _positioned(
-                            scaledTreasureRect(d.normalizedRect, scale: _scale),
-                            sceneSize,
-                            child: _TargetView(iconId: d.iconId, found: false),
-                          ),
-                        for (var i = 0; i < scene.targets.length; i++)
-                          _buildTarget(i, sceneSize, found, unfoundCount),
-                        for (final b in _missBubbles)
-                          MissBubble(key: b.key, position: b.position),
-                      ],
+                    // なぞって探す（パン発見）は Easy のみ。Large area では
+                    // ドラッグは InteractiveViewer のパンに割り当てる（タップで発見）。
+                    onPanStart: _isLargeArea
+                        ? null
+                        : (d) => _handleHit(d.localPosition, sceneSize),
+                    onPanUpdate: _isLargeArea
+                        ? null
+                        : (d) => _handleHit(d.localPosition, sceneSize),
+                    child: SizedBox(
+                      width: sceneSize.width,
+                      height: sceneSize.height,
+                      child: Stack(
+                        key: const ValueKey('scene-content'),
+                        fit: StackFit.expand,
+                        children: [
+                          sceneBackground(scene.id),
+                          for (final d in decoys)
+                            _positioned(
+                              scaledTreasureRect(d.normalizedRect),
+                              sceneSize,
+                              child: _TargetView(
+                                iconId: d.iconId,
+                                found: false,
+                              ),
+                            ),
+                          for (var i = 0; i < scene.targets.length; i++)
+                            _buildTarget(i, sceneSize, found, unfoundCount),
+                          for (final b in _missBubbles)
+                            MissBubble(key: b.key, position: b.position),
+                        ],
+                      ),
                     ),
+                  );
+                  if (!_isLargeArea) {
+                    return content;
+                  }
+                  return InteractiveViewer(
+                    constrained: false,
+                    minScale: 1.0,
+                    maxScale: kLargeAreaMaxScale,
+                    child: content,
                   );
                 },
               ),
@@ -290,7 +313,7 @@ class _SceneViewState extends ConsumerState<_SceneView>
     final clock = _blinkClock;
     final blinking = _isBlinking(index, found, unfoundCount);
     return _positioned(
-      scaledTreasureRect(t.normalizedRect, scale: _scale),
+      scaledTreasureRect(t.normalizedRect),
       sceneSize,
       child: clock == null || !blinking
           ? view
@@ -306,11 +329,7 @@ class _SceneViewState extends ConsumerState<_SceneView>
   Future<void> _handleComplete(String sceneId) async {
     if (_completed) return; // 二重発火ガード（連続通知でも完了処理は一度だけ）
     final progress = ref.read(progressRepositoryProvider);
-    if (widget.mode == GameMode.hard) {
-      await completeHardScene(progress, sceneId);
-    } else {
-      await completeScene(progress, sceneId);
-    }
+    await completeScene(progress, widget.mode, sceneId);
     await ref.read(audioServiceProvider).playComplete();
     if (mounted) {
       _hintTimer?.cancel();
@@ -329,7 +348,6 @@ class _SceneViewState extends ConsumerState<_SceneView>
       sceneSize: sceneSize,
       targets: scene.targets,
       foundIds: found,
-      scale: _scale,
       hiddenIds: hidden,
     );
     if (hitId == null) {
@@ -339,7 +357,6 @@ class _SceneViewState extends ConsumerState<_SceneView>
         sceneSize: sceneSize,
         targets: scene.targets,
         hiddenIds: hidden,
-        scale: _scale,
       );
       if (!onHidden) {
         _addMissBubble(localPosition);

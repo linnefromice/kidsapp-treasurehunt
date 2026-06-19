@@ -1,12 +1,36 @@
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:kidsapp_treasurehunt/features/seek_find/models/dummy_item.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/find_target.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
+import 'package:kidsapp_treasurehunt/shared/game_mode.dart';
 
 /// 宝アイコンを元の正規化 Rect から一律に拡大する表示倍率。
 /// 表示（Positioned レイアウト）と当たり判定（[findHitTargetId]）の両方で
 /// この同じ値を使うことで「見えている大きさ = 押せる大きさ」を保つ。
+/// 難易度では変えない（全モード共通サイズ）。
 const double kTreasureDisplayScale = 1.15;
+
+/// Normal / Hard の探索エリア（論理キャンバス）をビューポートの何倍にするか。
+/// 1.0 より大きいので画面に収まらず、パンして表示部分をずらす必要が生まれる。
+const double kLargeAreaFactor = 1.7;
+
+/// Normal / Hard でディテール確認用に許す最大拡大率（[InteractiveViewer.maxScale]）。
+/// 最小は 1.0 固定（全体を一望できないよう、これ以上は縮小不可＝必ずパンが要る）。
+const double kLargeAreaMaxScale = 2.5;
+
+/// モード別に描画するおとり（デコイ）の集合を返す純粋関数。
+///
+/// - [GameMode.easy]: シーン定義の [SceneDef.dummies] のみ（現行 Normal と同じ）。
+/// - [GameMode.normal] / [GameMode.hard]: [SceneDef.dummies] ＋
+///   [SceneDef.hardDummies] を**すべて**おとりとして描画する（昇格はしない）。
+///
+/// 探す宝（[SceneDef.targets]）はモード間で不変。難易度はおとりの量で調整する。
+List<DummyItem> decoysForMode(SceneDef scene, GameMode mode) =>
+    mode == GameMode.easy
+    ? scene.dummies
+    : [...scene.dummies, ...scene.hardDummies];
 
 /// [normalizedRect] を中心を保ったまま [scale] 倍に拡大/縮小する。
 /// 既定は [kTreasureDisplayScale]（通常モード）。ハードモードは小さい [scale] を渡す。
