@@ -89,6 +89,8 @@ iPad 向けに **Flutter** で個人開発する。
   - 自動配布したい場合は `distribute.yml` の `push: branches: [main]` のコメントを外す。
 - lint / format / test は当面**ローカル**（`scripts/check.sh`）。後で同スクリプトを CI ジョブへ昇格可能。
 - iOS 配布は当面スコープ外（Apple 署名の CI 投入が重いため。ローカル Xcode で確認）。
+- **接続中の実機（Galaxy Tab / iPad）へ直接インストールする手順**（コマンド・既知デバイス ID・
+  Auto Blocker や `devicectl` 排他のハマりどころ）は `docs/development.md` §4 を参照。
 
 ---
 
