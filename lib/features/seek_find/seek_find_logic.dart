@@ -55,6 +55,37 @@ String? findHitTargetId({
   return null;
 }
 
+/// [scenePoint] が [hiddenIds]（点滅で消失中の宝）のいずれかの表示矩形内にあるか。
+/// 表示と同じ [scale] で判定する。消失中の宝をタップしたとき空振り（ミスバブル）
+/// 扱いにせず「無反応」にするために使う（失敗を罰しない）。空の場所のタップとは区別する。
+bool isPointOnHiddenTarget({
+  required Offset scenePoint,
+  required Size sceneSize,
+  required List<FindTarget> targets,
+  required Set<String> hiddenIds,
+  double scale = kTreasureDisplayScale,
+}) {
+  if (hiddenIds.isEmpty || sceneSize.width <= 0 || sceneSize.height <= 0) {
+    return false;
+  }
+  final normalized = Offset(
+    scenePoint.dx / sceneSize.width,
+    scenePoint.dy / sceneSize.height,
+  );
+  for (final target in targets) {
+    if (!hiddenIds.contains(target.id)) {
+      continue;
+    }
+    if (scaledTreasureRect(
+      target.normalizedRect,
+      scale: scale,
+    ).contains(normalized)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 // ──────────────────────────────────────────
 // ハードモードの宝点滅（消える/現れる）
 // 描画（不透明度）と当たり判定（見えている＝押せる）を同じ純関数で駆動する。

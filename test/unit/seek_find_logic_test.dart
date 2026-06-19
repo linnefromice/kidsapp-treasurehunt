@@ -97,6 +97,50 @@ void main() {
     expect(id, 'b');
   });
 
+  group('isPointOnHiddenTarget', () {
+    test('true when the tap falls on a currently-hidden target', () {
+      // (0.1, 0.1) is inside 'a'; 'a' is hidden -> on a hidden target.
+      final on = isPointOnHiddenTarget(
+        scenePoint: const Offset(80, 60),
+        sceneSize: sceneSize,
+        targets: _targets,
+        hiddenIds: const {'a'},
+      );
+      expect(on, isTrue);
+    });
+
+    test('false when the tap falls on empty space', () {
+      final on = isPointOnHiddenTarget(
+        scenePoint: const Offset(720, 60), // normalized (0.9, 0.1) -> empty
+        sceneSize: sceneSize,
+        targets: _targets,
+        hiddenIds: const {'a'},
+      );
+      expect(on, isFalse);
+    });
+
+    test('false when the tapped target is visible (not in hiddenIds)', () {
+      // (0.1, 0.1) inside 'a' but only 'b' is hidden -> not on a hidden one.
+      final on = isPointOnHiddenTarget(
+        scenePoint: const Offset(80, 60),
+        sceneSize: sceneSize,
+        targets: _targets,
+        hiddenIds: const {'b'},
+      );
+      expect(on, isFalse);
+    });
+
+    test('false when hiddenIds is empty', () {
+      final on = isPointOnHiddenTarget(
+        scenePoint: const Offset(80, 60),
+        sceneSize: sceneSize,
+        targets: _targets,
+        hiddenIds: const {},
+      );
+      expect(on, isFalse);
+    });
+  });
+
   test('returns null for non-positive scene size', () {
     final id = findHitTargetId(
       scenePoint: const Offset(80, 60),
@@ -183,6 +227,15 @@ void main() {
       // slot 0 at clock 0.74 -> phase 0.74 -> midpoint of [0.70, 0.78) fade-out.
       expect(
         treasureBlinkOpacity(slot: 0, count: 4, clock: 0.74),
+        closeTo(0.5, 1e-9),
+      );
+    });
+
+    test('fades back through the visible threshold on reappear (= 0.5)', () {
+      // slot 0 at clock 0.96 -> phase 0.96 -> midpoint of [0.92, 1.0) fade-in.
+      // This is the point where a vanished target becomes hittable again.
+      expect(
+        treasureBlinkOpacity(slot: 0, count: 4, clock: 0.96),
         closeTo(0.5, 1e-9),
       );
     });

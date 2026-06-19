@@ -126,18 +126,33 @@ class _SceneViewState extends ConsumerState<_SceneView>
     super.dispose();
   }
 
+  /// ハードモードでこの宝（[index] 番目）を点滅させるか。
+  /// 未発見かつヒント中でないこと、さらに未発見が 2 つ以上あることが条件。
+  /// 残り 1 つになったら点滅を止めて常時表示＋常時押せるようにし、「待たないと
+  /// 何も押せない」時間帯を作らない（手詰まり防止）。描画と当たり判定の双方が
+  /// この同じ条件を参照することで「見えている＝押せる」を保つ。
+  bool _isBlinking(int index, Set<String> found, int unfoundCount) {
+    if (_blinkClock == null || unfoundCount <= 1) {
+      return false;
+    }
+    final t = widget.scene.targets[index];
+    return !found.contains(t.id) && t.id != _hintingId;
+  }
+
   /// ハード点滅で「今まさに消えている」未発見ターゲットの id 集合。
-  /// 通常モード（クロック無し）や、ヒント中の宝（強制可視）は含めない。
+  /// 通常モード（クロック無し）や、ヒント中の宝（強制可視）、残り 1 つの宝
+  /// （[_isBlinking] が false）は含めない。
   Set<String> _hiddenTargetIds(Set<String> found) {
     final clock = _blinkClock?.value;
     if (clock == null) {
       return const {};
     }
     final targets = widget.scene.targets;
+    final unfoundCount = targets.where((t) => !found.contains(t.id)).length;
     final hidden = <String>{};
     for (var i = 0; i < targets.length; i++) {
       final t = targets[i];
-      if (found.contains(t.id) || t.id == _hintingId) {
+      if (!_isBlinking(i, found, unfoundCount)) {
         continue;
       }
       final opacity = treasureBlinkOpacity(
@@ -200,6 +215,9 @@ class _SceneViewState extends ConsumerState<_SceneView>
     final scene = widget.scene;
     final localeCode = ref.watch(localeControllerProvider).languageCode;
     final found = ref.watch(foundControllerProvider(_foundKey));
+    final unfoundCount = scene.targets
+        .where((t) => !found.contains(t.id))
+        .length;
 
     ref.listen(foundControllerProvider(_foundKey), (previous, next) {
       final wasComplete = (previous?.length ?? 0) >= scene.targets.length;
@@ -237,7 +255,7 @@ class _SceneViewState extends ConsumerState<_SceneView>
                             child: _TargetView(iconId: d.iconId, found: false),
                           ),
                         for (var i = 0; i < scene.targets.length; i++)
-                          _buildTarget(i, sceneSize, found),
+                          _buildTarget(i, sceneSize, found, unfoundCount),
                         for (final b in _missBubbles)
                           MissBubble(key: b.key, position: b.position),
                       ],
@@ -255,29 +273,31 @@ class _SceneViewState extends ConsumerState<_SceneView>
     );
   }
 
-  /// 1 つの宝を配置する。ハードモードでは未発見かつヒント中でない宝を点滅させる。
-  Widget _buildTarget(int index, Size sceneSize, Set<String> found) {
+  /// 1 つの宝を配置する。ハードモードで [_isBlinking] が真の宝だけ点滅させる。
+  Widget _buildTarget(
+    int index,
+    Size sceneSize,
+    Set<String> found,
+    int unfoundCount,
+  ) {
     final t = widget.scene.targets[index];
-    final isFound = found.contains(t.id);
-    final isHinting = _hintingId == t.id;
     final view = _TargetView(
       key: ValueKey(t.id),
       iconId: t.iconId,
-      found: isFound,
-      hinting: isHinting,
+      found: found.contains(t.id),
+      hinting: _hintingId == t.id,
     );
     final clock = _blinkClock;
+    final blinking = _isBlinking(index, found, unfoundCount);
     return _positioned(
       scaledTreasureRect(t.normalizedRect, scale: _scale),
       sceneSize,
-      child: clock == null
+      child: clock == null || !blinking
           ? view
           : _BlinkingTarget(
               clock: clock,
               slot: index,
               count: widget.scene.targets.length,
-              // 発見済み・ヒント中は点滅させず常時表示（無制限ヒントを保証）。
-              active: !isFound && !isHinting,
               child: view,
             ),
     );
@@ -303,16 +323,27 @@ class _SceneViewState extends ConsumerState<_SceneView>
     _scheduleHint(); // 操作があった = アイドルではない。ヒント待ちをリセット
     final scene = widget.scene;
     final found = ref.read(foundControllerProvider(_foundKey));
+    final hidden = _hiddenTargetIds(found);
     final hitId = findHitTargetId(
       scenePoint: localPosition,
       sceneSize: sceneSize,
       targets: scene.targets,
       foundIds: found,
       scale: _scale,
-      hiddenIds: _hiddenTargetIds(found),
+      hiddenIds: hidden,
     );
     if (hitId == null) {
-      _addMissBubble(localPosition);
+      // 消失中の宝の上をタップしたときは無反応（罰なし）。空の場所だけミスバブル。
+      final onHidden = isPointOnHiddenTarget(
+        scenePoint: localPosition,
+        sceneSize: sceneSize,
+        targets: scene.targets,
+        hiddenIds: hidden,
+        scale: _scale,
+      );
+      if (!onHidden) {
+        _addMissBubble(localPosition);
+      }
       return;
     }
     ref.read(foundControllerProvider(_foundKey).notifier).markFound(hitId);
@@ -357,38 +388,38 @@ class _TargetView extends StatelessWidget {
 }
 
 /// ハードモードの宝点滅ラッパ。共有クロックに合わせて [Opacity] のみを更新し、
-/// [child]（宝の見た目）は再構築しない。[active] が false のときは素通し。
+/// [child]（宝の見た目）は再構築しない。点滅させるかどうかは呼び出し側
+/// （[_SceneViewState._isBlinking]）が判定済みで、このウィジェットは常に点滅する。
+/// [RepaintBoundary] で毎フレームの再描画をシーン全体から隔離する
+/// （兄弟の [_FoundGlow] / [HintGlow] と同じ方針）。
 class _BlinkingTarget extends StatelessWidget {
   const _BlinkingTarget({
     required this.clock,
     required this.slot,
     required this.count,
-    required this.active,
     required this.child,
   });
 
   final Animation<double> clock;
   final int slot;
   final int count;
-  final bool active;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
-    if (!active) {
-      return child;
-    }
-    return AnimatedBuilder(
-      animation: clock,
-      child: child,
-      builder: (context, ch) {
-        final opacity = treasureBlinkOpacity(
-          slot: slot,
-          count: count,
-          clock: clock.value,
-        );
-        return Opacity(opacity: opacity, child: ch);
-      },
+    return RepaintBoundary(
+      child: AnimatedBuilder(
+        animation: clock,
+        child: child,
+        builder: (context, ch) {
+          final opacity = treasureBlinkOpacity(
+            slot: slot,
+            count: count,
+            clock: clock.value,
+          );
+          return Opacity(opacity: opacity, child: ch);
+        },
+      ),
     );
   }
 }
