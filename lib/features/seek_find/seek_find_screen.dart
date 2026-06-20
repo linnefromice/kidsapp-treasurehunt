@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/models/trail_color.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/scene_background.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/seek_find_logic.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/target_icons.dart';
@@ -14,6 +15,7 @@ import 'package:kidsapp_treasurehunt/features/seek_find/widgets/collection_bar.d
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/found_burst.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/hint_glow.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/miss_bubble.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/widgets/trail_sparkle.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/unfound_treasure_icon.dart';
 import 'package:kidsapp_treasurehunt/providers.dart';
 import 'package:kidsapp_treasurehunt/scenes_catalog.dart';
@@ -24,6 +26,14 @@ import 'package:kidsapp_treasurehunt/shared/widgets/kids_button.dart';
 /// 操作が無いまま何秒経過したら未発見の宝を 1 つヒント点滅させるか
 /// （アイドル時のみ。タップ/なぞりのたびにカウントはリセットされ、急かさない）。
 const Duration _kHintIdleDelay = Duration(seconds: 8);
+
+/// なぞりキラキラを生成する最小移動距離（px）。これ未満の移動では粒を足さず、
+/// 粒の密集（描画負荷とちらつき）を抑える。
+const double _kTrailSpawnMinDistance = 18.0;
+
+/// 同時に保持するなぞりキラキラの上限。超えたら最古から捨てる
+/// （連続ドラッグでも生存ウィジェット数を一定に保つ安全弁）。
+const int _kTrailMaxParticles = 24;
 
 /// 正規化 Rect（0.0–1.0）をシーンの実ピクセルへ変換した [Positioned] を作る。
 /// 宝とダミーで共通の配置ロジック。[rect] は呼び出し側で
@@ -78,6 +88,17 @@ class _SceneViewState extends ConsumerState<_SceneView>
     with SingleTickerProviderStateMixin {
   bool _completed = false;
   final List<({Offset position, Key key})> _missBubbles = [];
+
+  /// なぞった指先に追従するキラキラ粒子（Easy のみ）。MissBubble と同じく
+  /// リストで管理し、各粒は時間経過で自己消滅する。
+  final List<({Offset position, Key key, Color color})> _trailSparkles = [];
+
+  /// 直近にキラキラを生成した位置。null は「このなぞりの最初の 1 粒」を表す。
+  Offset? _lastTrailSpawn;
+
+  /// 生成済み粒の通し番号。色解決の particleIndex に渡す（にじ拡張の種）。
+  int _trailSeq = 0;
+
   final math.Random _random = math.Random();
   Timer? _hintTimer;
   Timer? _hintClearTimer;
@@ -205,6 +226,34 @@ class _SceneViewState extends ConsumerState<_SceneView>
     });
   }
 
+  /// なぞり位置に追従するキラキラ粒子を 1 つ生成する（Easy のなぞり中のみ呼ぶ）。
+  /// 直近生成位置から [_kTrailSpawnMinDistance] 未満なら間引いて密集を防ぐ。
+  void _handlePanTrail(Offset position) {
+    final last = _lastTrailSpawn;
+    if (last != null && (position - last).distance < _kTrailSpawnMinDistance) {
+      return;
+    }
+    _lastTrailSpawn = position;
+    final choice = ref.read(trailColorControllerProvider);
+    final color = resolveTrailColor(choice, particleIndex: _trailSeq);
+    _trailSeq++;
+    final key = UniqueKey();
+    setState(() {
+      _trailSparkles.add((position: position, key: key, color: color));
+      // 上限を超えたら最古を捨てる（生存ウィジェット数の上限を保証）。
+      if (_trailSparkles.length > _kTrailMaxParticles) {
+        _trailSparkles.removeAt(0);
+      }
+    });
+    unawaited(
+      Future.delayed(const Duration(milliseconds: 550), () {
+        if (mounted) {
+          setState(() => _trailSparkles.removeWhere((s) => s.key == key));
+        }
+      }),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final scene = widget.scene;
@@ -247,12 +296,28 @@ class _SceneViewState extends ConsumerState<_SceneView>
                     onTapDown: (d) => _handleHit(d.localPosition, sceneSize),
                     // なぞって探す（パン発見）は Easy のみ。Large area では
                     // ドラッグは InteractiveViewer のパンに割り当てる（タップで発見）。
+                    // なぞり中はミスバブルを出さず、代わりに色付きキラキラを追従させる。
                     onPanStart: _isLargeArea
                         ? null
-                        : (d) => _handleHit(d.localPosition, sceneSize),
+                        : (d) {
+                            _lastTrailSpawn = null; // 新しいなぞりの開始
+                            _handleHit(
+                              d.localPosition,
+                              sceneSize,
+                              allowMiss: false,
+                            );
+                            _handlePanTrail(d.localPosition);
+                          },
                     onPanUpdate: _isLargeArea
                         ? null
-                        : (d) => _handleHit(d.localPosition, sceneSize),
+                        : (d) {
+                            _handleHit(
+                              d.localPosition,
+                              sceneSize,
+                              allowMiss: false,
+                            );
+                            _handlePanTrail(d.localPosition);
+                          },
                     child: SizedBox(
                       width: sceneSize.width,
                       height: sceneSize.height,
@@ -277,6 +342,12 @@ class _SceneViewState extends ConsumerState<_SceneView>
                             _buildTarget(i, sceneSize, found, unfoundCount),
                           for (final b in _missBubbles)
                             MissBubble(key: b.key, position: b.position),
+                          for (final s in _trailSparkles)
+                            TrailSparkle(
+                              key: s.key,
+                              position: s.position,
+                              color: s.color,
+                            ),
                         ],
                       ),
                     ),
@@ -344,7 +415,13 @@ class _SceneViewState extends ConsumerState<_SceneView>
     }
   }
 
-  void _handleHit(Offset localPosition, Size sceneSize) {
+  /// [allowMiss] が false のとき（なぞり中）はミスバブルを出さない。
+  /// なぞりの視覚フィードバックは色付きキラキラ（[_handlePanTrail]）が担うため。
+  void _handleHit(
+    Offset localPosition,
+    Size sceneSize, {
+    bool allowMiss = true,
+  }) {
     _scheduleHint(); // 操作があった = アイドルではない。ヒント待ちをリセット
     final scene = widget.scene;
     final found = ref.read(foundControllerProvider(_foundKey));
@@ -364,7 +441,7 @@ class _SceneViewState extends ConsumerState<_SceneView>
         targets: scene.targets,
         hiddenIds: hidden,
       );
-      if (!onHidden) {
+      if (allowMiss && !onHidden) {
         _addMissBubble(localPosition);
       }
       return;

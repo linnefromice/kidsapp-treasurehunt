@@ -6,6 +6,7 @@ import 'package:kidsapp_treasurehunt/data/progress_repository.dart';
 import 'package:kidsapp_treasurehunt/data/save_slot_repository.dart';
 import 'package:kidsapp_treasurehunt/data/settings_repository.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/models/trail_color.dart';
 import 'package:kidsapp_treasurehunt/save_slots_catalog.dart';
 import 'package:kidsapp_treasurehunt/scenes_catalog.dart';
 import 'package:kidsapp_treasurehunt/shared/audio/audio_service.dart';
@@ -136,6 +137,24 @@ class LocaleController extends Notifier<Locale> {
 final localeControllerProvider = NotifierProvider<LocaleController, Locale>(
   LocaleController.new,
 );
+
+/// なぞりトレイルの色。初期値は SettingsRepository から。全スロット共通。
+class TrailColorController extends Notifier<TrailColorChoice> {
+  @override
+  TrailColorChoice build() => TrailColorChoice.fromId(
+    ref.read(settingsRepositoryProvider).trailColorId(),
+  );
+
+  Future<void> select(TrailColorChoice choice) async {
+    await ref.read(settingsRepositoryProvider).setTrailColorId(choice.id);
+    state = choice;
+  }
+}
+
+final trailColorControllerProvider =
+    NotifierProvider<TrailColorController, TrailColorChoice>(
+      TrailColorController.new,
+    );
 
 /// シーン内で見つけた宝の id 集合(sceneId ごと)。
 class FoundController extends AutoDisposeFamilyNotifier<Set<String>, String> {

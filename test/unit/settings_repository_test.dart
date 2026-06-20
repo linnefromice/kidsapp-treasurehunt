@@ -17,4 +17,17 @@ void main() {
     await repo.setLocaleCode('en');
     expect(repo.localeCode(), 'en');
   });
+
+  test('defaults trail colour to sky', () async {
+    final prefs = await SharedPreferences.getInstance();
+    final repo = SettingsRepository(prefs);
+    expect(repo.trailColorId(), 'sky');
+  });
+
+  test('persists trail colour id', () async {
+    final prefs = await SharedPreferences.getInstance();
+    final repo = SettingsRepository(prefs);
+    await repo.setTrailColorId('pink');
+    expect(repo.trailColorId(), 'pink');
+  });
 }
