@@ -102,7 +102,7 @@ void main() {
 
       final progress = container.read(progressRepositoryProvider);
       expect(progress.isCleared(GameMode.easy, 'scene01'), isTrue);
-      expect(find.text('みつけたね！'), findsOneWidget);
+      expect(find.text('クリア！！\nぜんぶ みつけたね'), findsOneWidget);
     });
 
     testWidgets('found-state resets on re-entry (auto-dispose, no leak)', (
