@@ -1,0 +1,27 @@
+{
+  "id": "scene11",
+  "titleKey": "scene.scene11.title",
+  "imageAsset": "assets/scenes/scene11.png",
+  "targets": [
+    { "id": "apple",  "iconId": "apple",  "labelKey": "target.apple",  "left": 0.120, "top": 0.200, "width": 0.12, "height": 0.14 },
+    { "id": "duck",   "iconId": "duck",   "labelKey": "target.duck",   "left": 0.660, "top": 0.160, "width": 0.12, "height": 0.14 },
+    { "id": "star",   "iconId": "star",   "labelKey": "target.star",   "left": 0.300, "top": 0.620, "width": 0.12, "height": 0.14 },
+    { "id": "flower", "iconId": "flower", "labelKey": "target.flower", "left": 0.780, "top": 0.580, "width": 0.12, "height": 0.14 },
+    { "id": "heart",  "iconId": "heart",  "labelKey": "target.heart",  "left": 0.480, "top": 0.380, "width": 0.12, "height": 0.14 }
+  ],
+  "dummies": [
+    { "id": "leaf11",     "iconId": "leaf",     "left": 0.450, "top": 0.220, "width": 0.11, "height": 0.13 },
+    { "id": "rabbit11",   "iconId": "rabbit",   "left": 0.850, "top": 0.300, "width": 0.11, "height": 0.13 },
+    { "id": "bug11",      "iconId": "bug",      "left": 0.180, "top": 0.440, "width": 0.11, "height": 0.13 },
+    { "id": "anchor11",   "iconId": "anchor",   "left": 0.600, "top": 0.400, "width": 0.11, "height": 0.13 },
+    { "id": "umbrella11", "iconId": "umbrella", "left": 0.300, "top": 0.300, "width": 0.11, "height": 0.13 },
+    { "id": "car11",      "iconId": "car",      "left": 0.700, "top": 0.660, "width": 0.11, "height": 0.13 }
+  ],
+  "hardDummies": [
+    { "id": "h_moon11",    "iconId": "moon",    "left": 0.020, "top": 0.020, "width": 0.11, "height": 0.13, "scale": 0.6 },
+    { "id": "h_icecream11","iconId": "icecream","left": 0.880, "top": 0.020, "width": 0.11, "height": 0.13, "scale": 1.3 },
+    { "id": "h_cookie11",  "iconId": "cookie",  "left": 0.020, "top": 0.800, "width": 0.11, "height": 0.13, "scale": 0.75 },
+    { "id": "h_pizza11",   "iconId": "pizza",   "left": 0.880, "top": 0.800, "width": 0.11, "height": 0.13, "scale": 1.2 },
+    { "id": "h_bell11",    "iconId": "bell",    "left": 0.450, "top": 0.020, "width": 0.11, "height": 0.13, "scale": 0.55 }
+  ]
+}

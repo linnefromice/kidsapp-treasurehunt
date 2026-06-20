@@ -1,0 +1,26 @@
+{
+  "id": "scene10",
+  "titleKey": "scene.scene10.title",
+  "imageAsset": "assets/scenes/scene10.png",
+  "targets": [
+    { "id": "star",  "iconId": "star",  "labelKey": "target.star",  "left": 0.120, "top": 0.200, "width": 0.12, "height": 0.14 },
+    { "id": "ball",  "iconId": "ball",  "labelKey": "target.ball",  "left": 0.660, "top": 0.160, "width": 0.12, "height": 0.14 },
+    { "id": "heart", "iconId": "heart", "labelKey": "target.heart", "left": 0.300, "top": 0.620, "width": 0.12, "height": 0.14 },
+    { "id": "duck",  "iconId": "duck",  "labelKey": "target.duck",  "left": 0.780, "top": 0.580, "width": 0.12, "height": 0.14 }
+  ],
+  "dummies": [
+    { "id": "leaf10",     "iconId": "leaf",     "left": 0.450, "top": 0.220, "width": 0.11, "height": 0.13 },
+    { "id": "rabbit10",   "iconId": "rabbit",   "left": 0.850, "top": 0.300, "width": 0.11, "height": 0.13 },
+    { "id": "bug10",      "iconId": "bug",      "left": 0.180, "top": 0.440, "width": 0.11, "height": 0.13 },
+    { "id": "flower10",   "iconId": "flower",   "left": 0.600, "top": 0.400, "width": 0.11, "height": 0.13 },
+    { "id": "umbrella10", "iconId": "umbrella", "left": 0.300, "top": 0.300, "width": 0.11, "height": 0.13 },
+    { "id": "car10",      "iconId": "car",      "left": 0.700, "top": 0.660, "width": 0.11, "height": 0.13 }
+  ],
+  "hardDummies": [
+    { "id": "h_cake10",  "iconId": "cake",  "left": 0.020, "top": 0.020, "width": 0.11, "height": 0.13, "scale": 0.55 },
+    { "id": "h_gift10",  "iconId": "gift",  "left": 0.880, "top": 0.020, "width": 0.11, "height": 0.13, "scale": 0.6 },
+    { "id": "h_gem10",   "iconId": "gem",   "left": 0.450, "top": 0.020, "width": 0.11, "height": 0.13, "scale": 1.3 },
+    { "id": "h_music10", "iconId": "music", "left": 0.450, "top": 0.800, "width": 0.11, "height": 0.13, "scale": 0.75 },
+    { "id": "h_cloud10", "iconId": "cloud", "left": 0.020, "top": 0.780, "width": 0.11, "height": 0.13, "scale": 1.2 }
+  ]
+}

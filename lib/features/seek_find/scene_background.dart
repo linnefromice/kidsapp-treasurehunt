@@ -19,6 +19,9 @@ Widget _sceneBase(String sceneId) => switch (sceneId) {
   'scene07' => const _PaintedScene(painter: _SpacePainter()),
   'scene08' => const _PaintedScene(painter: _UnderseaPainter()),
   'scene09' => const _PaintedScene(painter: _SnowPainter()),
+  'scene10' => const _PaintedScene(painter: _FlowerFieldPainter()),
+  'scene11' => const _PaintedScene(painter: _RainbowHillsPainter()),
+  'scene12' => const _PaintedScene(painter: _CastlePainter()),
   _ => const ColoredBox(color: Color(0xFF87CEEB)),
 };
 
@@ -1255,4 +1258,309 @@ class _SnowPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_SnowPainter old) => false;
+}
+
+// ──────────────────────────────────────────
+// scene10: はなばたけ
+// ──────────────────────────────────────────
+class _FlowerFieldPainter extends CustomPainter {
+  const _FlowerFieldPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Soft spring sky
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height * 0.55),
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF81D4FA), Color(0xFFB3E5FC)],
+        ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.55)),
+    );
+
+    // Grassy meadow
+    canvas.drawRect(
+      Rect.fromLTWH(0, size.height * 0.55, size.width, size.height * 0.45),
+      Paint()
+        ..shader =
+            const LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xFF9CCC65), Color(0xFF7CB342)],
+            ).createShader(
+              Rect.fromLTWH(
+                0,
+                size.height * 0.55,
+                size.width,
+                size.height * 0.45,
+              ),
+            ),
+    );
+
+    // Sun
+    canvas.drawCircle(
+      Offset(size.width * 0.82, size.height * 0.16),
+      size.width * 0.05,
+      Paint()..color = const Color(0xFFFFD54F),
+    );
+
+    // Scattered flowers across the meadow
+    final w = size.width;
+    final h = size.height;
+    _drawFlower(
+      canvas,
+      Offset(w * 0.12, h * 0.72),
+      w * 0.030,
+      const Color(0xFFEF5350),
+    );
+    _drawFlower(
+      canvas,
+      Offset(w * 0.30, h * 0.84),
+      w * 0.034,
+      const Color(0xFFFFEE58),
+    );
+    _drawFlower(
+      canvas,
+      Offset(w * 0.50, h * 0.70),
+      w * 0.028,
+      const Color(0xFFAB47BC),
+    );
+    _drawFlower(
+      canvas,
+      Offset(w * 0.68, h * 0.86),
+      w * 0.034,
+      const Color(0xFFFF7043),
+    );
+    _drawFlower(
+      canvas,
+      Offset(w * 0.86, h * 0.74),
+      w * 0.030,
+      const Color(0xFFEC407A),
+    );
+    _drawFlower(
+      canvas,
+      Offset(w * 0.20, h * 0.94),
+      w * 0.030,
+      const Color(0xFF7E57C2),
+    );
+    _drawFlower(
+      canvas,
+      Offset(w * 0.78, h * 0.94),
+      w * 0.030,
+      const Color(0xFFFFCA28),
+    );
+  }
+
+  void _drawFlower(Canvas canvas, Offset center, double r, Color color) {
+    final petal = Paint()..color = color;
+    for (int i = 0; i < 5; i++) {
+      final a = i * (2 * math.pi / 5);
+      canvas.drawCircle(
+        center + Offset(math.cos(a) * r, math.sin(a) * r),
+        r * 0.7,
+        petal,
+      );
+    }
+    canvas.drawCircle(
+      center,
+      r * 0.7,
+      Paint()..color = const Color(0xFFFFF59D),
+    );
+  }
+
+  @override
+  bool shouldRepaint(_FlowerFieldPainter old) => false;
+}
+
+// ──────────────────────────────────────────
+// scene11: にじのおか
+// ──────────────────────────────────────────
+class _RainbowHillsPainter extends CustomPainter {
+  const _RainbowHillsPainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Clear sky
+    canvas.drawRect(
+      Offset.zero & size,
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF4FC3F7), Color(0xFFB3E5FC)],
+        ).createShader(Offset.zero & size),
+    );
+
+    // Rainbow arc, painted from outer to inner band
+    const bands = [
+      0xFFEF5350,
+      0xFFFFA726,
+      0xFFFFEE58,
+      0xFF66BB6A,
+      0xFF42A5F5,
+      0xFF7E57C2,
+    ];
+    final center = Offset(size.width * 0.5, size.height * 0.92);
+    final outer = size.width * 0.46;
+    final stroke = outer * 0.07;
+    for (int i = 0; i < bands.length; i++) {
+      final radius = outer - i * stroke;
+      canvas.drawArc(
+        Rect.fromCircle(center: center, radius: radius),
+        math.pi,
+        math.pi,
+        false,
+        Paint()
+          ..color = Color(bands[i])
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = stroke,
+      );
+    }
+
+    // Rolling green hills in the foreground
+    _drawHill(canvas, size, 0.78, const Color(0xFF81C784));
+    _drawHill(canvas, size, 0.88, const Color(0xFF66BB6A));
+
+    // A couple of soft clouds
+    _drawCloud(
+      canvas,
+      Offset(size.width * 0.18, size.height * 0.20),
+      size.width * 0.05,
+    );
+    _drawCloud(
+      canvas,
+      Offset(size.width * 0.80, size.height * 0.26),
+      size.width * 0.06,
+    );
+  }
+
+  void _drawHill(Canvas canvas, Size size, double topY, Color color) {
+    final y = topY * size.height;
+    final path = Path()
+      ..moveTo(0, size.height)
+      ..lineTo(0, y)
+      ..quadraticBezierTo(
+        size.width * 0.5,
+        y - size.height * 0.12,
+        size.width,
+        y,
+      )
+      ..lineTo(size.width, size.height)
+      ..close();
+    canvas.drawPath(path, Paint()..color = color);
+  }
+
+  void _drawCloud(Canvas canvas, Offset center, double r) {
+    final paint = Paint()..color = Colors.white.withValues(alpha: 0.92);
+    canvas.drawCircle(center, r, paint);
+    canvas.drawCircle(center + Offset(r * 0.9, r * 0.1), r * 0.8, paint);
+    canvas.drawCircle(center - Offset(r * 0.9, -r * 0.1), r * 0.8, paint);
+  }
+
+  @override
+  bool shouldRepaint(_RainbowHillsPainter old) => false;
+}
+
+// ──────────────────────────────────────────
+// scene12: おしろ
+// ──────────────────────────────────────────
+class _CastlePainter extends CustomPainter {
+  const _CastlePainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Sky
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, size.width, size.height * 0.70),
+      Paint()
+        ..shader = const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF7E57C2), Color(0xFFB39DDB)],
+        ).createShader(Rect.fromLTWH(0, 0, size.width, size.height * 0.70)),
+    );
+
+    // Grassy ground
+    canvas.drawRect(
+      Rect.fromLTWH(0, size.height * 0.70, size.width, size.height * 0.30),
+      Paint()..color = const Color(0xFF7CB342),
+    );
+
+    // Castle body
+    final body = const Color(0xFFECEFF1);
+    final bodyPaint = Paint()..color = body;
+    final castleRect = Rect.fromLTWH(
+      size.width * 0.30,
+      size.height * 0.34,
+      size.width * 0.40,
+      size.height * 0.36,
+    );
+    canvas.drawRect(castleRect, bodyPaint);
+
+    // Three towers with battlements; index 1 is the central tower.
+    const towerXs = [0.28, 0.50, 0.72];
+    const centerTowerIndex = 1;
+    final towerW = size.width * 0.10;
+    for (int t = 0; t < towerXs.length; t++) {
+      final cx = towerXs[t];
+      final left = size.width * cx - towerW / 2;
+      final top = size.height * 0.26;
+      canvas.drawRect(
+        Rect.fromLTWH(left, top, towerW, size.height * 0.44),
+        bodyPaint,
+      );
+      // Battlement teeth
+      final tooth = towerW / 3;
+      for (int i = 0; i < 3; i++) {
+        if (i.isEven) {
+          canvas.drawRect(
+            Rect.fromLTWH(left + i * tooth, top - tooth, tooth, tooth),
+            bodyPaint,
+          );
+        }
+      }
+      // Conical roof on the side towers
+      if (t != centerTowerIndex) {
+        final roof = Path()
+          ..moveTo(size.width * cx, top - size.height * 0.10)
+          ..lineTo(left - tooth * 0.3, top)
+          ..lineTo(left + towerW + tooth * 0.3, top)
+          ..close();
+        canvas.drawPath(roof, Paint()..color = const Color(0xFFE53935));
+      }
+    }
+
+    // Gate
+    final gate = Path()
+      ..moveTo(size.width * 0.45, size.height * 0.70)
+      ..lineTo(size.width * 0.45, size.height * 0.52)
+      ..arcToPoint(
+        Offset(size.width * 0.55, size.height * 0.52),
+        radius: Radius.circular(size.width * 0.05),
+      )
+      ..lineTo(size.width * 0.55, size.height * 0.70)
+      ..close();
+    canvas.drawPath(gate, Paint()..color = const Color(0xFF5D4037));
+
+    // Flag on the central tower
+    final poleX = size.width * 0.50;
+    final poleTop = size.height * 0.10;
+    canvas.drawLine(
+      Offset(poleX, poleTop),
+      Offset(poleX, size.height * 0.18),
+      Paint()
+        ..color = const Color(0xFF455A64)
+        ..strokeWidth = size.width * 0.006,
+    );
+    final flag = Path()
+      ..moveTo(poleX, poleTop)
+      ..lineTo(poleX + size.width * 0.07, poleTop + size.height * 0.025)
+      ..lineTo(poleX, poleTop + size.height * 0.05)
+      ..close();
+    canvas.drawPath(flag, Paint()..color = const Color(0xFFFFD54F));
+  }
+
+  @override
+  bool shouldRepaint(_CastlePainter old) => false;
 }

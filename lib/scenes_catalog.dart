@@ -21,13 +21,17 @@ class SceneCatalogEntry {
       id == 'scene06' ||
       id == 'scene07' ||
       id == 'scene08' ||
-      id == 'scene09';
+      id == 'scene09' ||
+      id == 'scene10' ||
+      id == 'scene11' ||
+      id == 'scene12';
 }
 
 const String kFirstSceneId = 'scene01';
 
 // マップ上の位置は左→右に x を単調増加させた緩やかな波。
 // x が常に増えるため連結線が交差せず、シンプルな一本道に見える。
+// 12 シーンを 0.080–0.920 に等間隔配置し、y を 0.40 / 0.64 で交互させる。
 const List<SceneCatalogEntry> kSceneCatalog = [
   SceneCatalogEntry(
     'scene01',
@@ -38,50 +42,68 @@ const List<SceneCatalogEntry> kSceneCatalog = [
   SceneCatalogEntry(
     'scene02',
     'scene.scene02.title',
-    Offset(0.185, 0.64),
+    Offset(0.156, 0.64),
     Icons.water,
   ),
   SceneCatalogEntry(
     'scene03',
     'scene.scene03.title',
-    Offset(0.290, 0.40),
+    Offset(0.233, 0.40),
     Icons.cloud,
   ),
   SceneCatalogEntry(
     'scene04',
     'scene.scene04.title',
-    Offset(0.395, 0.64),
+    Offset(0.309, 0.64),
     Icons.yard,
   ),
   SceneCatalogEntry(
     'scene05',
     'scene.scene05.title',
-    Offset(0.500, 0.40),
+    Offset(0.385, 0.40),
     Icons.nights_stay,
   ),
   SceneCatalogEntry(
     'scene06',
     'scene.scene06.title',
-    Offset(0.605, 0.64),
+    Offset(0.462, 0.64),
     Icons.wb_sunny,
   ),
   SceneCatalogEntry(
     'scene07',
     'scene.scene07.title',
-    Offset(0.710, 0.40),
+    Offset(0.538, 0.40),
     Icons.rocket_launch,
   ),
   SceneCatalogEntry(
     'scene08',
     'scene.scene08.title',
-    Offset(0.815, 0.64),
+    Offset(0.615, 0.64),
     Icons.scuba_diving,
   ),
   SceneCatalogEntry(
     'scene09',
     'scene.scene09.title',
-    Offset(0.920, 0.40),
+    Offset(0.691, 0.40),
     Icons.ac_unit,
+  ),
+  SceneCatalogEntry(
+    'scene10',
+    'scene.scene10.title',
+    Offset(0.767, 0.64),
+    Icons.local_florist,
+  ),
+  SceneCatalogEntry(
+    'scene11',
+    'scene.scene11.title',
+    Offset(0.844, 0.40),
+    Icons.looks,
+  ),
+  SceneCatalogEntry(
+    'scene12',
+    'scene.scene12.title',
+    Offset(0.920, 0.64),
+    Icons.castle,
   ),
 ];
 

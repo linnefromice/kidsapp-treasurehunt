@@ -150,6 +150,36 @@ List<AmbientSpec> ambientSpecsFor(String sceneId) => switch (sceneId) {
       seed: 901,
     ),
   ],
+  'scene10' => const [
+    AmbientSpec(
+      kind: AmbientKind.drift,
+      count: 3,
+      color: Color(0xCCFFFFFF),
+      seed: 1001,
+    ),
+    AmbientSpec(
+      kind: AmbientKind.mote,
+      count: 8,
+      color: Color(0xFFFFF6C8),
+      seed: 1002,
+    ),
+  ],
+  'scene11' => const [
+    AmbientSpec(
+      kind: AmbientKind.drift,
+      count: 3,
+      color: Color(0xCCFFFFFF),
+      seed: 1101,
+    ),
+  ],
+  'scene12' => const [
+    AmbientSpec(
+      kind: AmbientKind.twinkle,
+      count: 12,
+      color: Color(0xFFFFFDE7),
+      seed: 1201,
+    ),
+  ],
   _ => const [],
 };
 
