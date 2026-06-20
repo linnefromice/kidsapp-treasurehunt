@@ -103,6 +103,39 @@ void main() {
     });
   });
 
+  group('isModeFullyCleared', () {
+    const all = ['scene01', 'scene02', 'scene03'];
+
+    test('returns false for an empty scene set', () async {
+      final r = await _repo('slot1');
+      expect(r.isModeFullyCleared(GameMode.easy, const []), isFalse);
+    });
+
+    test('returns false when only some scenes are cleared', () async {
+      final r = await _repo('slot1');
+      await r.markCleared(GameMode.easy, 'scene01');
+      await r.markCleared(GameMode.easy, 'scene02');
+      expect(r.isModeFullyCleared(GameMode.easy, all), isFalse);
+    });
+
+    test('returns true when every scene is cleared', () async {
+      final r = await _repo('slot1');
+      for (final id in all) {
+        await r.markCleared(GameMode.easy, id);
+      }
+      expect(r.isModeFullyCleared(GameMode.easy, all), isTrue);
+    });
+
+    test('is evaluated per mode', () async {
+      final r = await _repo('slot1');
+      for (final id in all) {
+        await r.markCleared(GameMode.easy, id);
+      }
+      expect(r.isModeFullyCleared(GameMode.easy, all), isTrue);
+      expect(r.isModeFullyCleared(GameMode.hard, all), isFalse);
+    });
+  });
+
   group('unlockAll', () {
     test('unlocks every passed scene for the mode', () async {
       final r = await _repo('free');

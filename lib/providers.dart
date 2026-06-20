@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -171,6 +173,61 @@ final trailSettingControllerProvider =
     NotifierProvider<TrailSettingController, TrailSetting>(
       TrailSettingController.new,
     );
+
+/// 進捗を見て、満たした解放要件のトレイルスタイルをグローバルに解放する
+/// （sticky・端末ぜんたい・一度立てたら戻さない）。クリア確定時とスタイル一覧
+/// 参照時の双方から呼べるよう副作用（永続化）だけを行う。
+Future<void> syncTrailUnlocks(
+  ProgressRepository progress,
+  SettingsRepository settings,
+) async {
+  final sceneIds = kSceneCatalog.map((e) => e.id).toList(growable: false);
+  for (final style in TrailStyle.values) {
+    final mode = style.unlockRequirement;
+    if (mode == null) continue; // 常時解放（solid）
+    if (settings.trailStyleUnlocked(style.id)) continue; // 既に解放済み
+    if (progress.isModeFullyCleared(mode, sceneIds)) {
+      await settings.setTrailStyleUnlocked(style.id);
+    }
+  }
+}
+
+/// 現在使えるトレイルスタイルの集合（UI の真実源）。
+///
+/// 各スタイルは「永続フラグ（端末ぜんたい・sticky） OR アクティブスロットの
+/// live 進捗が全クリア」なら解放扱い。後者は既存の 100% セーブを開いた瞬間に
+/// 救済するためで、検出時に [syncTrailUnlocks] で sticky 永続化もしておく。
+final unlockedTrailStylesProvider = Provider<Set<TrailStyle>>((ref) {
+  final settings = ref.watch(settingsRepositoryProvider);
+  final slotId = ref.watch(activeSlotProvider);
+  final progress = slotId == null
+      ? null
+      : ProgressRepository(ref.watch(sharedPreferencesProvider), slotId);
+
+  // live 進捗で新たに解放された分を sticky に焼き込む（表示は下の OR で即時に正しい）。
+  if (progress != null) {
+    unawaited(syncTrailUnlocks(progress, settings));
+  }
+
+  final sceneIds = kSceneCatalog.map((e) => e.id).toList(growable: false);
+  return {
+    for (final style in TrailStyle.values)
+      if (_isStyleUnlocked(style, settings, progress, sceneIds)) style,
+  };
+});
+
+bool _isStyleUnlocked(
+  TrailStyle style,
+  SettingsRepository settings,
+  ProgressRepository? progress,
+  List<String> sceneIds,
+) {
+  final mode = style.unlockRequirement;
+  if (mode == null) return true; // 常時解放（solid）
+  if (settings.trailStyleUnlocked(style.id)) return true; // 永続フラグ
+  // フラグ未設定でも、現スロットが全クリアなら即時解放（既存セーブ救済）。
+  return progress?.isModeFullyCleared(mode, sceneIds) ?? false;
+}
 
 /// シーン内で見つけた宝の id 集合(sceneId ごと)。
 class FoundController extends AutoDisposeFamilyNotifier<Set<String>, String> {

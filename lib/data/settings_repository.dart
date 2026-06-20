@@ -14,6 +14,9 @@ class SettingsRepository {
   static const _trailStyleKey = 'settings.trailStyle';
   static const _trailColors3Key = 'settings.trailColors3';
 
+  /// トレイルスタイル解放フラグのキー接頭辞（`settings.trailUnlock.<styleId>`）。
+  static const _trailUnlockKeyPrefix = 'settings.trailUnlock.';
+
   /// 既定のトレイル色 id。`TrailColorChoice.fallback.id`（= 'sky'）と同値。
   static const _trailColorDefault = 'sky';
 
@@ -50,4 +53,13 @@ class SettingsRepository {
 
   Future<void> setTrailColors3Csv(String csv) =>
       _prefs.setString(_trailColors3Key, csv);
+
+  /// スタイル id の解放フラグ（端末ぜんたい・全スロット共通）。未設定は未解放。
+  /// styleId → モードの対応（解放方針）は features 側が持つ。
+  bool trailStyleUnlocked(String styleId) =>
+      _prefs.getBool('$_trailUnlockKeyPrefix$styleId') ?? false;
+
+  /// スタイル id を解放する（sticky: 解除は提供しない。一度立てたら戻さない）。
+  Future<void> setTrailStyleUnlocked(String styleId) =>
+      _prefs.setBool('$_trailUnlockKeyPrefix$styleId', true);
 }

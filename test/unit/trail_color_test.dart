@@ -2,8 +2,23 @@ import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/trail_color.dart';
+import 'package:kidsapp_treasurehunt/shared/game_mode.dart';
 
 void main() {
+  group('TrailStyle.unlockRequirement', () {
+    test('solid is always available (no requirement)', () {
+      expect(TrailStyle.solid.unlockRequirement, isNull);
+    });
+
+    test('rainbow3 requires clearing easy', () {
+      expect(TrailStyle.rainbow3.unlockRequirement, GameMode.easy);
+    });
+
+    test('rainbowFull requires clearing hard', () {
+      expect(TrailStyle.rainbowFull.unlockRequirement, GameMode.hard);
+    });
+  });
+
   group('TrailColorChoice.fromId', () {
     test('returns the matching choice for a known id', () {
       expect(TrailColorChoice.fromId('pink'), TrailColorChoice.pink);

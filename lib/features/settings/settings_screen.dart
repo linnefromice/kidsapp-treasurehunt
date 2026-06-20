@@ -24,6 +24,11 @@ class SettingsScreen extends ConsumerWidget {
     final localeController = ref.read(localeControllerProvider.notifier);
     final trail = ref.watch(trailSettingControllerProvider);
     final trailController = ref.read(trailSettingControllerProvider.notifier);
+    final unlockedStyles = ref.watch(unlockedTrailStylesProvider);
+    final lockedStyles = [
+      for (final style in TrailStyle.values)
+        if (!unlockedStyles.contains(style)) style,
+    ];
 
     return Scaffold(
       appBar: AppBar(
@@ -62,26 +67,30 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 8),
           // スタイル選択（単色 / にじ3色 / にじフル）。
+          // ロック中も🔒付きで見せる（選択は不可・煽らない）。
           Wrap(
             spacing: 12,
             runSpacing: 12,
             children: [
               for (final style in TrailStyle.values)
-                // キッズ UX 基準: 最小 60x60 dp のタップターゲットを保証する。
-                ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    minWidth: _kMinTapTarget,
-                    minHeight: _kMinTapTarget,
-                  ),
-                  child: ChoiceChip(
-                    key: ValueKey('trailStyle.${style.id}'),
-                    label: Text(tr(localeCode, 'trailStyle.${style.id}')),
-                    selected: trail.style == style,
-                    onSelected: (_) => trailController.selectStyle(style),
-                  ),
+                _StyleChip(
+                  style: style,
+                  label: tr(localeCode, 'trailStyle.${style.id}'),
+                  selected: trail.style == style,
+                  locked: !unlockedStyles.contains(style),
+                  onSelected: () => trailController.selectStyle(style),
                 ),
             ],
           ),
+          // ロック中スタイルのやさしい解放ヒント（読字に頼り切らず🔒も添える）。
+          if (lockedStyles.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            for (final style in lockedStyles)
+              _LockedStyleHint(
+                key: ValueKey('trailStyleLockedHint.${style.id}'),
+                text: tr(localeCode, 'trailStyle.${style.id}.lockedHint'),
+              ),
+          ],
           const SizedBox(height: 12),
           // 選択スタイルに応じたサブフォームを 1 つだけ表示する。
           switch (trail.style) {
@@ -97,6 +106,70 @@ class SettingsScreen extends ConsumerWidget {
             ),
             TrailStyle.rainbowFull => _RainbowFullHint(localeCode: localeCode),
           },
+        ],
+      ),
+    );
+  }
+}
+
+/// トレイルスタイルの選択チップ。ロック中は🔒を出し、タップ不可にする。
+class _StyleChip extends StatelessWidget {
+  const _StyleChip({
+    required this.style,
+    required this.label,
+    required this.selected,
+    required this.locked,
+    required this.onSelected,
+  });
+
+  final TrailStyle style;
+  final String label;
+  final bool selected;
+  final bool locked;
+  final VoidCallback onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    // キッズ UX 基準: 最小 60x60 dp のタップターゲットを保証する。
+    return ConstrainedBox(
+      constraints: const BoxConstraints(
+        minWidth: _kMinTapTarget,
+        minHeight: _kMinTapTarget,
+      ),
+      child: ChoiceChip(
+        key: ValueKey('trailStyle.${style.id}'),
+        avatar: locked
+            ? const Icon(Icons.lock_outline, size: 18, color: Colors.black54)
+            : null,
+        label: Text(label),
+        selected: selected,
+        // ロック中は onSelected:null で選択不可（失敗を罰しない＝無反応で十分）。
+        onSelected: locked ? null : (_) => onSelected(),
+      ),
+    );
+  }
+}
+
+/// ロック中スタイルのやさしい解放ヒント（🔒 + 文言）。
+class _LockedStyleHint extends StatelessWidget {
+  const _LockedStyleHint({required this.text, super.key});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Row(
+        children: [
+          const Icon(Icons.lock_outline, size: 16, color: Colors.black54),
+          const SizedBox(width: 6),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(fontSize: 14, color: Colors.black54),
+            ),
+          ),
         ],
       ),
     );

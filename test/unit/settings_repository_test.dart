@@ -56,4 +56,29 @@ void main() {
     await repo.setTrailColors3Csv('purple,orange,white');
     expect(repo.trailColors3Csv(), 'purple,orange,white');
   });
+
+  group('trail style unlock flags', () {
+    test('defaults to locked (false) for any style id', () async {
+      final prefs = await SharedPreferences.getInstance();
+      final repo = SettingsRepository(prefs);
+      expect(repo.trailStyleUnlocked('rainbow3'), isFalse);
+      expect(repo.trailStyleUnlocked('rainbowFull'), isFalse);
+    });
+
+    test('setTrailStyleUnlocked persists true', () async {
+      final prefs = await SharedPreferences.getInstance();
+      final repo = SettingsRepository(prefs);
+      await repo.setTrailStyleUnlocked('rainbow3');
+      expect(repo.trailStyleUnlocked('rainbow3'), isTrue);
+      expect(prefs.getBool('settings.trailUnlock.rainbow3'), isTrue);
+    });
+
+    test('unlock flags are independent per style id', () async {
+      final prefs = await SharedPreferences.getInstance();
+      final repo = SettingsRepository(prefs);
+      await repo.setTrailStyleUnlocked('rainbow3');
+      expect(repo.trailStyleUnlocked('rainbow3'), isTrue);
+      expect(repo.trailStyleUnlocked('rainbowFull'), isFalse);
+    });
+  });
 }

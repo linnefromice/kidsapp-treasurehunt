@@ -409,6 +409,8 @@ class _SceneViewState extends ConsumerState<_SceneView>
     if (_completed) return; // 二重発火ガード（連続通知でも完了処理は一度だけ）
     final progress = ref.read(progressRepositoryProvider);
     await completeScene(progress, widget.mode, sceneId);
+    // 難易度を全クリアしたらトレイルスタイルを解放する（端末ぜんたい・sticky）。
+    await syncTrailUnlocks(progress, ref.read(settingsRepositoryProvider));
     await ref.read(audioServiceProvider).playComplete();
     if (mounted) {
       _hintTimer?.cancel();
