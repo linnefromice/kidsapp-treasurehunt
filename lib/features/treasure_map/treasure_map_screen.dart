@@ -65,11 +65,13 @@ class _TreasureMapScreenState extends ConsumerState<TreasureMapScreen> {
     final localeCode = ref.watch(localeControllerProvider).languageCode;
     final trail = ref.watch(trailSettingControllerProvider);
     final activeSlotId = ref.watch(activeSlotProvider);
-    final slots = ref.watch(saveSlotControllerProvider);
-    final avatarEmoji =
-        (activeSlotId != null && activeSlotId != kFreeModeSlotId)
-        ? slots[activeSlotId]
-        : null;
+    final avatarEmoji = ref.watch(
+      saveSlotControllerProvider.select(
+        (slots) => (activeSlotId != null && activeSlotId != kFreeModeSlotId)
+            ? slots[activeSlotId]
+            : null,
+      ),
+    );
 
     final isHard = _mode == GameMode.hard;
     // バッジ・カウンタ・軌跡・現在地はすべて選択中モードの進捗を反映する。
