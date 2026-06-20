@@ -158,8 +158,8 @@ void main() {
     ) async {
       SharedPreferences.setMockInitialValues({
         'progress.slot1.unlockedSceneIds': ['scene01'],
-        'save_slots.created': ['slot1'],
-        'save_slots.slot1.avatar': '🐱',
+        'save.createdSlotIds': ['slot1'],
+        'save.avatar.slot1': '🐱',
       });
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer(
