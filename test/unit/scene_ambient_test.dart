@@ -1,18 +1,14 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/scene_ambient.dart';
+import 'package:kidsapp_treasurehunt/scenes_catalog.dart';
 
 void main() {
-  const sceneIds = [
-    'scene01',
-    'scene02',
-    'scene03',
-    'scene04',
-    'scene05',
-    'scene06',
-    'scene07',
-    'scene08',
-    'scene09',
-  ];
+  // カタログ駆動: 新シーンを追加すると本テストの検証対象が自動で増える
+  // （ハードコードのリストだと新シーンの抜けを静かに見逃すため）。
+  final sceneIds = kSceneCatalog
+      .where((e) => e.hasScene)
+      .map((e) => e.id)
+      .toList(growable: false);
 
   test('every catalog scene has at least one ambient spec', () {
     for (final id in sceneIds) {

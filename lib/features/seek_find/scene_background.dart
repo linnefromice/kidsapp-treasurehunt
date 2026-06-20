@@ -1306,23 +1306,50 @@ class _FlowerFieldPainter extends CustomPainter {
     );
 
     // Scattered flowers across the meadow
-    const spots = [
-      [0.12, 0.72, 0.030, 0xFFEF5350],
-      [0.30, 0.84, 0.034, 0xFFFFEE58],
-      [0.50, 0.70, 0.028, 0xFFAB47BC],
-      [0.68, 0.86, 0.034, 0xFFFF7043],
-      [0.86, 0.74, 0.030, 0xFFEC407A],
-      [0.20, 0.94, 0.030, 0xFF7E57C2],
-      [0.78, 0.94, 0.030, 0xFFFFCA28],
-    ];
-    for (final s in spots) {
-      _drawFlower(
-        canvas,
-        Offset(size.width * (s[0] as double), size.height * (s[1] as double)),
-        size.width * (s[2] as double),
-        Color(s[3] as int),
-      );
-    }
+    final w = size.width;
+    final h = size.height;
+    _drawFlower(
+      canvas,
+      Offset(w * 0.12, h * 0.72),
+      w * 0.030,
+      const Color(0xFFEF5350),
+    );
+    _drawFlower(
+      canvas,
+      Offset(w * 0.30, h * 0.84),
+      w * 0.034,
+      const Color(0xFFFFEE58),
+    );
+    _drawFlower(
+      canvas,
+      Offset(w * 0.50, h * 0.70),
+      w * 0.028,
+      const Color(0xFFAB47BC),
+    );
+    _drawFlower(
+      canvas,
+      Offset(w * 0.68, h * 0.86),
+      w * 0.034,
+      const Color(0xFFFF7043),
+    );
+    _drawFlower(
+      canvas,
+      Offset(w * 0.86, h * 0.74),
+      w * 0.030,
+      const Color(0xFFEC407A),
+    );
+    _drawFlower(
+      canvas,
+      Offset(w * 0.20, h * 0.94),
+      w * 0.030,
+      const Color(0xFF7E57C2),
+    );
+    _drawFlower(
+      canvas,
+      Offset(w * 0.78, h * 0.94),
+      w * 0.030,
+      const Color(0xFFFFCA28),
+    );
   }
 
   void _drawFlower(Canvas canvas, Offset center, double r, Color color) {
@@ -1471,9 +1498,12 @@ class _CastlePainter extends CustomPainter {
     );
     canvas.drawRect(castleRect, bodyPaint);
 
-    // Three towers with battlements
+    // Three towers with battlements; index 1 is the central tower.
+    const towerXs = [0.28, 0.50, 0.72];
+    const centerTowerIndex = 1;
     final towerW = size.width * 0.10;
-    for (final cx in [0.28, 0.50, 0.72]) {
+    for (int t = 0; t < towerXs.length; t++) {
+      final cx = towerXs[t];
       final left = size.width * cx - towerW / 2;
       final top = size.height * 0.26;
       canvas.drawRect(
@@ -1491,7 +1521,7 @@ class _CastlePainter extends CustomPainter {
         }
       }
       // Conical roof on the side towers
-      if (cx != 0.50) {
+      if (t != centerTowerIndex) {
         final roof = Path()
           ..moveTo(size.width * cx, top - size.height * 0.10)
           ..lineTo(left - tooth * 0.3, top)
@@ -1521,7 +1551,7 @@ class _CastlePainter extends CustomPainter {
       Offset(poleX, size.height * 0.18),
       Paint()
         ..color = const Color(0xFF455A64)
-        ..strokeWidth = 2,
+        ..strokeWidth = size.width * 0.006,
     );
     final flag = Path()
       ..moveTo(poleX, poleTop)
