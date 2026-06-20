@@ -115,20 +115,37 @@ void main() {
       expect(unlocked, isNot(contains(TrailStyle.rainbowFull)));
     });
 
-    test('live-progress unlock is persisted (sticky) as a flag', () async {
-      final prefs = await SharedPreferences.getInstance();
-      final progress = ProgressRepository(prefs, 'slot1');
-      await _clearAll(progress, GameMode.hard);
-      final container = makeContainer(prefs, 'slot1');
+    test(
+      'selecting a fully-cleared slot persists the unlock as a flag',
+      () async {
+        final prefs = await SharedPreferences.getInstance();
+        final progress = ProgressRepository(prefs, 'slot1');
+        await _clearAll(progress, GameMode.hard);
 
-      // 参照すると副作用で永続化される。
-      container.read(unlockedTrailStylesProvider);
-      await Future<void>.delayed(Duration.zero); // unawaited sync を流す
+        // makeContainer が select('slot1') を呼び、選択時に sticky 永続化する。
+        makeContainer(prefs, 'slot1');
+        await Future<void>.delayed(Duration.zero); // unawaited select-sync を流す
 
-      expect(
-        SettingsRepository(prefs).trailStyleUnlocked('rainbowFull'),
-        isTrue,
-      );
-    });
+        expect(
+          SettingsRepository(prefs).trailStyleUnlocked('rainbowFull'),
+          isTrue,
+        );
+      },
+    );
+
+    test(
+      'a slot-earned unlock survives switching slots (device-wide)',
+      () async {
+        final prefs = await SharedPreferences.getInstance();
+        await _clearAll(ProgressRepository(prefs, 'slot1'), GameMode.easy);
+        final container = makeContainer(prefs, 'slot1'); // 選択で sticky 永続化
+        await Future<void>.delayed(Duration.zero); // select-sync を流す
+
+        // 未クリアの別スロットへ切替えても、解放は端末ぜんたいで維持される。
+        container.read(activeSlotProvider.notifier).select('slot2');
+        final unlocked = container.read(unlockedTrailStylesProvider);
+        expect(unlocked, contains(TrailStyle.rainbow3));
+      },
+    );
   });
 }

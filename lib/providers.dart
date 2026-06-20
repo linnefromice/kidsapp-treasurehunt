@@ -26,7 +26,21 @@ class ActiveSlotController extends Notifier<String?> {
   @override
   String? build() => null;
 
-  void select(String slotId) => state = slotId;
+  void select(String slotId) {
+    state = slotId;
+    // 既存の 100% クリア済みセーブも含め、選択時に解放要件を満たすスタイルを
+    // sticky 永続化する（端末ぜんたい・戻らない）。フリーモードは markCleared
+    // しない＝全クリア扱いにならないため対象外。
+    if (slotId == kFreeModeSlotId) return;
+    // progressRepositoryProvider は activeSlotProvider を watch するため、ここで
+    // read すると循環依存になる。createSlot 等と同じく直接構築する。
+    final progress = ProgressRepository(
+      ref.read(sharedPreferencesProvider),
+      slotId,
+    );
+    unawaited(syncTrailUnlocks(progress, ref.read(settingsRepositoryProvider)));
+  }
+
   void deselect() => state = null;
 }
 
@@ -175,8 +189,8 @@ final trailSettingControllerProvider =
     );
 
 /// 進捗を見て、満たした解放要件のトレイルスタイルをグローバルに解放する
-/// （sticky・端末ぜんたい・一度立てたら戻さない）。クリア確定時とスタイル一覧
-/// 参照時の双方から呼べるよう副作用（永続化）だけを行う。
+/// （sticky・端末ぜんたい・一度立てたら戻さない）。クリア確定時（_handleComplete）
+/// とスロット選択時（ActiveSlotController.select）の双方から呼ぶ、永続化だけの副作用。
 Future<void> syncTrailUnlocks(
   ProgressRepository progress,
   SettingsRepository settings,
@@ -194,20 +208,16 @@ Future<void> syncTrailUnlocks(
 
 /// 現在使えるトレイルスタイルの集合（UI の真実源）。
 ///
-/// 各スタイルは「永続フラグ（端末ぜんたい・sticky） OR アクティブスロットの
-/// live 進捗が全クリア」なら解放扱い。後者は既存の 100% セーブを開いた瞬間に
-/// 救済するためで、検出時に [syncTrailUnlocks] で sticky 永続化もしておく。
+/// 副作用のない純粋な導出。各スタイルは「永続フラグ（端末ぜんたい・sticky） OR
+/// アクティブスロットの live 進捗が全クリア」なら解放扱い。後者は既存の 100%
+/// セーブをそのスロットで開いた瞬間に「見た目だけ」即時解放するため。フラグへの
+/// 焼き込み（端末ぜんたい化）は [ActiveSlotController.select] と _handleComplete が担う。
 final unlockedTrailStylesProvider = Provider<Set<TrailStyle>>((ref) {
   final settings = ref.watch(settingsRepositoryProvider);
   final slotId = ref.watch(activeSlotProvider);
   final progress = slotId == null
       ? null
       : ProgressRepository(ref.watch(sharedPreferencesProvider), slotId);
-
-  // live 進捗で新たに解放された分を sticky に焼き込む（表示は下の OR で即時に正しい）。
-  if (progress != null) {
-    unawaited(syncTrailUnlocks(progress, settings));
-  }
 
   final sceneIds = kSceneCatalog.map((e) => e.id).toList(growable: false);
   return {
