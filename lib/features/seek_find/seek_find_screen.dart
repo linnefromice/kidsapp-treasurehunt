@@ -407,14 +407,21 @@ class _SceneViewState extends ConsumerState<_SceneView>
 
   Future<void> _handleComplete(String sceneId) async {
     if (_completed) return; // 二重発火ガード（連続通知でも完了処理は一度だけ）
+    // await をまたいで ref を触らないよう、必要な依存は先に読み出しておく
+    // （途中で破棄されても disposed-ref で落ちない）。
     final progress = ref.read(progressRepositoryProvider);
+    final settings = ref.read(settingsRepositoryProvider);
+    final audio = ref.read(audioServiceProvider);
     await completeScene(progress, widget.mode, sceneId);
-    await ref.read(audioServiceProvider).playComplete();
-    if (mounted) {
-      _hintTimer?.cancel();
-      _blinkClock?.stop(); // 完了後は点滅を止める（全て発見済みなので不要）
-      setState(() => _completed = true);
-    }
+    // 難易度を全クリアしたらトレイルスタイルを解放する（端末ぜんたい・sticky）。
+    await syncTrailUnlocks(progress, settings);
+    await audio.playComplete();
+    if (!mounted) return; // 完了演出の前に画面が破棄されていたら何もしない
+    // 解放状態を即時反映（設定画面を開き直さなくても新スタイルが使える）。
+    ref.invalidate(unlockedTrailStylesProvider);
+    _hintTimer?.cancel();
+    _blinkClock?.stop(); // 完了後は点滅を止める（全て発見済みなので不要）
+    setState(() => _completed = true);
   }
 
   /// [allowMiss] が false のとき（なぞり中）はミスバブルを出さない。

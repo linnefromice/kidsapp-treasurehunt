@@ -42,6 +42,15 @@ class ProgressRepository {
   bool isCleared(GameMode mode, String sceneId) =>
       clearedSceneIds(mode).contains(sceneId);
 
+  /// [sceneIds]（カタログ全シーン）がこのモードで全てクリア済みか。
+  /// 空集合は「全クリア」とみなさない（解放条件として不成立）。
+  bool isModeFullyCleared(GameMode mode, Iterable<String> sceneIds) {
+    final ids = sceneIds.toList(growable: false);
+    if (ids.isEmpty) return false;
+    final cleared = clearedSceneIds(mode).toSet();
+    return ids.every(cleared.contains);
+  }
+
   /// このモードの解放セットが空のときだけ [firstSceneId] を初期解放する（冪等）。
   Future<void> ensureInitialUnlock(GameMode mode, String firstSceneId) async {
     if (unlockedSceneIds(mode).isEmpty) {

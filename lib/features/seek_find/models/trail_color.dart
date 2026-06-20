@@ -1,5 +1,7 @@
 import 'package:flutter/painting.dart';
 
+import 'package:kidsapp_treasurehunt/shared/game_mode.dart';
+
 /// なぞり跡に出すキラキラ粒子トレイルの「色の部品」。設定で選べる単色 6 色。
 ///
 /// 永続化は [id]（文字列）で行い、未知の値は [fallback] に倒す。
@@ -49,6 +51,20 @@ enum TrailStyle {
 
   /// 未設定・未知 id 時の既定スタイル。
   static const fallback = TrailStyle.solid;
+
+  /// このスタイルを解放するのに必要な「全シーンクリア」のモード。
+  ///
+  /// - [solid]: `null`（常に使える）。
+  /// - [rainbow3]: [GameMode.easy] を全シーンクリアで解放。
+  /// - [rainbowFull]: [GameMode.hard] を全シーンクリアで解放。
+  ///
+  /// 解放はスタイル id でグローバルに永続化され、一度解放したら戻らない
+  /// （端末ぜんたい・sticky）。実際の判定・永続化は providers 側が担う。
+  GameMode? get unlockRequirement => switch (this) {
+    TrailStyle.solid => null,
+    TrailStyle.rainbow3 => GameMode.easy,
+    TrailStyle.rainbowFull => GameMode.hard,
+  };
 
   /// 永続値（id 文字列）から復元する。未知・null は [fallback]。
   static TrailStyle fromId(String? id) {
