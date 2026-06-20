@@ -1,0 +1,27 @@
+{
+  "id": "scene12",
+  "titleKey": "scene.scene12.title",
+  "imageAsset": "assets/scenes/scene12.png",
+  "targets": [
+    { "id": "apple", "iconId": "apple", "labelKey": "target.apple", "left": 0.120, "top": 0.200, "width": 0.12, "height": 0.14 },
+    { "id": "duck",  "iconId": "duck",  "labelKey": "target.duck",  "left": 0.660, "top": 0.160, "width": 0.12, "height": 0.14 },
+    { "id": "ball",  "iconId": "ball",  "labelKey": "target.ball",  "left": 0.300, "top": 0.620, "width": 0.12, "height": 0.14 },
+    { "id": "star",  "iconId": "star",  "labelKey": "target.star",  "left": 0.780, "top": 0.580, "width": 0.12, "height": 0.14 },
+    { "id": "heart", "iconId": "heart", "labelKey": "target.heart", "left": 0.480, "top": 0.380, "width": 0.12, "height": 0.14 }
+  ],
+  "dummies": [
+    { "id": "leaf12",     "iconId": "leaf",     "left": 0.450, "top": 0.220, "width": 0.11, "height": 0.13 },
+    { "id": "rabbit12",   "iconId": "rabbit",   "left": 0.850, "top": 0.300, "width": 0.11, "height": 0.13 },
+    { "id": "bug12",      "iconId": "bug",      "left": 0.180, "top": 0.440, "width": 0.11, "height": 0.13 },
+    { "id": "flower12",   "iconId": "flower",   "left": 0.600, "top": 0.400, "width": 0.11, "height": 0.13 },
+    { "id": "umbrella12", "iconId": "umbrella", "left": 0.300, "top": 0.300, "width": 0.11, "height": 0.13 },
+    { "id": "car12",      "iconId": "car",      "left": 0.700, "top": 0.660, "width": 0.11, "height": 0.13 }
+  ],
+  "hardDummies": [
+    { "id": "h_lightbulb12", "iconId": "lightbulb", "left": 0.020, "top": 0.020, "width": 0.11, "height": 0.13, "scale": 1.3 },
+    { "id": "h_cat12",       "iconId": "cat",       "left": 0.880, "top": 0.020, "width": 0.11, "height": 0.13, "scale": 0.75 },
+    { "id": "h_sailboat12",  "iconId": "sailboat",  "left": 0.020, "top": 0.800, "width": 0.11, "height": 0.13, "scale": 1.2 },
+    { "id": "h_crown12",     "iconId": "crown",     "left": 0.880, "top": 0.800, "width": 0.11, "height": 0.13, "scale": 0.55 },
+    { "id": "h_fire12",      "iconId": "fire",      "left": 0.450, "top": 0.020, "width": 0.11, "height": 0.13, "scale": 0.6 }
+  ]
+}
