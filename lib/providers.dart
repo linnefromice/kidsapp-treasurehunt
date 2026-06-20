@@ -138,22 +138,38 @@ final localeControllerProvider = NotifierProvider<LocaleController, Locale>(
   LocaleController.new,
 );
 
-/// なぞりトレイルの色。初期値は SettingsRepository から。全スロット共通。
-class TrailColorController extends Notifier<TrailColorChoice> {
+/// なぞりトレイルの設定（スタイル + 単色 + にじ3色）。
+/// 初期値は SettingsRepository から。全スロット共通。
+class TrailSettingController extends Notifier<TrailSetting> {
+  SettingsRepository get _repo => ref.read(settingsRepositoryProvider);
+
   @override
-  TrailColorChoice build() => TrailColorChoice.fromId(
-    ref.read(settingsRepositoryProvider).trailColorId(),
+  TrailSetting build() => TrailSetting.fromPersisted(
+    styleId: _repo.trailStyleId(),
+    solidId: _repo.trailColorId(),
+    colors3Csv: _repo.trailColors3Csv(),
   );
 
-  Future<void> select(TrailColorChoice choice) async {
-    await ref.read(settingsRepositoryProvider).setTrailColorId(choice.id);
-    state = choice;
+  Future<void> selectStyle(TrailStyle style) async {
+    await _repo.setTrailStyleId(style.id);
+    state = state.copyWith(style: style);
+  }
+
+  Future<void> selectSolid(TrailColorChoice choice) async {
+    await _repo.setTrailColorId(choice.id);
+    state = state.copyWith(solidColor: choice);
+  }
+
+  Future<void> selectThreeColorAt(int index, TrailColorChoice choice) async {
+    final next = state.withThreeColorAt(index, choice);
+    await _repo.setTrailColors3Csv(next.threeColorsCsv);
+    state = next;
   }
 }
 
-final trailColorControllerProvider =
-    NotifierProvider<TrailColorController, TrailColorChoice>(
-      TrailColorController.new,
+final trailSettingControllerProvider =
+    NotifierProvider<TrailSettingController, TrailSetting>(
+      TrailSettingController.new,
     );
 
 /// シーン内で見つけた宝の id 集合(sceneId ごと)。

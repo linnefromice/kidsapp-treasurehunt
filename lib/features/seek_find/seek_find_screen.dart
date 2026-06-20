@@ -234,8 +234,8 @@ class _SceneViewState extends ConsumerState<_SceneView>
       return;
     }
     _lastTrailSpawn = position;
-    final choice = ref.read(trailColorControllerProvider);
-    final color = resolveTrailColor(choice, particleIndex: _trailSeq);
+    final setting = ref.read(trailSettingControllerProvider);
+    final color = resolveTrailColor(setting, particleIndex: _trailSeq);
     _trailSeq++;
     final key = UniqueKey();
     setState(() {

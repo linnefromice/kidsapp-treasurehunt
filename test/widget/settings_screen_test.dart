@@ -37,28 +37,110 @@ void main() {
     expect(prefs.getString('settings.locale'), 'en');
   });
 
-  testWidgets('renders a chip for every trail colour', (tester) async {
+  testWidgets('renders a chip for every trail style', (tester) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     await _pumpSettings(tester, prefs);
 
-    for (final choice in TrailColorChoice.values) {
-      expect(find.byKey(ValueKey('trailColor.${choice.id}')), findsOneWidget);
+    for (final style in TrailStyle.values) {
+      expect(find.byKey(ValueKey('trailStyle.${style.id}')), findsOneWidget);
     }
   });
 
-  testWidgets('selecting a trail colour persists and reflects', (tester) async {
+  testWidgets('solid is the default and shows the six colour chips', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final container = await _pumpSettings(tester, prefs);
 
-    // 既定は sky。pink を選ぶと state と永続値の両方が pink になる。
-    expect(container.read(trailColorControllerProvider), TrailColorChoice.sky);
+    expect(
+      container.read(trailSettingControllerProvider).style,
+      TrailStyle.solid,
+    );
+    for (final choice in TrailColorChoice.values) {
+      expect(find.byKey(ValueKey('trailColor.${choice.id}')), findsOneWidget);
+    }
+    // 単色時はにじ3色のドロップダウンは出ない。
+    expect(find.byKey(const ValueKey('trail3.slot0')), findsNothing);
+  });
+
+  testWidgets('selecting a solid colour persists and reflects', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final container = await _pumpSettings(tester, prefs);
+
+    expect(
+      container.read(trailSettingControllerProvider).solidColor,
+      TrailColorChoice.sky,
+    );
 
     await tester.tap(find.byKey(const ValueKey('trailColor.pink')));
     await tester.pump();
 
-    expect(container.read(trailColorControllerProvider), TrailColorChoice.pink);
+    expect(
+      container.read(trailSettingControllerProvider).solidColor,
+      TrailColorChoice.pink,
+    );
     expect(prefs.getString('settings.trailColor'), 'pink');
+  });
+
+  testWidgets('selecting rainbow3 reveals three dropdowns and persists style', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final container = await _pumpSettings(tester, prefs);
+
+    await tester.tap(find.byKey(const ValueKey('trailStyle.rainbow3')));
+    await tester.pump();
+
+    expect(
+      container.read(trailSettingControllerProvider).style,
+      TrailStyle.rainbow3,
+    );
+    expect(prefs.getString('settings.trailStyle'), 'rainbow3');
+    for (var i = 0; i < 3; i++) {
+      expect(find.byKey(ValueKey('trail3.slot$i')), findsOneWidget);
+    }
+    // 単色チップは隠れる。
+    expect(find.byKey(const ValueKey('trailColor.sky')), findsNothing);
+  });
+
+  testWidgets('selecting rainbowFull hides the dropdowns', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    await _pumpSettings(tester, prefs);
+
+    await tester.tap(find.byKey(const ValueKey('trailStyle.rainbow3')));
+    await tester.pump();
+    expect(find.byKey(const ValueKey('trail3.slot0')), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('trailStyle.rainbowFull')));
+    await tester.pump();
+    expect(find.byKey(const ValueKey('trail3.slot0')), findsNothing);
+  });
+
+  testWidgets('changing a rainbow3 dropdown persists the csv and reflects', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final container = await _pumpSettings(tester, prefs);
+
+    await tester.tap(find.byKey(const ValueKey('trailStyle.rainbow3')));
+    await tester.pump();
+
+    // 既定の 3 色は sky,pink,yellow。1 つめ(slot0)を むらさき に変える。
+    await tester.tap(find.byKey(const ValueKey('trail3.slot0')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('むらさき').last);
+    await tester.pumpAndSettle();
+
+    expect(
+      container.read(trailSettingControllerProvider).threeColors.first,
+      TrailColorChoice.purple,
+    );
+    expect(prefs.getString('settings.trailColors3'), 'purple,pink,yellow');
   });
 }

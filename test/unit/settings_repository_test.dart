@@ -30,4 +30,30 @@ void main() {
     await repo.setTrailColorId('pink');
     expect(repo.trailColorId(), 'pink');
   });
+
+  test('defaults trail style to solid', () async {
+    final prefs = await SharedPreferences.getInstance();
+    final repo = SettingsRepository(prefs);
+    expect(repo.trailStyleId(), 'solid');
+  });
+
+  test('persists trail style id', () async {
+    final prefs = await SharedPreferences.getInstance();
+    final repo = SettingsRepository(prefs);
+    await repo.setTrailStyleId('rainbow3');
+    expect(repo.trailStyleId(), 'rainbow3');
+  });
+
+  test('defaults trail three colours to sky,pink,yellow', () async {
+    final prefs = await SharedPreferences.getInstance();
+    final repo = SettingsRepository(prefs);
+    expect(repo.trailColors3Csv(), 'sky,pink,yellow');
+  });
+
+  test('persists trail three colours csv', () async {
+    final prefs = await SharedPreferences.getInstance();
+    final repo = SettingsRepository(prefs);
+    await repo.setTrailColors3Csv('purple,orange,white');
+    expect(repo.trailColors3Csv(), 'purple,orange,white');
+  });
 }
