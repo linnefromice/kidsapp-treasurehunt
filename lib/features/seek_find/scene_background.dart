@@ -2,19 +2,19 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/scene_ambient.dart';
 
-part 'package:kidsapp_treasurehunt/features/seek_find/scene_background/forest_painter.dart';
-part 'package:kidsapp_treasurehunt/features/seek_find/scene_background/ocean_painter.dart';
-part 'package:kidsapp_treasurehunt/features/seek_find/scene_background/city_painter.dart';
-part 'package:kidsapp_treasurehunt/features/seek_find/scene_background/mountain_painter.dart';
-part 'package:kidsapp_treasurehunt/features/seek_find/scene_background/night_painter.dart';
-part 'package:kidsapp_treasurehunt/features/seek_find/scene_background/desert_painter.dart';
-part 'package:kidsapp_treasurehunt/features/seek_find/scene_background/space_painter.dart';
-part 'package:kidsapp_treasurehunt/features/seek_find/scene_background/undersea_painter.dart';
-part 'package:kidsapp_treasurehunt/features/seek_find/scene_background/snow_painter.dart';
-part 'package:kidsapp_treasurehunt/features/seek_find/scene_background/flower_field_painter.dart';
-part 'package:kidsapp_treasurehunt/features/seek_find/scene_background/rainbow_hills_painter.dart';
-part 'package:kidsapp_treasurehunt/features/seek_find/scene_background/castle_painter.dart';
-part 'package:kidsapp_treasurehunt/features/seek_find/scene_background/galaxy_painter.dart';
+part 'scene_background/forest_painter.dart';
+part 'scene_background/ocean_painter.dart';
+part 'scene_background/city_painter.dart';
+part 'scene_background/mountain_painter.dart';
+part 'scene_background/night_painter.dart';
+part 'scene_background/desert_painter.dart';
+part 'scene_background/space_painter.dart';
+part 'scene_background/undersea_painter.dart';
+part 'scene_background/snow_painter.dart';
+part 'scene_background/flower_field_painter.dart';
+part 'scene_background/rainbow_hills_painter.dart';
+part 'scene_background/castle_painter.dart';
+part 'scene_background/galaxy_painter.dart';
 
 /// シーン背景。静止画レイヤ（[_PaintedScene]）の上に環境アニメ層
 /// （[sceneAmbient]）を重ねる。静止画はそのまま、その上で雲・光・雪などが緩く動く。

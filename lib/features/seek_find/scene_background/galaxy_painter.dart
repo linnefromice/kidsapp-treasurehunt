@@ -1,4 +1,4 @@
-part of 'package:kidsapp_treasurehunt/features/seek_find/scene_background.dart';
+part of '../scene_background.dart';
 
 // ──────────────────────────────────────────
 // scene13: ぎんが（うちゅうの別バージョン）
