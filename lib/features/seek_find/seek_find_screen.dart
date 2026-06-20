@@ -301,6 +301,8 @@ class _SceneViewState extends ConsumerState<_SceneView>
                         ? null
                         : (d) {
                             _lastTrailSpawn = null; // 新しいなぞりの開始
+                            // にじは各なぞりを先頭の色相から始める（境界の肥大も防ぐ）。
+                            _trailSeq = 0;
                             _handleHit(
                               d.localPosition,
                               sceneSize,

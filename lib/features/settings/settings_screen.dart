@@ -9,6 +9,12 @@ import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
 /// キッズ UX 基準の最小タップターゲット（dp）。
 const double _kMinTapTarget = 60;
 
+/// 色スウォッチ（円）の直径（dp）。
+const double _kSwatchSize = 24;
+
+/// ドロップダウン行のラベル列の幅（dp）。
+const double _kDropdownLabelWidth = 56;
+
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -61,11 +67,18 @@ class SettingsScreen extends ConsumerWidget {
             runSpacing: 12,
             children: [
               for (final style in TrailStyle.values)
-                ChoiceChip(
-                  key: ValueKey('trailStyle.${style.id}'),
-                  label: Text(tr(localeCode, 'trailStyle.${style.id}')),
-                  selected: trail.style == style,
-                  onSelected: (_) => trailController.selectStyle(style),
+                // キッズ UX 基準: 最小 60x60 dp のタップターゲットを保証する。
+                ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    minWidth: _kMinTapTarget,
+                    minHeight: _kMinTapTarget,
+                  ),
+                  child: ChoiceChip(
+                    key: ValueKey('trailStyle.${style.id}'),
+                    label: Text(tr(localeCode, 'trailStyle.${style.id}')),
+                    selected: trail.style == style,
+                    onSelected: (_) => trailController.selectStyle(style),
+                  ),
                 ),
             ],
           ),
@@ -214,7 +227,7 @@ class _ColorDropdown extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        SizedBox(width: 56, child: Text(label)),
+        SizedBox(width: _kDropdownLabelWidth, child: Text(label)),
         const SizedBox(width: 8),
         Expanded(
           child: Container(
@@ -267,8 +280,8 @@ class _RainbowFullHint extends StatelessWidget {
       children: [
         // 虹を象徴する小さなグラデーション円。
         Container(
-          width: 24,
-          height: 24,
+          width: _kSwatchSize,
+          height: _kSwatchSize,
           decoration: const BoxDecoration(
             shape: BoxShape.circle,
             gradient: SweepGradient(
@@ -300,8 +313,8 @@ class _ColorSwatch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 24,
-      height: 24,
+      width: _kSwatchSize,
+      height: _kSwatchSize,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         color: color,

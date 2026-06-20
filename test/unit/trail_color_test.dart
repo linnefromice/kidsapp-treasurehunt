@@ -70,13 +70,31 @@ void main() {
       ]);
     });
 
-    test('pads a short csv with the default colours', () {
-      final setting = TrailSetting.fromPersisted(colors3Csv: 'pink');
+    test('pads a short csv with the per-position default colours', () {
+      // 'orange' は既定のどの位置とも異なるので、補完が位置ベース
+      // （default[1]=pink, default[2]=yellow）であることを正しく検証できる。
+      final setting = TrailSetting.fromPersisted(colors3Csv: 'orange');
       expect(setting.threeColors, [
-        TrailColorChoice.pink,
+        TrailColorChoice.orange, // 入力
         TrailColorChoice.pink, // default[1]
         TrailColorChoice.yellow, // default[2]
       ]);
+    });
+
+    test('drops extra entries beyond the third', () {
+      final setting = TrailSetting.fromPersisted(
+        colors3Csv: 'orange,purple,white,pink',
+      );
+      expect(setting.threeColors, [
+        TrailColorChoice.orange,
+        TrailColorChoice.purple,
+        TrailColorChoice.white,
+      ]);
+    });
+
+    test('yields an unmodifiable list', () {
+      final colors = TrailSetting.fromPersisted().threeColors;
+      expect(() => colors[0] = TrailColorChoice.orange, throwsUnsupportedError);
     });
 
     test('always yields exactly three colours, even for null/empty csv', () {
@@ -114,6 +132,27 @@ void main() {
     test('serialises three colours back to csv', () {
       expect(TrailSetting.fallback.threeColorsCsv, 'sky,pink,yellow');
     });
+  });
+
+  group('TrailSetting equality', () {
+    test('equal when every field matches', () {
+      // copyWith() with no args reproduces the same value.
+      expect(TrailSetting.fallback, TrailSetting.fallback.copyWith());
+      expect(
+        TrailSetting.fallback.hashCode,
+        TrailSetting.fallback.copyWith().hashCode,
+      );
+    });
+
+    test(
+      'differs when style, solid colour, or a three-colour slot differs',
+      () {
+        const base = TrailSetting.fallback;
+        expect(base, isNot(base.copyWith(style: TrailStyle.rainbowFull)));
+        expect(base, isNot(base.copyWith(solidColor: TrailColorChoice.orange)));
+        expect(base, isNot(base.withThreeColorAt(0, TrailColorChoice.orange)));
+      },
+    );
   });
 
   group('resolveTrailColor', () {

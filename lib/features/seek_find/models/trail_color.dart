@@ -78,6 +78,9 @@ class TrailSetting {
   final TrailColorChoice solidColor;
 
   /// にじ3色スタイル時に循環させる 3 色（順序あり・重複可・常に長さ 3）。
+  ///
+  /// 生成パス（[fromPersisted]/[copyWith]/[withThreeColorAt]）は常に変更不可リスト
+  /// （[List.unmodifiable] か `const`）を渡すため、外部から内容を書き換えられない。
   final List<TrailColorChoice> threeColors;
 
   /// 3 色未設定時の既定（最初の 3 色）。
@@ -96,8 +99,9 @@ class TrailSetting {
 
   /// 永続化された生文字列から復元する。未知・不足は安全に既定へ倒す。
   ///
-  /// [colors3Csv] は `id,id,id` 形式。要素が 3 未満なら既定色で補い、
-  /// 3 を超える分は捨てる。各 id は [TrailColorChoice.fromId] で解釈する。
+  /// [colors3Csv] は `id,id,id` 形式。位置ごとに解釈し、要素が不足する位置は
+  /// 同じ位置の既定色（[defaultThreeColors]）で補い、3 を超える分は捨てる。
+  /// 各 id は [TrailColorChoice.fromId] で解釈する。
   static TrailSetting fromPersisted({
     String? styleId,
     String? solidId,
@@ -116,10 +120,12 @@ class TrailSetting {
         .map((s) => s.trim())
         .where((s) => s.isNotEmpty)
         .toList();
-    return List<TrailColorChoice>.generate(3, (i) {
-      if (i < parts.length) return TrailColorChoice.fromId(parts[i]);
-      return defaultThreeColors[i];
-    });
+    return List<TrailColorChoice>.unmodifiable(
+      List<TrailColorChoice>.generate(3, (i) {
+        if (i < parts.length) return TrailColorChoice.fromId(parts[i]);
+        return defaultThreeColors[i];
+      }),
+    );
   }
 
   /// 3 色を CSV（`id,id,id`）へ直列化する。
@@ -133,12 +139,18 @@ class TrailSetting {
     return TrailSetting(
       style: style ?? this.style,
       solidColor: solidColor ?? this.solidColor,
-      threeColors: threeColors ?? this.threeColors,
+      threeColors: threeColors != null
+          ? List<TrailColorChoice>.unmodifiable(threeColors)
+          : this.threeColors,
     );
   }
 
   /// 3 色のうち [index] 番目を [color] に差し替えた新しい設定を返す。
   TrailSetting withThreeColorAt(int index, TrailColorChoice color) {
+    assert(
+      index >= 0 && index < threeColors.length,
+      'index は 0..${threeColors.length - 1}（受け取った値: $index）',
+    );
     final next = [...threeColors];
     next[index] = color;
     return copyWith(threeColors: next);
