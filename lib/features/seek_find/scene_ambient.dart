@@ -180,6 +180,20 @@ List<AmbientSpec> ambientSpecsFor(String sceneId) => switch (sceneId) {
       seed: 1201,
     ),
   ],
+  'scene13' => const [
+    AmbientSpec(
+      kind: AmbientKind.twinkle,
+      count: 16,
+      color: Color(0xFFFFFFFF),
+      seed: 1301,
+    ),
+    AmbientSpec(
+      kind: AmbientKind.drift,
+      count: 2,
+      color: Color(0x33AB47BC),
+      seed: 1302,
+    ),
+  ],
   _ => const [],
 };
 
