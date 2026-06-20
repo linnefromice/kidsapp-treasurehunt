@@ -26,7 +26,7 @@ const Map<String, Map<String, String>> _strings = {
     'trailColor.slot1': '1つめ',
     'trailColor.slot2': '2つめ',
     'trailColor.slot3': '3つめ',
-    'seek.complete': 'クリア！！\n全て みつけたね',
+    'seek.complete': 'クリア！！\nぜんぶ みつけたね',
     'scene.scene01.title': 'もりの たからさがし',
     'scene.scene02.title': 'うみの たからさがし',
     'scene.scene03.title': 'そらの たからさがし',
