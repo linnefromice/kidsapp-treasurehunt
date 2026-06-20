@@ -5,8 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:kidsapp_treasurehunt/data/progress_repository.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/models/trail_color.dart';
 import 'package:kidsapp_treasurehunt/features/treasure_map/widgets/treasure_map_canvas.dart';
 import 'package:kidsapp_treasurehunt/providers.dart';
+import 'package:kidsapp_treasurehunt/save_slots_catalog.dart';
 import 'package:kidsapp_treasurehunt/scenes_catalog.dart';
 import 'package:kidsapp_treasurehunt/shared/game_mode.dart';
 import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
@@ -61,6 +63,15 @@ class _TreasureMapScreenState extends ConsumerState<TreasureMapScreen> {
   Widget build(BuildContext context) {
     final progress = ref.watch(progressRepositoryProvider);
     final localeCode = ref.watch(localeControllerProvider).languageCode;
+    final trail = ref.watch(trailSettingControllerProvider);
+    final activeSlotId = ref.watch(activeSlotProvider);
+    final avatarEmoji = ref.watch(
+      saveSlotControllerProvider.select(
+        (slots) => (activeSlotId != null && activeSlotId != kFreeModeSlotId)
+            ? slots[activeSlotId]
+            : null,
+      ),
+    );
 
     final isHard = _mode == GameMode.hard;
     // バッジ・カウンタ・軌跡・現在地はすべて選択中モードの進捗を反映する。
@@ -73,7 +84,10 @@ class _TreasureMapScreenState extends ConsumerState<TreasureMapScreen> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: const Icon(Icons.person),
+          key: const ValueKey('avatar-button'),
+          icon: avatarEmoji != null
+              ? Text(avatarEmoji, style: const TextStyle(fontSize: 28))
+              : const Icon(Icons.person),
           onPressed: () {
             ref.read(activeSlotProvider.notifier).deselect();
             context.go('/slots');
@@ -92,6 +106,7 @@ class _TreasureMapScreenState extends ConsumerState<TreasureMapScreen> {
               ),
             ),
           ),
+          _TrailBadge(setting: trail, onTap: () => context.go('/settings')),
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () => context.go('/settings'),
@@ -532,6 +547,80 @@ class _GlowRing extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+/// AppBar に表示する現在のトレイルスタイルバッジ。タップで設定画面へ。
+class _TrailBadge extends StatelessWidget {
+  const _TrailBadge({required this.setting, required this.onTap});
+
+  final TrailSetting setting;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: 'トレイル色設定',
+      child: IconButton(
+        key: const ValueKey('trail-badge'),
+        // タップターゲット 60dp 以上（IconButton デフォルト 48dp を padding で補う）。
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+        constraints: const BoxConstraints(minWidth: 60, minHeight: 60),
+        onPressed: onTap,
+        icon: switch (setting.style) {
+          TrailStyle.solid => _TrailDot(color: setting.solidColor.baseColor),
+          TrailStyle.rainbow3 => Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (var i = 0; i < 3; i++) ...[
+                if (i > 0) const SizedBox(width: 2),
+                _TrailDot(color: setting.threeColors[i].baseColor, size: 14),
+              ],
+            ],
+          ),
+          TrailStyle.rainbowFull => Container(
+            width: 22,
+            height: 22,
+            decoration: const BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: SweepGradient(
+                colors: [
+                  Color(0xFFFF0000),
+                  Color(0xFFFFFF00),
+                  Color(0xFF00FF00),
+                  Color(0xFF00FFFF),
+                  Color(0xFF0000FF),
+                  Color(0xFFFF00FF),
+                  Color(0xFFFF0000),
+                ],
+              ),
+            ),
+          ),
+        },
+      ),
+    );
+  }
+}
+
+/// トレイルバッジ用の色付き丸。淡色でも埋もれないよう薄枠を付ける。
+class _TrailDot extends StatelessWidget {
+  const _TrailDot({required this.color, this.size = 22});
+
+  final Color color;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: color,
+        border: Border.all(color: Colors.black26),
+      ),
     );
   }
 }

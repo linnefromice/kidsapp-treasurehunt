@@ -121,6 +121,93 @@ void main() {
     });
   });
 
+  group('trail badge', () {
+    testWidgets('solid style — badge key exists', (tester) async {
+      await _pumpHome(tester, {
+        'progress.slot1.unlockedSceneIds': ['scene01'],
+        'settings.trail_style_id': 'solid',
+        'settings.trail_color_id': 'sky',
+      });
+      expect(find.byKey(const ValueKey('trail-badge')), findsOneWidget);
+    });
+
+    testWidgets('rainbow3 style — badge key exists', (tester) async {
+      await _pumpHome(tester, {
+        'progress.slot1.unlockedSceneIds': ['scene01'],
+        'settings.trail_style_id': 'rainbow3',
+        // rainbow3 は本来ロック中だが、設定リポジトリは unlock フラグとは独立して
+        // 保存された style id を読み込むため、ここでは表示テストに絞る。
+        'settings.trail_style_unlocked.rainbow3': true,
+      });
+      expect(find.byKey(const ValueKey('trail-badge')), findsOneWidget);
+    });
+
+    testWidgets('rainbowFull style — badge key exists', (tester) async {
+      await _pumpHome(tester, {
+        'progress.slot1.unlockedSceneIds': ['scene01'],
+        'settings.trail_style_id': 'rainbowFull',
+        'settings.trail_style_unlocked.rainbowFull': true,
+      });
+      expect(find.byKey(const ValueKey('trail-badge')), findsOneWidget);
+    });
+  });
+
+  group('avatar button', () {
+    testWidgets('slot with avatar shows emoji instead of person icon', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({
+        'progress.slot1.unlockedSceneIds': ['scene01'],
+        'save.createdSlotIds': ['slot1'],
+        'save.avatar.slot1': '🐱',
+      });
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      );
+      addTearDown(container.dispose);
+      container.read(saveSlotControllerProvider); // initialize
+      container.read(activeSlotProvider.notifier).select('slot1');
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const MaterialApp(home: TreasureMapScreen()),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byKey(const ValueKey('avatar-button')), findsOneWidget);
+      expect(find.text('🐱'), findsOneWidget);
+      // 人アイコンは出ない。
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('avatar-button')),
+          matching: find.byIcon(Icons.person),
+        ),
+        findsNothing,
+      );
+    });
+
+    testWidgets('slot without avatar falls back to person icon', (
+      tester,
+    ) async {
+      await _pumpHome(tester, {
+        'progress.slot1.unlockedSceneIds': ['scene01'],
+        // avatar キーなし → saveSlotControllerProvider は空 Map を返す
+      });
+
+      expect(find.byKey(const ValueKey('avatar-button')), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byKey(const ValueKey('avatar-button')),
+          matching: find.byIcon(Icons.person),
+        ),
+        findsOneWidget,
+      );
+    });
+  });
+
   group('mode toggle (always visible: Easy / Normal / Hard)', () {
     testWidgets('toggle and all three chips render on a fresh slot', (
       tester,
