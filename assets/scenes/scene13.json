@@ -12,7 +12,7 @@
   "dummies": [
     { "id": "moon13",   "iconId": "moon",   "left": 0.500, "top": 0.140, "width": 0.11, "height": 0.13 },
     { "id": "key13",    "iconId": "key",    "left": 0.860, "top": 0.380, "width": 0.11, "height": 0.13 },
-    { "id": "car13",    "iconId": "car",    "left": 0.320, "top": 0.480, "width": 0.11, "height": 0.13 },
+    { "id": "car13",    "iconId": "car",    "left": 0.360, "top": 0.460, "width": 0.11, "height": 0.13 },
     { "id": "bug13",    "iconId": "bug",    "left": 0.580, "top": 0.660, "width": 0.11, "height": 0.13 },
     { "id": "rabbit13", "iconId": "rabbit", "left": 0.820, "top": 0.700, "width": 0.11, "height": 0.13 },
     { "id": "leaf13",   "iconId": "leaf",   "left": 0.120, "top": 0.420, "width": 0.11, "height": 0.13 }

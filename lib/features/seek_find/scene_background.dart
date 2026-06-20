@@ -1600,7 +1600,7 @@ class _GalaxyPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final full = Rect.fromLTWH(0, 0, size.width, size.height);
 
-    // Deep galaxy gradient (teal → magenta → indigo) — scene07 より青紫寄り
+    // Deep galaxy gradient (teal → violet → indigo) — scene07 より青紫寄り
     canvas.drawRect(
       full,
       Paint()
@@ -1678,11 +1678,20 @@ class _GalaxyPainter extends CustomPainter {
   }
 
   void _drawNebula(Canvas canvas, Offset center, double r, Color color) {
+    // RadialGradient (center color → transparent) gives a soft nebula glow
+    // without the per-frame cost of MaskFilter.blur. Safe here because the
+    // painter renders once (shouldRepaint == false).
+    final rect = Rect.fromCenter(
+      center: center,
+      width: r * 2.2,
+      height: r * 1.1,
+    );
     canvas.drawOval(
-      Rect.fromCenter(center: center, width: r * 2.2, height: r * 1.1),
+      rect,
       Paint()
-        ..color = color
-        ..maskFilter = MaskFilter.blur(BlurStyle.normal, r * 0.5),
+        ..shader = RadialGradient(
+          colors: [color, color.withValues(alpha: 0)],
+        ).createShader(rect),
     );
   }
 
