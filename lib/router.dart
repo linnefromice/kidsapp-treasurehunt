@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:kidsapp_treasurehunt/features/collection/collection_screen.dart';
 import 'package:kidsapp_treasurehunt/features/save_slots/slot_select_screen.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/seek_find_screen.dart';
 import 'package:kidsapp_treasurehunt/features/settings/settings_screen.dart';
@@ -32,6 +33,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           sceneId: state.pathParameters['sceneId']!,
           mode: gameModeFromQuery(state.uri.queryParameters['mode']),
         ),
+      ),
+      GoRoute(
+        path: '/collection',
+        builder: (context, state) => const CollectionScreen(),
       ),
       GoRoute(
         path: '/settings',

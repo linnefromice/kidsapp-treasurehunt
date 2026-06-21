@@ -4,9 +4,11 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:kidsapp_treasurehunt/data/collection_repository.dart';
 import 'package:kidsapp_treasurehunt/data/progress_repository.dart';
 import 'package:kidsapp_treasurehunt/data/save_slot_repository.dart';
 import 'package:kidsapp_treasurehunt/data/settings_repository.dart';
+import 'package:kidsapp_treasurehunt/features/collection/models/collection_world.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/trail_color.dart';
 import 'package:kidsapp_treasurehunt/save_slots_catalog.dart';
@@ -143,6 +145,48 @@ final progressRepositoryProvider = Provider<ProgressRepository>((ref) {
 final settingsRepositoryProvider = Provider<SettingsRepository>(
   (ref) => SettingsRepository(ref.watch(sharedPreferencesProvider)),
 );
+
+/// アクティブスロットにスコープした図鑑（コレクション）Repository。
+final collectionRepositoryProvider = Provider<CollectionRepository>((ref) {
+  final slotId = ref.watch(activeSlotProvider);
+  if (slotId == null) {
+    throw StateError('No active save slot selected');
+  }
+  return CollectionRepository(ref.watch(sharedPreferencesProvider), slotId);
+});
+
+/// 図鑑カタログ: 各プレイ可能シーンの (id, titleKey, 重複なし宝アイコン)。
+/// 13 シーンのアセットを読み、図鑑画面のページ構成に使う（静的データ）。
+final collectionCatalogProvider = FutureProvider<List<CollectionWorld>>((
+  ref,
+) async {
+  final entries = kSceneCatalog.where((e) => e.hasScene).toList();
+  // 13 シーンを並列ロード（順次 await だと合計時間が嵩む）。
+  final scenes = await Future.wait(
+    entries.map((e) => SceneDef.loadAsset(e.id)),
+  );
+  return [
+    for (var i = 0; i < entries.length; i++)
+      CollectionWorld(
+        sceneId: entries[i].id,
+        titleKey: entries[i].titleKey,
+        // 重複なし・登場順を維持（seen で O(1) 判定）。
+        iconIds: _distinctInOrder(scenes[i].targets.map((t) => t.iconId)),
+      ),
+  ];
+});
+
+/// 登場順を保ったまま重複を畳む（`Set` 判定で O(n)）。
+List<String> _distinctInOrder(Iterable<String> ids) {
+  final seen = <String>{};
+  final out = <String>[];
+  for (final id in ids) {
+    if (seen.add(id)) {
+      out.add(id);
+    }
+  }
+  return out;
+}
 
 final audioServiceProvider = Provider<AudioService>(
   (ref) => AudioPlayersService(),

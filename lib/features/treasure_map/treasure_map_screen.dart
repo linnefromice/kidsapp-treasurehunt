@@ -110,6 +110,12 @@ class _TreasureMapScreenState extends ConsumerState<TreasureMapScreen> {
           ),
           _TrailBadge(setting: trail, onTap: () => context.go('/settings')),
           IconButton(
+            key: const ValueKey('collection-button'),
+            icon: const Icon(Icons.menu_book),
+            tooltip: tr(localeCode, 'home.collection'),
+            onPressed: () => context.go('/collection'),
+          ),
+          IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () => context.go('/settings'),
           ),
