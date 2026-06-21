@@ -14,6 +14,9 @@ class CollectionRepository {
 
   String get _key => 'collection.$_slotId.discovered';
 
+  /// 「まだ図鑑で見ていない初発見」（new! バッジ用）の集合キー。
+  String get _unseenKey => 'collection.$_slotId.unseen';
+
   /// 永続化エントリのキー（`sceneId:iconId`）。
   static String entryKey(String sceneId, String iconId) => '$sceneId:$iconId';
 
@@ -24,14 +27,38 @@ class CollectionRepository {
   bool isDiscovered(String sceneId, String iconId) =>
       discovered().contains(entryKey(sceneId, iconId));
 
+  /// 初発見したが図鑑でまだ見ていない（new! 表示中）エントリの集合。
+  Set<String> unseen() =>
+      (_prefs.getStringList(_unseenKey) ?? const <String>[]).toSet();
+
+  bool isUnseen(String sceneId, String iconId) =>
+      unseen().contains(entryKey(sceneId, iconId));
+
   /// 宝の発見を記録する。新規に記録したら true、既に記録済みなら false
-  /// （= 初発見の判定に使える。例: new! バッジ）。
+  /// （= 初発見の判定に使える）。初発見は new!（unseen）にも積む。
   Future<bool> record(String sceneId, String iconId) async {
+    final entry = entryKey(sceneId, iconId);
     final set = discovered();
-    final added = set.add(entryKey(sceneId, iconId));
+    final added = set.add(entry);
     if (added) {
       await _prefs.setStringList(_key, set.toList());
+      final pending = unseen()..add(entry);
+      await _prefs.setStringList(_unseenKey, pending.toList());
     }
     return added;
+  }
+
+  /// 指定した [entries] を new!（unseen）から外す（既読化）。図鑑で表示した分
+  /// だけを消すことで、見ている最中に増えた初発見（並行 record）を取りこぼさない。
+  Future<void> markSeen(Set<String> entries) async {
+    if (entries.isEmpty) {
+      return;
+    }
+    final remaining = unseen()..removeAll(entries);
+    if (remaining.isEmpty) {
+      await _prefs.remove(_unseenKey);
+    } else {
+      await _prefs.setStringList(_unseenKey, remaining.toList());
+    }
   }
 }

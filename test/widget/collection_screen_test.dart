@@ -22,10 +22,15 @@ const _fakeWorlds = [
   ),
 ];
 
-Future<void> _pump(WidgetTester tester, List<String> discovered) async {
+Future<SharedPreferences> _pump(
+  WidgetTester tester,
+  List<String> discovered, {
+  List<String> unseen = const [],
+}) async {
   SharedPreferences.setMockInitialValues({
     'save.createdSlotIds': ['slot1'],
     'collection.slot1.discovered': discovered,
+    'collection.slot1.unseen': unseen,
   });
   final prefs = await SharedPreferences.getInstance();
   final container = ProviderContainer(
@@ -45,6 +50,7 @@ Future<void> _pump(WidgetTester tester, List<String> discovered) async {
     ),
   );
   await tester.pumpAndSettle();
+  return prefs;
 }
 
 void main() {
@@ -80,5 +86,34 @@ void main() {
       find.byKey(const ValueKey('collection-found.scene01.apple')),
       findsNothing,
     );
+  });
+
+  testWidgets('shows a NEW badge on unseen discoveries and marks them seen', (
+    tester,
+  ) async {
+    final prefs = await _pump(
+      tester,
+      ['scene01:apple'],
+      unseen: ['scene01:apple'],
+    );
+
+    // 未読の初発見には NEW バッジが付く。
+    expect(
+      find.byKey(const ValueKey('collection-new.scene01.apple')),
+      findsOneWidget,
+    );
+    // 図鑑を開いたので永続側の unseen は既読化される（次回は出ない）。
+    expect(
+      prefs.getStringList('collection.slot1.unseen'),
+      anyOf(isNull, isEmpty),
+    );
+  });
+
+  testWidgets('shows the collected progress header', (tester) async {
+    await _pump(tester, ['scene01:apple']);
+
+    expect(find.byKey(const ValueKey('collection-progress')), findsOneWidget);
+    // fake worlds: 合計 5 個（apple/duck/star + ball/flower）、収集 1 個。
+    expect(find.textContaining('1/5'), findsOneWidget);
   });
 }
