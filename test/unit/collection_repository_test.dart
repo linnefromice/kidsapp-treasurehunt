@@ -52,4 +52,39 @@ void main() {
     expect(r2.isDiscovered('scene01', 'apple'), isFalse);
     expect(r2.discovered(), isEmpty);
   });
+
+  group('unseen (new! バッジ)', () {
+    test('a first discovery becomes unseen', () async {
+      final r = await repo('slot1');
+      await r.record('scene01', 'apple');
+      expect(r.isUnseen('scene01', 'apple'), isTrue);
+      expect(r.unseen(), {'scene01:apple'});
+    });
+
+    test(
+      're-discovering an already-found treasure does not re-flag unseen',
+      () async {
+        final r = await repo('slot1');
+        await r.record('scene01', 'apple');
+        await r.markSeen({'scene01:apple'});
+        // 既収集を再度通っても new! には戻らない。
+        expect(await r.record('scene01', 'apple'), isFalse);
+        expect(r.isUnseen('scene01', 'apple'), isFalse);
+        expect(r.unseen(), isEmpty);
+      },
+    );
+
+    test('markSeen clears only the given entries, keeps discovered', () async {
+      final r = await repo('slot1');
+      await r.record('scene01', 'apple');
+      await r.record('scene02', 'duck');
+      await r.markSeen({'scene01:apple'});
+      // 表示した分だけ既読。見ていない初発見は new! のまま残る。
+      expect(r.isUnseen('scene01', 'apple'), isFalse);
+      expect(r.isUnseen('scene02', 'duck'), isTrue);
+      // 収集自体は両方とも残る。
+      expect(r.isDiscovered('scene01', 'apple'), isTrue);
+      expect(r.isDiscovered('scene02', 'duck'), isTrue);
+    });
+  });
 }
