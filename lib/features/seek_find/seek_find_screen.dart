@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:kidsapp_treasurehunt/features/seek_find/models/dummy_item.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_interaction.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/trail_color.dart';
@@ -356,17 +357,17 @@ class _SceneViewState extends ConsumerState<_SceneView>
                         fit: StackFit.expand,
                         children: [
                           sceneBackground(scene.id),
-                          for (final d in decoys)
+                          for (var i = 0; i < decoys.length; i++)
                             _positioned(
                               scaledTreasureRect(
-                                d.normalizedRect,
-                                itemScale: d.scale,
+                                decoys[i].normalizedRect,
+                                itemScale: decoys[i].scale,
                               ),
                               sceneSize,
-                              child: _TargetView(
-                                iconId: d.iconId,
-                                found: false,
-                              ),
+                              // Hard ではおとりも点滅させる（ヒット判定外なので
+                              // 見た目の不透明度のみ。宝とは別カウントで位相を
+                              // ずらし、全部が同時に消えないようにする）。
+                              child: _buildDecoy(decoys[i], i, decoys.length),
                             ),
                           for (var i = 0; i < scene.targets.length; i++)
                             _buildTarget(i, sceneSize, found, unfoundCount),
@@ -436,6 +437,18 @@ class _SceneViewState extends ConsumerState<_SceneView>
               child: view,
             ),
     );
+  }
+
+  /// おとり 1 つの見た目。Hard（[_blinkClock] が非 null）ではおとりも点滅させる。
+  /// おとりはヒット判定の対象外なので、当たり判定（[_hiddenTargetIds]）には
+  /// 影響しない（消えていても元々押せない）。位相は [slot]/[count] でずらす。
+  Widget _buildDecoy(DummyItem decoy, int slot, int count) {
+    final view = _TargetView(iconId: decoy.iconId, found: false);
+    final clock = _blinkClock;
+    if (clock == null) {
+      return view; // Normal: おとりは静止
+    }
+    return _BlinkingTarget(clock: clock, slot: slot, count: count, child: view);
   }
 
   Future<void> _handleComplete(String sceneId) async {
