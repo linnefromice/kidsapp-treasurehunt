@@ -28,8 +28,8 @@ class EmojiPickerDialog extends StatelessWidget {
         width: 360,
         child: SingleChildScrollView(
           child: Wrap(
-            spacing: 8,
-            runSpacing: 8,
+            spacing: 12,
+            runSpacing: 12,
             alignment: WrapAlignment.center,
             children: [
               for (final emoji in kAvatarEmojis)
@@ -61,18 +61,28 @@ class _EmojiCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    const radius = BorderRadius.all(Radius.circular(14));
     return Semantics(
       label: emoji,
       button: true,
-      child: InkWell(
-        key: ValueKey('emoji-pick.$emoji'),
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: SizedBox(
-          width: 64,
-          height: 64,
-          child: Center(
-            child: Text(emoji, style: const TextStyle(fontSize: 36)),
+      // 背景 + 枠線でボタンらしく見せ、セル同士の境目を明確にする。
+      child: Material(
+        color: scheme.surfaceContainerHighest,
+        borderRadius: radius,
+        child: InkWell(
+          key: ValueKey('emoji-pick.$emoji'),
+          onTap: onTap,
+          borderRadius: radius,
+          child: Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              borderRadius: radius,
+              border: Border.all(color: scheme.outlineVariant, width: 2),
+            ),
+            alignment: Alignment.center,
+            child: Text(emoji, style: const TextStyle(fontSize: 34)),
           ),
         ),
       ),

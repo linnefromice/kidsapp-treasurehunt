@@ -41,6 +41,26 @@ void main() {
     }
   });
 
+  testWidgets('each emoji is rendered as a bordered button cell', (
+    tester,
+  ) async {
+    await _openPicker(tester);
+
+    final cell = find.byKey(const ValueKey('emoji-pick.🦊'));
+    expect(cell, findsOneWidget);
+    // セルの境目が分かるよう枠線付きの矩形（BoxDecoration.border）で描く。
+    final bordered = find.descendant(
+      of: cell,
+      matching: find.byWidgetPredicate(
+        (w) =>
+            w is Container &&
+            w.decoration is BoxDecoration &&
+            (w.decoration as BoxDecoration).border != null,
+      ),
+    );
+    expect(bordered, findsOneWidget);
+  });
+
   testWidgets('tapping an emoji returns it to the caller', (tester) async {
     final result = await _openPicker(tester);
 

@@ -6,7 +6,14 @@ import 'package:kidsapp_treasurehunt/features/save_slots/widgets/emoji_picker_di
 import 'package:kidsapp_treasurehunt/providers.dart';
 import 'package:kidsapp_treasurehunt/save_slots_catalog.dart';
 import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
+import 'package:kidsapp_treasurehunt/shared/theme/kids_theme.dart';
 import 'package:kidsapp_treasurehunt/shared/widgets/parental_gate.dart';
+
+/// 角ボタン（編集・削除）共通のタップターゲット制約（kids UX: 60dp 以上）。
+const _cornerButtonConstraints = BoxConstraints(
+  minWidth: KidsTheme.minTouchTarget,
+  minHeight: KidsTheme.minTouchTarget,
+);
 
 class SlotSelectScreen extends ConsumerWidget {
   const SlotSelectScreen({super.key});
@@ -82,6 +89,21 @@ class _SlotCard extends ConsumerWidget {
                   ),
                 ],
               ),
+              // 編集（左上・primary 色）と削除（右上・error 色）を色で明確に分け、
+              // 幼児の誤タップを抑える。どちらも 60dp 以上のタップターゲット。
+              if (isCreated)
+                Positioned(
+                  top: 4,
+                  left: 4,
+                  child: IconButton(
+                    key: ValueKey('slot-edit.${slot.id}'),
+                    icon: const Icon(Icons.edit_outlined),
+                    color: Theme.of(context).colorScheme.primary,
+                    constraints: _cornerButtonConstraints,
+                    tooltip: tr(localeCode, 'slot.changeAvatar'),
+                    onPressed: () => _changeAvatar(context, ref),
+                  ),
+                ),
               if (isCreated)
                 Positioned(
                   top: 4,
@@ -89,6 +111,9 @@ class _SlotCard extends ConsumerWidget {
                   child: IconButton(
                     key: ValueKey('slot-reset.${slot.id}'),
                     icon: const Icon(Icons.delete_outline),
+                    color: Theme.of(context).colorScheme.error,
+                    constraints: _cornerButtonConstraints,
+                    tooltip: tr(localeCode, 'slot.reset'),
                     onPressed: () => _reset(context, ref),
                   ),
                 ),
@@ -111,6 +136,15 @@ class _SlotCard extends ConsumerWidget {
     if (!context.mounted) return;
     ref.read(activeSlotProvider.notifier).select(slot.id);
     context.go('/');
+  }
+
+  Future<void> _changeAvatar(BuildContext context, WidgetRef ref) async {
+    // アバター変更は非破壊なので保護者ゲートは挟まない。
+    final emoji = await EmojiPickerDialog.show(context, localeCode);
+    if (emoji == null || !context.mounted) return;
+    await ref
+        .read(saveSlotControllerProvider.notifier)
+        .changeAvatar(slot.id, emoji);
   }
 
   Future<void> _reset(BuildContext context, WidgetRef ref) async {

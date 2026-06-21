@@ -84,6 +84,20 @@ class SaveSlotController extends Notifier<Map<String, String>> {
     state = {...state, slotId: emoji};
   }
 
+  /// 作成済みスロットのアバターだけを差し替える（進捗・解放はそのまま）。
+  /// 非破壊なので保護者ゲートは不要（子どもの「きせかえ」遊びの一部）。
+  Future<void> changeAvatar(String slotId, String emoji) async {
+    assert(
+      kAvatarEmojis.contains(emoji),
+      'emoji "$emoji" is not in kAvatarEmojis',
+    );
+    // 未作成スロットには無効（白紙は createSlot 経由でのみ作る）。
+    if (!state.containsKey(slotId)) return;
+    final repo = ref.read(saveSlotRepositoryProvider);
+    await repo.setAvatar(slotId, emoji);
+    state = {...state, slotId: emoji};
+  }
+
   Future<void> resetSlot(String slotId) async {
     final repo = ref.read(saveSlotRepositoryProvider);
     await repo.removeCreated(slotId);
