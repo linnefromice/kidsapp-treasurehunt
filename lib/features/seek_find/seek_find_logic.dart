@@ -110,16 +110,18 @@ bool isPointOnHiddenTarget({
 // 描画（不透明度）と当たり判定（見えている＝押せる）を同じ純関数で駆動する。
 // ──────────────────────────────────────────
 
-/// 未発見の宝が 1 回「消えて現れる」周期の長さ（やさしめ）。
-const Duration kBlinkCyclePeriod = Duration(milliseconds: 4000);
+/// 未発見の宝が 1 回「消えて現れる」周期の長さ。
+/// 短いほど消える/現れるペースが速い（Hard を歯ごたえのある速さに）。
+const Duration kBlinkCyclePeriod = Duration(milliseconds: 3000);
 
 /// この不透明度以上のとき「見えている」とみなし、当たり判定を有効にする境界。
 const double kBlinkVisibleThreshold = 0.5;
 
-// 1 周期内のフェーズ境界（やさしめ: 大半は可視・消失は短く緩やか）。
-const double _kBlinkVisibleUntil = 0.70; // [0,        0.70) 完全可視
-const double _kBlinkFadeOutUntil = 0.78; // [0.70, 0.78) フェードアウト
-const double _kBlinkHiddenUntil = 0.92; //  [0.78, 0.92) 完全消失
+// 1 周期内のフェーズ境界（Hard 強化: 消失フェーズを長くして難度を上げる）。
+// 消失は全体の 30%（[0.62, 0.92)）。周期 3s と合わせ約 900ms 消えたままになる。
+const double _kBlinkVisibleUntil = 0.55; // [0,        0.55) 完全可視
+const double _kBlinkFadeOutUntil = 0.62; // [0.55, 0.62) フェードアウト
+const double _kBlinkHiddenUntil = 0.92; //  [0.62, 0.92) 完全消失
 //                                          [0.92, 1.00) フェードイン
 
 /// ターゲット [slot]（0..count-1 の安定インデックス）の、共有クロック [clock]

@@ -240,17 +240,25 @@ void main() {
     });
 
     test('is fully hidden in the disappear window', () {
-      // slot 0 at clock 0.85 -> phase 0.85 -> hidden interval [0.78, 0.92).
+      // slot 0 at clock 0.85 -> phase 0.85 -> hidden interval [0.62, 0.92).
       expect(
         treasureBlinkOpacity(slot: 0, count: 4, clock: 0.85),
         closeTo(0.0, 1e-9),
       );
     });
 
-    test('fades through the visible threshold (half-faded = 0.5)', () {
-      // slot 0 at clock 0.74 -> phase 0.74 -> midpoint of [0.70, 0.78) fade-out.
+    test('hidden window is widened (phase 0.65 now fully hidden)', () {
+      // 消失時間を長くしたため、以前は可視だった 0.65 も消失域 [0.62, 0.92) に入る。
       expect(
-        treasureBlinkOpacity(slot: 0, count: 4, clock: 0.74),
+        treasureBlinkOpacity(slot: 0, count: 4, clock: 0.65),
+        closeTo(0.0, 1e-9),
+      );
+    });
+
+    test('fades through the visible threshold (half-faded = 0.5)', () {
+      // slot 0 at clock 0.585 -> midpoint of [0.55, 0.62) fade-out.
+      expect(
+        treasureBlinkOpacity(slot: 0, count: 4, clock: 0.585),
         closeTo(0.5, 1e-9),
       );
     });
