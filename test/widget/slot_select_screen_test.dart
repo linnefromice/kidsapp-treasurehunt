@@ -113,6 +113,60 @@ void main() {
     expect(find.byKey(const ValueKey('slot-empty.slot1')), findsOneWidget);
   });
 
+  testWidgets('a created slot can change its avatar without a parental gate', (
+    tester,
+  ) async {
+    final c = await _pumpApp(tester, {
+      'save.createdSlotIds': ['slot1'],
+      'save.avatar.slot1': '🐶',
+      'progress.slot1.unlockedSceneIds': ['scene01'],
+      'progress.slot1.clearedSceneIds': ['scene01'],
+    });
+
+    expect(find.byKey(const ValueKey('slot-edit.slot1')), findsOneWidget);
+
+    // 編集ボタン -> ピッカー（保護者ゲートは挟まない）。
+    await tester.tap(find.byKey(const ValueKey('slot-edit.slot1')));
+    await tester.pumpAndSettle();
+    expect(find.byKey(const ValueKey('emoji-picker')), findsOneWidget);
+
+    await tester.tap(find.byKey(const ValueKey('emoji-pick.🦊')));
+    await tester.pumpAndSettle();
+
+    // アバターが差し替わり、作成済み（つづき）状態と進捗は維持される。
+    expect(c.read(saveSlotControllerProvider)['slot1'], '🦊');
+    expect(find.byKey(const ValueKey('slot-continue.slot1')), findsOneWidget);
+    final prefs = c.read(sharedPreferencesProvider);
+    expect(prefs.getStringList('progress.slot1.clearedSceneIds'), ['scene01']);
+  });
+
+  testWidgets('canceling the edit picker keeps the existing avatar', (
+    tester,
+  ) async {
+    final c = await _pumpApp(tester, {
+      'save.createdSlotIds': ['slot1'],
+      'save.avatar.slot1': '🐶',
+      'progress.slot1.unlockedSceneIds': ['scene01'],
+    });
+
+    await tester.tap(find.byKey(const ValueKey('slot-edit.slot1')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const ValueKey('emoji-cancel')));
+    await tester.pumpAndSettle();
+
+    // 戻る -> アバターは変わらず、作成済み状態も維持。
+    expect(c.read(saveSlotControllerProvider)['slot1'], '🐶');
+    expect(find.byKey(const ValueKey('slot-continue.slot1')), findsOneWidget);
+  });
+
+  testWidgets('an empty slot has no edit (change avatar) button', (
+    tester,
+  ) async {
+    await _pumpApp(tester, {});
+
+    expect(find.byKey(const ValueKey('slot-edit.slot1')), findsNothing);
+  });
+
   testWidgets('free mode card is shown on the slot select screen', (
     tester,
   ) async {

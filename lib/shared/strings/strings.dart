@@ -54,6 +54,7 @@ const Map<String, Map<String, String>> _strings = {
     'slot.free': 'フリーモード',
     'slot.pick': 'どれに する?',
     'slot.cancel': 'もどる',
+    'slot.changeAvatar': 'えを かえる',
   },
   'en': {
     'app.title': 'Treasure Hunt',
@@ -110,6 +111,7 @@ const Map<String, Map<String, String>> _strings = {
     'slot.free': 'Free Mode',
     'slot.pick': 'Pick one',
     'slot.cancel': 'Back',
+    'slot.changeAvatar': 'Change picture',
   },
 };
 

@@ -92,6 +92,39 @@ void main() {
     expect(c.read(saveSlotRepositoryProvider).avatarOf('slot1'), isNull);
   });
 
+  test('changeAvatar swaps the avatar without touching progress', () async {
+    final c = await _container();
+    final ctrl = c.read(saveSlotControllerProvider.notifier);
+    await ctrl.createSlot('slot1', '🐶');
+
+    c.read(activeSlotProvider.notifier).select('slot1');
+    await c
+        .read(progressRepositoryProvider)
+        .markCleared(GameMode.easy, 'scene01');
+
+    await ctrl.changeAvatar('slot1', '🦊');
+
+    // アバターだけ差し替わる。
+    expect(c.read(saveSlotControllerProvider)['slot1'], '🦊');
+    expect(c.read(saveSlotRepositoryProvider).avatarOf('slot1'), '🦊');
+    // 進捗（クリア状態）は保持される。
+    c.read(activeSlotProvider.notifier).select('slot1');
+    expect(
+      c.read(progressRepositoryProvider).isCleared(GameMode.easy, 'scene01'),
+      isTrue,
+    );
+  });
+
+  test('changeAvatar is a no-op for an uncreated slot', () async {
+    final c = await _container();
+    await c
+        .read(saveSlotControllerProvider.notifier)
+        .changeAvatar('slot2', '🦊');
+
+    expect(c.read(saveSlotControllerProvider).containsKey('slot2'), isFalse);
+    expect(c.read(saveSlotRepositoryProvider).avatarOf('slot2'), isNull);
+  });
+
   test('build falls back to default avatar for legacy slots', () async {
     // この機能以前に作られた（アバター未保存の）スロットを再現。
     SharedPreferences.setMockInitialValues({
