@@ -44,7 +44,7 @@ iPad 向けに **Flutter** で個人開発する。
   `GestureDetector` の `localPosition`（= シーン座標）+ `Rect.contains`（正規化 Rect で当たり判定）。
   ゲームループ・物理が不要なため **Flame は入れない**。
 - 状態管理: **Riverpod**（MVP は手動 `Notifier`/`Provider`・**コード生成なし**。将来 `@riverpod` へ移行可）
-- ルーティング: **go_router**（`routerProvider`）。ルート: `/slots`(初期) / `/` / `/hunt/:sceneId` / `/settings`。アクティブスロット未選択なら `/slots` に redirect。音声: **audioplayers**（通信なし・効果音のみ）
+- ルーティング: **go_router**（`routerProvider`）。ルート: `/slots`(初期) / `/` / `/hunt/:sceneId` / `/collection`(図鑑) / `/settings`。アクティブスロット未選択なら `/slots` に redirect。音声: **audioplayers**（通信なし・効果音のみ）
 - 永続化: **shared_preferences**（`lib/data/` の Repository で隠蔽）。進捗はセーブスロットで名前空間化（`progress.<slotId>.*`）、`progressRepositoryProvider` は `activeSlotProvider` にスコープ。将来 DB へ差し替えても上位不変
 - i18n: 当面 **ja/en の文字列 Map**（`lib/shared/strings/`）。本格化時に `intl`/ARB へ移行可
 - 構成: `lib/features/{save_slots, treasure_map, seek_find, settings}` + `lib/data` + `lib/shared`（+ `lib/scenes_catalog.dart` / `lib/save_slots_catalog.dart`）
