@@ -39,7 +39,7 @@ void main() {
   });
 
   group('palette', () {
-    test('exposes exactly the six solid colours', () {
+    test('exposes the full solid colour palette (12)', () {
       expect(TrailColorChoice.values.map((c) => c.id), [
         'sky',
         'pink',
@@ -47,12 +47,23 @@ void main() {
         'purple',
         'orange',
         'white',
+        'red',
+        'green',
+        'teal',
+        'lime',
+        'brown',
+        'black',
       ]);
     });
 
     test('every id is unique', () {
       final ids = TrailColorChoice.values.map((c) => c.id).toSet();
       expect(ids.length, TrailColorChoice.values.length);
+    });
+
+    test('fromId resolves the newly added colours', () {
+      expect(TrailColorChoice.fromId('red'), TrailColorChoice.red);
+      expect(TrailColorChoice.fromId('black'), TrailColorChoice.black);
     });
   });
 
