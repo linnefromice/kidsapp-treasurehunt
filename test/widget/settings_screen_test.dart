@@ -53,7 +53,7 @@ void main() {
     }
   });
 
-  testWidgets('solid is the default and shows the six colour chips', (
+  testWidgets('solid is the default and shows a chip for every colour', (
     tester,
   ) async {
     SharedPreferences.setMockInitialValues({});
