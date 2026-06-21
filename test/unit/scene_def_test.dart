@@ -31,15 +31,12 @@ void main() {
     expect(t.normalizedRect, const Rect.fromLTWH(0.1, 0.2, 0.3, 0.4));
   });
 
-  test(
-    'loads scene02 (4 targets) and scene03 (5 targets) from assets',
-    () async {
-      final s2 = await SceneDef.loadAsset('scene02');
-      expect(s2.targets, hasLength(4));
-      final s3 = await SceneDef.loadAsset('scene03');
-      expect(s3.targets, hasLength(5));
-    },
-  );
+  test('loads scenes with the expanded target count (8 per scene)', () async {
+    final s2 = await SceneDef.loadAsset('scene02');
+    expect(s2.targets, hasLength(8));
+    final s3 = await SceneDef.loadAsset('scene03');
+    expect(s3.targets, hasLength(8));
+  });
 
   group('SceneDef dummy parsing', () {
     test('parses dummies from json', () {
@@ -128,20 +125,15 @@ void main() {
       expect(def.dummies.first.scale, closeTo(0.6, 1e-9));
     });
 
-    test('scene01 loads with 6 dummies', () async {
+    test('scene01 loads with 12 dummies disjoint from its targets', () async {
       final def = await SceneDef.loadAsset('scene01');
-      expect(def.dummies.length, 6);
-      // `key` (not `heart`) — a dummy must never reuse a target iconId, or it
-      // looks like a treasure yet is never hit-tested. See
-      // scene_consistency_test.dart for the cross-scene invariant.
-      expect(def.dummies.map((d) => d.iconId).toSet(), {
-        'leaf',
-        'rabbit',
-        'bug',
-        'flower',
-        'key',
-        'ball',
-      });
+      expect(def.dummies.length, 12);
+      // 不変条件: ダミーは宝の iconId を流用しない（流用すると宝そっくりの
+      // 偽物が出るがヒット判定外になる）。厳密なアイコン集合を凍結せず、
+      // この本質的な性質だけを検証する（増量時にブレない）。
+      final targetIcons = def.targets.map((t) => t.iconId).toSet();
+      final dummyIcons = def.dummies.map((d) => d.iconId).toSet();
+      expect(targetIcons.intersection(dummyIcons), isEmpty);
     });
   });
 }

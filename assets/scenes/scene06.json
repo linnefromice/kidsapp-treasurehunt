@@ -3,25 +3,249 @@
   "titleKey": "scene.scene06.title",
   "imageAsset": "assets/scenes/scene06.png",
   "targets": [
-    { "id": "apple",  "iconId": "apple",  "labelKey": "target.apple",  "left": 0.100, "top": 0.180, "width": 0.12, "height": 0.14 },
-    { "id": "duck",   "iconId": "duck",   "labelKey": "target.duck",   "left": 0.620, "top": 0.160, "width": 0.12, "height": 0.14 },
-    { "id": "star",   "iconId": "star",   "labelKey": "target.star",   "left": 0.380, "top": 0.300, "width": 0.12, "height": 0.14 },
-    { "id": "ball",   "iconId": "ball",   "labelKey": "target.ball",   "left": 0.780, "top": 0.420, "width": 0.12, "height": 0.14 },
-    { "id": "flower", "iconId": "flower", "labelKey": "target.flower", "left": 0.300, "top": 0.660, "width": 0.12, "height": 0.14 }
+    {
+      "id": "apple_1",
+      "iconId": "apple",
+      "labelKey": "target.apple",
+      "left": 0.352,
+      "top": 0.497,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "duck_1",
+      "iconId": "duck",
+      "labelKey": "target.duck",
+      "left": 0.034,
+      "top": 0.034,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "star_1",
+      "iconId": "star",
+      "labelKey": "target.star",
+      "left": 0.681,
+      "top": 0.647,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "ball_1",
+      "iconId": "ball",
+      "labelKey": "target.ball",
+      "left": 0.357,
+      "top": 0.028,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "flower_1",
+      "iconId": "flower",
+      "labelKey": "target.flower",
+      "left": 0.366,
+      "top": 0.185,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "apple_2",
+      "iconId": "apple",
+      "labelKey": "target.apple",
+      "left": 0.698,
+      "top": 0.342,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "duck_2",
+      "iconId": "duck",
+      "labelKey": "target.duck",
+      "left": 0.182,
+      "top": 0.801,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "star_2",
+      "iconId": "star",
+      "labelKey": "target.star",
+      "left": 0.025,
+      "top": 0.342,
+      "width": 0.11,
+      "height": 0.13
+    }
   ],
   "dummies": [
-    { "id": "leaf6",     "iconId": "leaf",     "left": 0.500, "top": 0.500, "width": 0.11, "height": 0.13 },
-    { "id": "rabbit6",   "iconId": "rabbit",   "left": 0.160, "top": 0.460, "width": 0.11, "height": 0.13 },
-    { "id": "bug6",      "iconId": "bug",      "left": 0.840, "top": 0.200, "width": 0.11, "height": 0.13 },
-    { "id": "car6",      "iconId": "car",      "left": 0.555, "top": 0.700, "width": 0.11, "height": 0.13 },
-    { "id": "key6",      "iconId": "key",      "left": 0.100, "top": 0.700, "width": 0.11, "height": 0.13 },
-    { "id": "umbrella6", "iconId": "umbrella", "left": 0.700, "top": 0.620, "width": 0.11, "height": 0.13 }
+    {
+      "id": "d_swimmer",
+      "iconId": "swimmer",
+      "left": 0.202,
+      "top": 0.18,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_bell",
+      "iconId": "bell",
+      "left": 0.86,
+      "top": 0.492,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_pizza",
+      "iconId": "pizza",
+      "left": 0.202,
+      "top": 0.34,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_kite",
+      "iconId": "kite",
+      "left": 0.35,
+      "top": 0.338,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_lightbulb",
+      "iconId": "lightbulb",
+      "left": 0.521,
+      "top": 0.795,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_fire",
+      "iconId": "fire",
+      "left": 0.677,
+      "top": 0.025,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_sailboat",
+      "iconId": "sailboat",
+      "left": 0.86,
+      "top": 0.8,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_crown",
+      "iconId": "crown",
+      "left": 0.515,
+      "top": 0.644,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_icecream",
+      "iconId": "icecream",
+      "left": 0.023,
+      "top": 0.644,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_heart",
+      "iconId": "heart",
+      "left": 0.355,
+      "top": 0.8,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_leaf",
+      "iconId": "leaf",
+      "left": 0.522,
+      "top": 0.19,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_car",
+      "iconId": "car",
+      "left": 0.839,
+      "top": 0.645,
+      "width": 0.1,
+      "height": 0.12
+    }
   ],
   "hardDummies": [
-    { "id": "h_bell6",      "iconId": "bell",      "left": 0.020, "top": 0.020, "width": 0.11, "height": 0.13, "scale": 0.6 },
-    { "id": "h_lightbulb6", "iconId": "lightbulb", "left": 0.400, "top": 0.030, "width": 0.11, "height": 0.13, "scale": 1.3 },
-    { "id": "h_cat6",       "iconId": "cat",       "left": 0.880, "top": 0.620, "width": 0.11, "height": 0.13, "scale": 0.75 },
-    { "id": "h_sailboat6",  "iconId": "sailboat",  "left": 0.880, "top": 0.820, "width": 0.11, "height": 0.13, "scale": 1.2 },
-    { "id": "h_crown6",     "iconId": "crown",     "left": 0.400, "top": 0.820, "width": 0.11, "height": 0.13, "scale": 0.55 }
+    {
+      "id": "h_gem",
+      "iconId": "gem",
+      "left": 0.68,
+      "top": 0.805,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.7
+    },
+    {
+      "id": "h_rabbit",
+      "iconId": "rabbit",
+      "left": 0.191,
+      "top": 0.027,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.85
+    },
+    {
+      "id": "h_umbrella",
+      "iconId": "umbrella",
+      "left": 0.039,
+      "top": 0.18,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.0
+    },
+    {
+      "id": "h_music",
+      "iconId": "music",
+      "left": 0.852,
+      "top": 0.186,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.15
+    },
+    {
+      "id": "h_bug",
+      "iconId": "bug",
+      "left": 0.697,
+      "top": 0.183,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.3
+    },
+    {
+      "id": "h_key",
+      "iconId": "key",
+      "left": 0.033,
+      "top": 0.49,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.8
+    },
+    {
+      "id": "h_cake",
+      "iconId": "cake",
+      "left": 0.511,
+      "top": 0.034,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.2
+    },
+    {
+      "id": "h_cat",
+      "iconId": "cat",
+      "left": 0.531,
+      "top": 0.343,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.95
+    }
   ]
 }
