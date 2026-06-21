@@ -12,6 +12,7 @@ import 'package:kidsapp_treasurehunt/save_slots_catalog.dart';
 import 'package:kidsapp_treasurehunt/scenes_catalog.dart';
 import 'package:kidsapp_treasurehunt/shared/game_mode.dart';
 import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
+import 'package:kidsapp_treasurehunt/shared/theme/kids_theme.dart';
 
 /// 選択中モードでの「現在地」= まだクリアしていない最初の解放済みシーンの index。
 /// 全クリア / 先頭未解放なら null（マーチング足跡を出さない）。
@@ -33,8 +34,6 @@ class TreasureMapScreen extends ConsumerStatefulWidget {
 }
 
 class _TreasureMapScreenState extends ConsumerState<TreasureMapScreen> {
-  GameMode _mode = GameMode.easy;
-
   @override
   void initState() {
     super.initState();
@@ -65,6 +64,9 @@ class _TreasureMapScreenState extends ConsumerState<TreasureMapScreen> {
     final localeCode = ref.watch(localeControllerProvider).languageCode;
     final trail = ref.watch(trailSettingControllerProvider);
     final activeSlotId = ref.watch(activeSlotProvider);
+    // 難易度は永続化された設定から取得する。クリア後にホームへ戻って画面が
+    // 作り直されても選択が維持される（Bug A: easy へのリセットを防ぐ）。
+    final mode = ref.watch(gameModeControllerProvider);
     final avatarEmoji = ref.watch(
       saveSlotControllerProvider.select(
         (slots) => (activeSlotId != null && activeSlotId != kFreeModeSlotId)
@@ -73,13 +75,13 @@ class _TreasureMapScreenState extends ConsumerState<TreasureMapScreen> {
       ),
     );
 
-    final isHard = _mode == GameMode.hard;
+    final isHard = mode == GameMode.hard;
     // バッジ・カウンタ・軌跡・現在地はすべて選択中モードの進捗を反映する。
     final clearedForMode = kSceneCatalog
-        .where((e) => progress.isCleared(_mode, e.id))
+        .where((e) => progress.isCleared(mode, e.id))
         .map((e) => e.id)
         .toSet();
-    final currentIndex = _currentNodeIndex(progress, _mode);
+    final currentIndex = _currentNodeIndex(progress, mode);
 
     return Scaffold(
       appBar: AppBar(
@@ -151,11 +153,11 @@ class _TreasureMapScreenState extends ConsumerState<TreasureMapScreen> {
                   child: _MapNode(
                     entry: entry,
                     localeCode: localeCode,
-                    unlocked: progress.isUnlocked(_mode, entry.id),
+                    unlocked: progress.isUnlocked(mode, entry.id),
                     cleared: clearedForMode.contains(entry.id),
-                    onTap: progress.isUnlocked(_mode, entry.id)
+                    onTap: progress.isUnlocked(mode, entry.id)
                         ? () =>
-                              context.go('/hunt/${entry.id}?mode=${_mode.name}')
+                              context.go('/hunt/${entry.id}?mode=${mode.name}')
                         : null,
                   ),
                 ),
@@ -166,9 +168,10 @@ class _TreasureMapScreenState extends ConsumerState<TreasureMapScreen> {
                 right: 0,
                 child: Center(
                   child: _ModeToggle(
-                    mode: _mode,
+                    mode: mode,
                     localeCode: localeCode,
-                    onChanged: (m) => setState(() => _mode = m),
+                    onChanged: (m) =>
+                        ref.read(gameModeControllerProvider.notifier).select(m),
                   ),
                 ),
               ),
@@ -196,7 +199,7 @@ class _ModeToggle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       key: const ValueKey('map-mode-toggle'),
-      color: const Color(0xFFEDE3D2),
+      color: KidsTheme.toggleSurface,
       borderRadius: BorderRadius.circular(24),
       elevation: 2,
       child: Padding(

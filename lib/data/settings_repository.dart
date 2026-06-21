@@ -1,4 +1,5 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:kidsapp_treasurehunt/shared/game_mode.dart';
 
 /// 設定(表示言語・なぞりトレイルの色)の永続化窓口。
 ///
@@ -10,6 +11,7 @@ class SettingsRepository {
   final SharedPreferences _prefs;
 
   static const _localeKey = 'settings.locale';
+  static const _gameModeKey = 'settings.gameMode';
   static const _trailColorKey = 'settings.trailColor';
   static const _trailStyleKey = 'settings.trailStyle';
   static const _trailColors3Key = 'settings.trailColors3';
@@ -29,6 +31,13 @@ class SettingsRepository {
   String localeCode() => _prefs.getString(_localeKey) ?? 'ja';
 
   Future<void> setLocaleCode(String code) => _prefs.setString(_localeKey, code);
+
+  /// 選択中の難易度。ナビゲーションやアプリ再起動をまたいで保持する
+  /// （未設定・不明値は最もやさしい既定にフォールバック）。
+  GameMode gameMode() => gameModeFromQuery(_prefs.getString(_gameModeKey));
+
+  Future<void> setGameMode(GameMode mode) =>
+      _prefs.setString(_gameModeKey, mode.name);
 
   /// なぞりトレイルの色 id。未設定時は既定色 ([_trailColorDefault])。
   /// 未知値の解釈（fallback への倒し込み）は呼び出し側の

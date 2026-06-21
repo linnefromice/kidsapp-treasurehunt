@@ -1,9 +1,24 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:kidsapp_treasurehunt/data/settings_repository.dart';
+import 'package:kidsapp_treasurehunt/shared/game_mode.dart';
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  test('defaults game mode to easy', () async {
+    final prefs = await SharedPreferences.getInstance();
+    final repo = SettingsRepository(prefs);
+    expect(repo.gameMode(), GameMode.easy);
+  });
+
+  test('persists the selected game mode', () async {
+    final prefs = await SharedPreferences.getInstance();
+    final repo = SettingsRepository(prefs);
+    await repo.setGameMode(GameMode.normal);
+    expect(repo.gameMode(), GameMode.normal);
+    expect(prefs.getString('settings.gameMode'), 'normal');
+  });
 
   test('defaults to ja', () async {
     final prefs = await SharedPreferences.getInstance();
