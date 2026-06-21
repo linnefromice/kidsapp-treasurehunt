@@ -2,7 +2,7 @@ import 'package:flutter/painting.dart';
 
 import 'package:kidsapp_treasurehunt/shared/game_mode.dart';
 
-/// なぞり跡に出すキラキラ粒子トレイルの「色の部品」。設定で選べる単色 12 色。
+/// なぞり跡に出すキラキラ粒子トレイルの「色の部品」。設定で選べる単色 20 色。
 ///
 /// 永続化は [id]（文字列）で行い、未知の値は [fallback] に倒す。
 /// にじ（[TrailStyle.rainbow3]）の 3 色もこの値から組み立てる。
@@ -18,7 +18,15 @@ enum TrailColorChoice {
   teal('teal', Color(0xFF26C6DA)),
   lime('lime', Color(0xFFCDDC39)),
   brown('brown', Color(0xFF8D6E63)),
-  black('black', Color(0xFF424242));
+  black('black', Color(0xFF424242)),
+  indigo('indigo', Color(0xFF5C6BC0)),
+  magenta('magenta', Color(0xFFE040FB)),
+  coral('coral', Color(0xFFFF8A65)),
+  mint('mint', Color(0xFFA5D6A7)),
+  lavender('lavender', Color(0xFFB39DDB)),
+  peach('peach', Color(0xFFFFCC80)),
+  turquoise('turquoise', Color(0xFF1DE9B6)),
+  grey('grey', Color(0xFF9E9E9E));
 
   const TrailColorChoice(this.id, this.baseColor);
 

@@ -39,7 +39,7 @@ void main() {
   });
 
   group('palette', () {
-    test('exposes the full solid colour palette (12)', () {
+    test('exposes the full solid colour palette (20)', () {
       expect(TrailColorChoice.values.map((c) => c.id), [
         'sky',
         'pink',
@@ -53,6 +53,14 @@ void main() {
         'lime',
         'brown',
         'black',
+        'indigo',
+        'magenta',
+        'coral',
+        'mint',
+        'lavender',
+        'peach',
+        'turquoise',
+        'grey',
       ]);
     });
 
