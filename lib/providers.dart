@@ -168,6 +168,21 @@ final localeControllerProvider = NotifierProvider<LocaleController, Locale>(
   LocaleController.new,
 );
 
+/// 選択中の難易度（Easy / Normal / Hard）。初期値は SettingsRepository から。
+/// 全スロット共通の表示設定として扱い、ナビゲーション・再起動をまたいで保持する。
+class GameModeController extends Notifier<GameMode> {
+  @override
+  GameMode build() => ref.read(settingsRepositoryProvider).gameMode();
+
+  Future<void> select(GameMode mode) async {
+    await ref.read(settingsRepositoryProvider).setGameMode(mode);
+    state = mode;
+  }
+}
+
+final gameModeControllerProvider =
+    NotifierProvider<GameModeController, GameMode>(GameModeController.new);
+
 /// なぞりトレイルの設定（スタイル + 単色 + にじ3色）。
 /// 初期値は SettingsRepository から。全スロット共通。
 class TrailSettingController extends Notifier<TrailSetting> {

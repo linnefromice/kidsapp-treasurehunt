@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_interaction.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/trail_color.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/scene_background.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/seek_find_logic.dart';
@@ -21,6 +22,7 @@ import 'package:kidsapp_treasurehunt/providers.dart';
 import 'package:kidsapp_treasurehunt/scenes_catalog.dart';
 import 'package:kidsapp_treasurehunt/shared/game_mode.dart';
 import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
+import 'package:kidsapp_treasurehunt/shared/theme/kids_theme.dart';
 import 'package:kidsapp_treasurehunt/shared/widgets/kids_button.dart';
 
 /// 操作が無いまま何秒経過したら未発見の宝を 1 つヒント点滅させるか
@@ -121,6 +123,11 @@ class _SceneViewState extends ConsumerState<_SceneView>
 
   /// Normal / Hard はビューポートより大きい探索エリア（パン必須）。
   bool get _isLargeArea => widget.mode != GameMode.easy;
+
+  /// 大エリアでの 1 本指ドラッグの用途（地図を動かす / なぞって探す）。
+  /// 既定は [SceneInteraction.move]: まず地図を見渡せて、タップ発見は常に可能。
+  /// Easy ではトグルを出さず、常になぞり（[dragBehaviorFor] が吸収）。
+  SceneInteraction _interaction = SceneInteraction.move;
 
   @override
   void initState() {
@@ -275,6 +282,18 @@ class _SceneViewState extends ConsumerState<_SceneView>
       children: [
         Column(
           children: [
+            // 大エリア（Normal/Hard）のみ「うごかす / さがす」トグルをシーンの外
+            // （専用ストリップ）に置く。Stack で重ねるとピル下のターゲットへの
+            // タップを吸収してしまうため、レイアウト上で場所を分けて衝突を避ける。
+            if (_isLargeArea && !_completed)
+              Padding(
+                padding: const EdgeInsets.only(top: 8, bottom: 4),
+                child: _InteractionToggle(
+                  interaction: _interaction,
+                  localeCode: localeCode,
+                  onChanged: (i) => setState(() => _interaction = i),
+                ),
+              ),
             Expanded(
               child: LayoutBuilder(
                 builder: (context, constraints) {
@@ -291,15 +310,23 @@ class _SceneViewState extends ConsumerState<_SceneView>
                         )
                       : viewport;
                   final decoys = decoysForMode(scene, widget.mode);
+                  // ドラッグの割り当て（パン or なぞり）。タップ発見は別途常に有効。
+                  final drag = dragBehaviorFor(widget.mode, _interaction);
                   final content = GestureDetector(
                     behavior: HitTestBehavior.opaque,
-                    onTapDown: (d) => _handleHit(d.localPosition, sceneSize),
-                    // なぞって探す（パン発見）は Easy のみ。Large area では
-                    // ドラッグは InteractiveViewer のパンに割り当てる（タップで発見）。
-                    // なぞり中はミスバブルを出さず、代わりに色付きキラキラを追従させる。
-                    onPanStart: _isLargeArea
+                    // Easy は押した瞬間に発見（パン競合が無いので onTapDown）。
+                    // 大エリアは onTapUp（タップ確定時のみ）にして、地図パンの
+                    // 指タッチで誤発見しないようにする（Bug B: ずらしと発見の分離）。
+                    onTapDown: _isLargeArea
                         ? null
-                        : (d) {
+                        : (d) => _handleHit(d.localPosition, sceneSize),
+                    onTapUp: _isLargeArea
+                        ? (d) => _handleHit(d.localPosition, sceneSize)
+                        : null,
+                    // なぞって探す。なぞり中はミスバブルを出さず、代わりに色付き
+                    // キラキラを追従させる。大エリアでは「さがす」モードのみ有効。
+                    onPanStart: drag.traceEnabled
+                        ? (d) {
                             _lastTrailSpawn = null; // 新しいなぞりの開始
                             // にじは各なぞりを先頭の色相から始める（境界の肥大も防ぐ）。
                             _trailSeq = 0;
@@ -309,17 +336,18 @@ class _SceneViewState extends ConsumerState<_SceneView>
                               allowMiss: false,
                             );
                             _handlePanTrail(d.localPosition);
-                          },
-                    onPanUpdate: _isLargeArea
-                        ? null
-                        : (d) {
+                          }
+                        : null,
+                    onPanUpdate: drag.traceEnabled
+                        ? (d) {
                             _handleHit(
                               d.localPosition,
                               sceneSize,
                               allowMiss: false,
                             );
                             _handlePanTrail(d.localPosition);
-                          },
+                          }
+                        : null,
                     child: SizedBox(
                       width: sceneSize.width,
                       height: sceneSize.height,
@@ -357,10 +385,15 @@ class _SceneViewState extends ConsumerState<_SceneView>
                   if (!_isLargeArea) {
                     return content;
                   }
+                  // 「うごかす」= 1 本指パン＋ピンチ拡大。「なぞる」= パン/拡大とも
+                  // 無効にして単一指のなぞりに専念させる（2 本指がなぞり開始と競合して
+                  // 誤発見するのを防ぐ）。拡大率は move で設定した値が保持される。
                   return InteractiveViewer(
                     constrained: false,
                     minScale: 1.0,
                     maxScale: kLargeAreaMaxScale,
+                    panEnabled: drag.panEnabled,
+                    scaleEnabled: drag.panEnabled,
                     child: content,
                   );
                 },
@@ -458,6 +491,109 @@ class _SceneViewState extends ConsumerState<_SceneView>
     ref.read(foundControllerProvider(_foundKey).notifier).markFound(hitId);
     HapticFeedback.lightImpact();
     ref.read(audioServiceProvider).playFound();
+  }
+}
+
+/// 「うごかす（地図パン） / さがす（なぞって発見）」を切り替えるピル型トグル。
+/// 大エリア（Normal/Hard）でのみ表示し、1 本指ドラッグの用途を明示的に選ばせる。
+/// タップ発見はどちらのモードでも有効なので、これはドラッグの割り当てだけを変える。
+class _InteractionToggle extends StatelessWidget {
+  const _InteractionToggle({
+    required this.interaction,
+    required this.localeCode,
+    required this.onChanged,
+  });
+
+  final SceneInteraction interaction;
+  final String localeCode;
+  final ValueChanged<SceneInteraction> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      key: const ValueKey('interaction-toggle'),
+      color: KidsTheme.toggleSurface,
+      borderRadius: BorderRadius.circular(24),
+      elevation: 2,
+      child: Padding(
+        padding: const EdgeInsets.all(4),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _InteractionChip(
+              keyValue: 'interaction-move',
+              icon: Icons.open_with,
+              label: tr(localeCode, 'seek.move'),
+              selected: interaction == SceneInteraction.move,
+              onTap: () => onChanged(SceneInteraction.move),
+            ),
+            const SizedBox(width: 4),
+            _InteractionChip(
+              keyValue: 'interaction-trace',
+              icon: Icons.gesture,
+              label: tr(localeCode, 'seek.trace'),
+              selected: interaction == SceneInteraction.trace,
+              onTap: () => onChanged(SceneInteraction.trace),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InteractionChip extends StatelessWidget {
+  const _InteractionChip({
+    required this.keyValue,
+    required this.icon,
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String keyValue;
+  final IconData icon;
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    // ホームの難易度トグル（_ModeChip）と同じ配色で見た目を統一する。
+    final fg = selected ? Colors.white : Colors.brown.shade700;
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: label,
+      child: GestureDetector(
+        key: ValueKey(keyValue),
+        onTap: onTap,
+        child: Container(
+          // タッチターゲット 60dp 以上（子供向け UX 基準）。
+          constraints: const BoxConstraints(minWidth: 96, minHeight: 60),
+          decoration: BoxDecoration(
+            color: selected ? Colors.amber.shade600 : Colors.transparent,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 24, color: fg),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: fg,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

@@ -26,6 +26,29 @@ Future<void> _pumpHome(WidgetTester tester, Map<String, Object> seed) async {
   await tester.pump();
 }
 
+/// `_pumpHome` と同じだが、永続化の検証用に `SharedPreferences` を返す。
+Future<SharedPreferences> _pumpHomeReturningPrefs(
+  WidgetTester tester,
+  Map<String, Object> seed,
+) async {
+  SharedPreferences.setMockInitialValues(seed);
+  final prefs = await SharedPreferences.getInstance();
+  final container = ProviderContainer(
+    overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+  );
+  addTearDown(container.dispose);
+  container.read(activeSlotProvider.notifier).select('slot1');
+
+  await tester.pumpWidget(
+    UncontrolledProviderScope(
+      container: container,
+      child: const MaterialApp(home: TreasureMapScreen()),
+    ),
+  );
+  await tester.pump();
+  return prefs;
+}
+
 void main() {
   final allIds = kSceneCatalog.map((e) => e.id).toList();
 
@@ -224,6 +247,43 @@ void main() {
         find.byKey(const ValueKey('node-current.scene01')),
         findsOneWidget,
       );
+    });
+
+    testWidgets(
+      'starts on the persisted mode (Bug A: no reset to Easy on rebuild)',
+      (tester) async {
+        // 永続化された難易度を初期表示に採用する。クリア後にホームへ戻って
+        // 画面が作り直されても Easy に戻らないことを担保する回帰テスト。
+        await _pumpHome(tester, {
+          'settings.gameMode': 'normal',
+          'progress.slot1.unlockedSceneIds': allIds,
+          'progress.slot1.clearedSceneIds': allIds,
+          'progress.slot1.normal.unlockedSceneIds': ['scene01', 'scene02'],
+          'progress.slot1.normal.clearedSceneIds': ['scene01'],
+        });
+
+        // タップなしで Normal ビュー（1/13・scene02 が現在地）になっている。
+        expect(find.textContaining('1/13'), findsOneWidget);
+        expect(
+          find.byKey(const ValueKey('node-current.scene02')),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets('selecting a mode persists it for the next launch', (
+      tester,
+    ) async {
+      final prefs = await _pumpHomeReturningPrefs(tester, {
+        'progress.slot1.unlockedSceneIds': allIds,
+        'progress.slot1.clearedSceneIds': allIds,
+        'progress.slot1.hard.unlockedSceneIds': ['scene01'],
+      });
+
+      await tester.tap(find.byKey(const ValueKey('mode-hard')));
+      await tester.pump();
+
+      expect(prefs.getString('settings.gameMode'), 'hard');
     });
 
     testWidgets('switching to Normal reflects independent normal progress', (
