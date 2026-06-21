@@ -294,4 +294,26 @@ void main() {
       );
     });
   });
+
+  group('comboBurstScale (連鎖演出の派手さ)', () {
+    test('first find is plain (1.0)', () {
+      expect(comboBurstScale(0), closeTo(1.0, 1e-9));
+      expect(comboBurstScale(1), closeTo(1.0, 1e-9));
+    });
+
+    test('escalates with consecutive finds', () {
+      expect(comboBurstScale(2), closeTo(1.15, 1e-9));
+      expect(comboBurstScale(4), closeTo(1.45, 1e-9));
+    });
+
+    test('caps so it never gets absurd', () {
+      expect(comboBurstScale(5), closeTo(1.6, 1e-9));
+      expect(comboBurstScale(100), closeTo(1.6, 1e-9));
+    });
+
+    test('the grand finale is always the most lavish burst', () {
+      // 「最後の1個」は連鎖の上限より必ず派手にする。
+      expect(kGrandFinaleBurstIntensity, greaterThan(comboBurstScale(1000)));
+    });
+  });
 }

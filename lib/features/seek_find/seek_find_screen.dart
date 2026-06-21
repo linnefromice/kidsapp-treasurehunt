@@ -92,6 +92,13 @@ class _SceneViewState extends ConsumerState<_SceneView>
   bool _completed = false;
   final List<({Offset position, Key key})> _missBubbles = [];
 
+  /// 連続発見（連鎖）数。発見で +1、空振りで 0 に戻す（A5）。
+  /// 罰しない: 途切れても減点・不快音は出さず、静かにリセットするだけ。
+  int _streak = 0;
+
+  /// 宝 id → 発見時のバースト派手さ。連鎖（A5）と「最後の 1 個」（B6）を反映。
+  final Map<String, double> _burstIntensity = {};
+
   /// なぞった指先に追従するキラキラ粒子（Easy のみ）。MissBubble と同じく
   /// リストで管理し、各粒は時間経過で自己消滅する。
   final List<({Offset position, Key key, Color color})> _trailSparkles = [];
@@ -422,6 +429,7 @@ class _SceneViewState extends ConsumerState<_SceneView>
       iconId: t.iconId,
       found: found.contains(t.id),
       hinting: _hintingId == t.id,
+      burstIntensity: _burstIntensity[t.id] ?? 1.0,
     );
     final clock = _blinkClock;
     final blinking = _isBlinking(index, found, unfoundCount);
@@ -498,9 +506,25 @@ class _SceneViewState extends ConsumerState<_SceneView>
       );
       if (allowMiss && !onHidden) {
         _addMissBubble(localPosition);
+        // タップの空振りでのみ連鎖が途切れる（なぞり中=allowMiss:false は対象外）。
+        // 静かにリセットするだけで、減点・不快音・×は出さない（no-fail 厳守）。
+        _streak = 0;
       }
       return;
     }
+    // 連鎖を伸ばし、発見バーストの派手さを決める（A5）。最後の 1 個なら
+    // 連鎖上限より豪華な「グランドフィナーレ」にする（B6）。
+    _streak++;
+    final foundCountAfter = found.length + 1;
+    final isFinalFind = foundCountAfter >= scene.targets.length;
+    final intensity = isFinalFind
+        ? kGrandFinaleBurstIntensity
+        : comboBurstScale(_streak);
+    // 重要: FoundBurst は intensity を生成時に固定するため、markFound による
+    // 再構築で burst が初めて現れる「前」に派手さを記録しておく（順序を逆にすると
+    // 既定の 1.0 で構築され、後から変えても走行中のバーストは変わらない）。
+    // markFound が foundControllerProvider を更新して再構築を起こすので setState 不要。
+    _burstIntensity[hitId] = intensity;
     ref.read(foundControllerProvider(_foundKey).notifier).markFound(hitId);
     HapticFeedback.lightImpact();
     ref.read(audioServiceProvider).playFound();
@@ -616,11 +640,15 @@ class _TargetView extends StatelessWidget {
     required this.iconId,
     required this.found,
     this.hinting = false,
+    this.burstIntensity = 1.0,
   });
 
   final String iconId;
   final bool found;
   final bool hinting;
+
+  /// 発見バーストの派手さ（連鎖 A5 / ラスト B6）。おとり・未発見では未使用。
+  final double burstIntensity;
 
   @override
   Widget build(BuildContext context) {
@@ -639,7 +667,8 @@ class _TargetView extends StatelessWidget {
               ? Icon(targetIcon(iconId), color: targetColor(iconId))
               : UnfoundTreasureIcon(iconId: iconId),
         ),
-        if (found) FoundBurst(color: targetColor(iconId)),
+        if (found)
+          FoundBurst(color: targetColor(iconId), intensity: burstIntensity),
       ],
     );
   }
@@ -753,6 +782,41 @@ class _ClearOverlayState extends State<_ClearOverlay>
     duration: const Duration(milliseconds: 1400),
   )..repeat();
 
+  // クリアの瞬間に一度だけ降る紙吹雪（B1: セレモニー強化）。山場だけ豪華に
+  // し、常時はループさせない（calm 哲学・過剰刺激を避ける）。
+  late final AnimationController _confetti = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 1800),
+  )..forward();
+
+  // 紙吹雪 1 片: [startX(0–1), 色index(0–5), 横ゆれ量(-1–1), 大きさ(0.7–1.3), 開始遅延(0–0.35)]
+  static const List<List<double>> _kConfetti = [
+    [0.05, 0, 0.8, 1.1, 0.00],
+    [0.14, 2, -0.6, 0.9, 0.10],
+    [0.23, 4, 0.5, 1.2, 0.05],
+    [0.32, 1, -0.9, 0.8, 0.18],
+    [0.41, 3, 0.7, 1.0, 0.02],
+    [0.50, 5, -0.4, 1.3, 0.12],
+    [0.59, 0, 0.9, 0.9, 0.07],
+    [0.68, 2, -0.7, 1.1, 0.20],
+    [0.77, 4, 0.6, 0.8, 0.03],
+    [0.86, 1, -0.8, 1.2, 0.15],
+    [0.95, 3, 0.4, 1.0, 0.09],
+    [0.10, 5, -0.5, 1.1, 0.25],
+    [0.19, 1, 0.8, 0.9, 0.30],
+    [0.28, 3, -0.6, 1.2, 0.08],
+    [0.37, 0, 0.7, 0.8, 0.22],
+    [0.46, 2, -0.9, 1.0, 0.04],
+    [0.55, 4, 0.5, 1.3, 0.17],
+    [0.64, 1, -0.4, 0.9, 0.28],
+    [0.73, 5, 0.9, 1.1, 0.06],
+    [0.82, 0, -0.7, 0.8, 0.13],
+    [0.91, 2, 0.6, 1.2, 0.24],
+    [0.01, 4, -0.8, 1.0, 0.11],
+    [0.43, 5, 0.5, 0.9, 0.33],
+    [0.61, 3, -0.6, 1.1, 0.19],
+  ];
+
   // Normalized [x, y, phaseOffset] for twinkling stars. Explicit List<List<double>>
   // type prevents Dart inferring List<List<num>> from the literal.
   static const List<List<double>> _kStars = [
@@ -785,6 +849,7 @@ class _ClearOverlayState extends State<_ClearOverlay>
   void dispose() {
     _entry.dispose();
     _sparkle.dispose();
+    _confetti.dispose();
     super.dispose();
   }
 
@@ -808,15 +873,29 @@ class _ClearOverlayState extends State<_ClearOverlay>
                 ),
               ),
             ),
-            // Twinkling stars
-            AnimatedBuilder(
-              animation: _sparkle,
-              builder: (context, _) {
-                return CustomPaint(
-                  painter: _SparklePainter(_sparkle.value, _kStars),
-                  size: Size.infinite,
-                );
-              },
+            // Twinkling stars（毎フレーム再描画をオーバーレイ全体から隔離）
+            RepaintBoundary(
+              child: AnimatedBuilder(
+                animation: _sparkle,
+                builder: (context, _) {
+                  return CustomPaint(
+                    painter: _SparklePainter(_sparkle.value, _kStars),
+                    size: Size.infinite,
+                  );
+                },
+              ),
+            ),
+            // Falling confetti (plays once)
+            RepaintBoundary(
+              child: AnimatedBuilder(
+                animation: _confetti,
+                builder: (context, _) {
+                  return CustomPaint(
+                    painter: _ConfettiPainter(_confetti.value, _kConfetti),
+                    size: Size.infinite,
+                  );
+                },
+              ),
             ),
             // Center message + button
             Center(
@@ -900,6 +979,71 @@ class _SparklePainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_SparklePainter old) => old.t != t;
+}
+
+/// クリア時に一度だけ上から降る紙吹雪。各片は回転しながら落下し、
+/// 終盤でフェードアウトする。[t] は 0→1 の一回再生進捗。
+class _ConfettiPainter extends CustomPainter {
+  const _ConfettiPainter(this.t, this.pieces);
+
+  final double t;
+  final List<List<double>> pieces;
+
+  static const List<Color> _palette = [
+    Color(0xFFFFC107), // amber
+    Color(0xFFE91E63), // pink
+    Color(0xFF42A5F5), // sky
+    Color(0xFF66BB6A), // green
+    Color(0xFFAB47BC), // purple
+    Color(0xFFFF7043), // orange
+  ];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    for (final p in pieces) {
+      final startX = p[0];
+      final color = _palette[p[1].toInt() % _palette.length];
+      final drift = p[2];
+      final sizeF = p[3];
+      final delay = p[4];
+
+      if (delay >= 1.0) {
+        continue; // ゼロ除算ガード（将来データに delay=1.0 が混じっても安全）
+      }
+      // 開始遅延を抜いた各片の進捗。
+      final local = ((t - delay) / (1.0 - delay)).clamp(0.0, 1.0);
+      if (local <= 0.0) {
+        continue;
+      }
+      // 上から下へ落下（画面外まで）。横はゆっくり左右に揺れる。
+      final y = (-0.05 + local * 1.15) * size.height;
+      final x =
+          (startX + drift * 0.06 * math.sin(local * math.pi * 2 + p[1])) *
+          size.width;
+      // フェードイン（0–0.1）→ フェードアウト（0.8–1.0）。
+      final opacity = (local < 0.1
+          ? local / 0.1
+          : (local > 0.8 ? (1.0 - local) / 0.2 : 1.0));
+      final w = 10.0 * sizeF;
+      final h = 6.0 * sizeF;
+
+      canvas.save();
+      canvas.translate(x, y);
+      canvas.rotate((startX * 6 + local * 8) % (2 * math.pi));
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromCenter(center: Offset.zero, width: w, height: h),
+          const Radius.circular(2),
+        ),
+        Paint()..color = color.withValues(alpha: opacity.clamp(0.0, 1.0)),
+      );
+      canvas.restore();
+    }
+  }
+
+  @override
+  bool shouldRepaint(_ConfettiPainter old) =>
+      old.t != t || old.pieces != pieces;
 }
 
 class _PulsingStarIcon extends AnimatedWidget {
