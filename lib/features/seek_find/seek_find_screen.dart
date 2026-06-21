@@ -562,6 +562,19 @@ class _SceneViewState extends ConsumerState<_SceneView>
     ref.read(foundControllerProvider(_foundKey).notifier).markFound(hitId);
     HapticFeedback.lightImpact();
     ref.read(audioServiceProvider).playFound();
+    // 図鑑（コレクション）に永続記録する（ワールド×アイコン・モード非依存）。
+    // sceneId はルートの安定 id を使う（_foundKey と同じ方針）。発見演出は既に
+    // 出ているので fire-and-forget だが、書き込み失敗は握り潰さずログする。
+    final hitIcon = scene.targets.firstWhere((t) => t.id == hitId).iconId;
+    unawaited(
+      ref
+          .read(collectionRepositoryProvider)
+          .record(widget.scene.id, hitIcon)
+          .catchError((Object e) {
+            debugPrint('collection record failed: $e');
+            return false;
+          }),
+    );
   }
 }
 
