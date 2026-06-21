@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:math';
+import 'dart:ui';
 
 import 'package:flutter/services.dart' show rootBundle;
 
@@ -50,5 +52,68 @@ class SceneDef {
   static Future<SceneDef> loadAsset(String sceneId) async {
     final raw = await rootBundle.loadString('assets/scenes/$sceneId.json');
     return SceneDef.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+  }
+
+  /// 全アイテム（宝・ダミー・ハードダミー）の**中心座標を入れ替えた**新しい
+  /// [SceneDef] を返す（C1 配置シャッフル）。id・iconId・labelKey・サイズ・scale は
+  /// すべて保持し、位置だけを置き換える。
+  ///
+  /// クリア済みシーンの再訪やフリーモードで「毎回ちがう場所」を作り、no-time /
+  /// no-fail のままリプレイ性を上げる（アセット追加ゼロ）。中心は元の集合の置換
+  /// なので、元が重ならない配置なら入れ替えても重ならない（数・難度は不変）。
+  SceneDef withShuffledPositions(Random random) {
+    final centers = <Offset>[
+      for (final t in targets) t.normalizedRect.center,
+      for (final d in dummies) d.normalizedRect.center,
+      for (final d in hardDummies) d.normalizedRect.center,
+    ]..shuffle(random);
+
+    var i = 0;
+    Rect place(Rect original) {
+      final c = centers[i++];
+      return Rect.fromCenter(
+        center: c,
+        width: original.width,
+        height: original.height,
+      );
+    }
+
+    // 中心の取り出しと同じ順（targets → dummies → hardDummies）で割り当てる。
+    final newTargets = [
+      for (final t in targets)
+        FindTarget(
+          id: t.id,
+          iconId: t.iconId,
+          labelKey: t.labelKey,
+          normalizedRect: place(t.normalizedRect),
+        ),
+    ];
+    final newDummies = [
+      for (final d in dummies)
+        DummyItem(
+          id: d.id,
+          iconId: d.iconId,
+          normalizedRect: place(d.normalizedRect),
+          scale: d.scale,
+        ),
+    ];
+    final newHardDummies = [
+      for (final d in hardDummies)
+        DummyItem(
+          id: d.id,
+          iconId: d.iconId,
+          normalizedRect: place(d.normalizedRect),
+          scale: d.scale,
+        ),
+    ];
+
+    return SceneDef(
+      id: id,
+      titleKey: titleKey,
+      imageAsset: imageAsset,
+      targets: newTargets,
+      dummies: newDummies,
+      hardDummies: newHardDummies,
+    );
   }
 }

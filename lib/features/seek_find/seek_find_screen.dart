@@ -20,6 +20,7 @@ import 'package:kidsapp_treasurehunt/features/seek_find/widgets/miss_bubble.dart
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/trail_sparkle.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/unfound_treasure_icon.dart';
 import 'package:kidsapp_treasurehunt/providers.dart';
+import 'package:kidsapp_treasurehunt/save_slots_catalog.dart';
 import 'package:kidsapp_treasurehunt/scenes_catalog.dart';
 import 'package:kidsapp_treasurehunt/shared/game_mode.dart';
 import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
@@ -71,14 +72,21 @@ class SeekFindScreen extends ConsumerWidget {
       body: sceneAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('error: $e')),
-        data: (scene) => _SceneView(scene: scene, mode: mode),
+        // key にシーン id ＋モードを含め、万一 _SceneView が同じ位置で別シーン/
+        // モードに差し替わっても State（_scene の 1 回シャッフル等）が確実に
+        // 作り直されるようにする（将来 PageView 等で再利用される場合の保険）。
+        data: (scene) => _SceneView(
+          key: ValueKey('${scene.id}-${mode.name}'),
+          scene: scene,
+          mode: mode,
+        ),
       ),
     );
   }
 }
 
 class _SceneView extends ConsumerStatefulWidget {
-  const _SceneView({required this.scene, required this.mode});
+  const _SceneView({super.key, required this.scene, required this.mode});
 
   final SceneDef scene;
   final GameMode mode;
@@ -89,6 +97,10 @@ class _SceneView extends ConsumerStatefulWidget {
 
 class _SceneViewState extends ConsumerState<_SceneView>
     with SingleTickerProviderStateMixin {
+  /// 実際に描画するシーン。クリア済みの再訪やフリーモードでは入場時に配置を
+  /// シャッフルして「毎回ちがう場所」にする（C1）。初回（未クリア）は安定配置のまま。
+  late final SceneDef _scene = _maybeShuffleOnReplay();
+
   bool _completed = false;
   final List<({Offset position, Key key})> _missBubbles = [];
 
@@ -123,6 +135,9 @@ class _SceneViewState extends ConsumerState<_SceneView>
   /// インメモリ状態（`foundControllerProvider`）専用で、永続キーとは別物。
   /// `foundControllerProvider` は autoDispose のため画面を離れると破棄され、
   /// Easy↔Normal を行き来しても Easy の素の sceneId が Normal の値を引かない。
+  // 発見状態キーはルートの安定アイデンティティ（widget.scene.id）に紐づける。
+  // _scene は配置シャッフル後の表示用で id は不変だが、ここで _scene を使うと
+  // 「発見状態の名前空間」と「シャッフル表示」が不要に結合するため使わない。
   String get _foundKey => switch (widget.mode) {
     GameMode.easy => widget.scene.id,
     GameMode.normal => '${widget.scene.id}#normal',
@@ -136,6 +151,25 @@ class _SceneViewState extends ConsumerState<_SceneView>
   /// 既定は [SceneInteraction.move]: まず地図を見渡せて、タップ発見は常に可能。
   /// Easy ではトグルを出さず、常になぞり（[dragBehaviorFor] が吸収）。
   SceneInteraction _interaction = SceneInteraction.move;
+
+  /// 再訪（クリア済み）またはフリーモードなら配置をシャッフルし、初回は
+  /// 作者の安定配置のまま返す（C1）。入場ごとに新しい乱数 → 毎回ちがう配置。
+  SceneDef _maybeShuffleOnReplay() {
+    // ref.read（watch でなく）で 1 回だけ判定する。activeSlot が null のときは
+    // progressRepositoryProvider が throw するため、先に null ガードして避ける。
+    final activeSlot = ref.read(activeSlotProvider);
+    if (activeSlot == null) {
+      return widget.scene; // スロット未選択（通常起こらない）はそのまま
+    }
+    final isFree = activeSlot == kFreeModeSlotId;
+    final cleared = ref
+        .read(progressRepositoryProvider)
+        .isCleared(widget.mode, widget.scene.id);
+    if (isFree || cleared) {
+      return widget.scene.withShuffledPositions(math.Random());
+    }
+    return widget.scene;
+  }
 
   @override
   void initState() {
@@ -166,7 +200,7 @@ class _SceneViewState extends ConsumerState<_SceneView>
     if (_blinkClock == null || unfoundCount <= 1) {
       return false;
     }
-    final t = widget.scene.targets[index];
+    final t = _scene.targets[index];
     return !found.contains(t.id) && t.id != _hintingId;
   }
 
@@ -178,7 +212,7 @@ class _SceneViewState extends ConsumerState<_SceneView>
     if (clock == null) {
       return const {};
     }
-    final targets = widget.scene.targets;
+    final targets = _scene.targets;
     final unfoundCount = targets.where((t) => !found.contains(t.id)).length;
     final hidden = <String>{};
     for (var i = 0; i < targets.length; i++) {
@@ -210,7 +244,7 @@ class _SceneViewState extends ConsumerState<_SceneView>
     }
     final found = ref.read(foundControllerProvider(_foundKey));
     final id = pickHintTargetId(
-      targets: widget.scene.targets,
+      targets: _scene.targets,
       foundIds: found,
       random: _random,
     );
@@ -271,7 +305,7 @@ class _SceneViewState extends ConsumerState<_SceneView>
 
   @override
   Widget build(BuildContext context) {
-    final scene = widget.scene;
+    final scene = _scene;
     final localeCode = ref.watch(localeControllerProvider).languageCode;
     final found = ref.watch(foundControllerProvider(_foundKey));
     final unfoundCount = scene.targets
@@ -423,7 +457,7 @@ class _SceneViewState extends ConsumerState<_SceneView>
     Set<String> found,
     int unfoundCount,
   ) {
-    final t = widget.scene.targets[index];
+    final t = _scene.targets[index];
     final view = _TargetView(
       key: ValueKey(t.id),
       iconId: t.iconId,
@@ -441,7 +475,7 @@ class _SceneViewState extends ConsumerState<_SceneView>
           : _BlinkingTarget(
               clock: clock,
               slot: index,
-              count: widget.scene.targets.length,
+              count: _scene.targets.length,
               child: view,
             ),
     );
@@ -486,7 +520,7 @@ class _SceneViewState extends ConsumerState<_SceneView>
     bool allowMiss = true,
   }) {
     _scheduleHint(); // 操作があった = アイドルではない。ヒント待ちをリセット
-    final scene = widget.scene;
+    final scene = _scene;
     final found = ref.read(foundControllerProvider(_foundKey));
     final hidden = _hiddenTargetIds(found);
     final hitId = findHitTargetId(
