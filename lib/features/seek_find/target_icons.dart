@@ -88,6 +88,15 @@ const Map<String, Color> _kTargetColors = {
   'rare_medal': Color(0xFFFF7043),
 };
 
+/// おとり（decoy）として使えるアイコンのプール。再訪時のおとり抽選（C2）で、
+/// ここからランダムに引き直す。ターゲット用（apple/duck/star/ball/flower/heart）・
+/// カバー用（cover_*）・レア用（rare_*）は除外してある（整合性のため）。
+const List<String> kDecoyIconPool = [
+  'leaf', 'rabbit', 'bug', 'anchor', 'swimmer', 'umbrella', 'car', 'key', //
+  'cake', 'gift', 'gem', 'music', 'cloud', 'moon', 'icecream', 'cookie', //
+  'pizza', 'bell', 'lightbulb', 'cat', 'sailboat', 'crown', 'fire', 'kite', //
+];
+
 IconData targetIcon(String id) => _kTargetIcons[id] ?? Icons.help_outline;
 Color targetColor(String id) => _kTargetColors[id] ?? const Color(0xFF9E9E9E);
 

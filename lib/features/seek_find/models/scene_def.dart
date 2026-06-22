@@ -7,6 +7,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:kidsapp_treasurehunt/features/seek_find/models/dummy_item.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/find_target.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/rare_treasure.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/target_icons.dart';
 
 /// 1シーンの定義(背景 + 隠し宝のリスト)。
 class SceneDef {
@@ -115,6 +116,34 @@ class SceneDef {
       targets: newTargets,
       dummies: newDummies,
       hardDummies: newHardDummies,
+    );
+  }
+
+  /// おとり（dummies + hardDummies）のアイコンを [kDecoyIconPool] から引き直した
+  /// 新しい [SceneDef] を返す（C2 おとり抽選）。id・位置・scale・個数は保持し、
+  /// アイコンだけを変えて「紛れ方」を毎回変える。ターゲットのアイコンは除外する
+  /// （= 整合性: おとりが宝と同じ見た目にならない）。
+  SceneDef withReseededDecoyIcons(Random random) {
+    final targetIcons = targets.map((t) => t.iconId).toSet();
+    final pool = kDecoyIconPool
+        .where((i) => !targetIcons.contains(i))
+        .toList(growable: false);
+    if (pool.isEmpty) {
+      return this;
+    }
+    DummyItem reseed(DummyItem d) => DummyItem(
+      id: d.id,
+      iconId: pool[random.nextInt(pool.length)],
+      normalizedRect: d.normalizedRect,
+      scale: d.scale,
+    );
+    return SceneDef(
+      id: id,
+      titleKey: titleKey,
+      imageAsset: imageAsset,
+      targets: targets,
+      dummies: [for (final d in dummies) reseed(d)],
+      hardDummies: [for (final d in hardDummies) reseed(d)],
     );
   }
 
