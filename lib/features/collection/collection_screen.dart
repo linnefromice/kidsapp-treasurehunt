@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:kidsapp_treasurehunt/data/collection_repository.dart';
 import 'package:kidsapp_treasurehunt/features/collection/collection_logic.dart';
 import 'package:kidsapp_treasurehunt/features/collection/models/collection_world.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/models/rare_treasure.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/trail_color.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/target_icons.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/unfound_treasure_icon.dart';
@@ -79,12 +80,25 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               (_) => _grantCompletionReward(),
             );
           }
+          // C4: 見つけたレア宝（base カタログ外）。見つかった分だけ「とくべつ」に
+          // 並べる（影絵は出さない＝サプライズ性を保つ・100% には影響しない）。
+          // エントリは `sceneId:iconId` 形式 → 最初の ':' 以降が iconId。
+          // ワールドをまたいで同じレアは 1 つに畳む（toSet）。
+          final foundRares = discovered
+              .map((e) => e.substring(e.indexOf(':') + 1))
+              .where(isRareIcon)
+              .toSet()
+              .toList();
           return ListView(
             key: const ValueKey('collection-list'),
             padding: const EdgeInsets.all(16),
             children: [
               _ProgressHeader(progress: progress, localeCode: localeCode),
               const SizedBox(height: 12),
+              if (foundRares.isNotEmpty) ...[
+                _RareSection(rareIconIds: foundRares, localeCode: localeCode),
+                const SizedBox(height: 12),
+              ],
               for (final world in worlds)
                 _WorldSection(
                   world: world,
@@ -153,6 +167,78 @@ class _ProgressHeader extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 見つけたレア宝（C4）を並べる「とくべつ」カード。見つけた分だけカラーで表示し、
+/// 影絵（未収集）は出さない（サプライズ性を保つ・100% 判定にも影響しない）。
+class _RareSection extends StatelessWidget {
+  const _RareSection({required this.rareIconIds, required this.localeCode});
+
+  final List<String> rareIconIds;
+  final String localeCode;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      key: const ValueKey('collection-rare'),
+      color: Colors.amber.shade50,
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.auto_awesome, color: Colors.amber.shade700),
+                const SizedBox(width: 8),
+                Text(
+                  tr(localeCode, 'collection.rare'),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                for (final iconId in rareIconIds)
+                  Container(
+                    key: ValueKey('collection-rare.$iconId'),
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: Colors.amber.shade100,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: Colors.amber.shade400,
+                        width: 2,
+                      ),
+                    ),
+                    child: Center(
+                      child: SizedBox(
+                        width: 36,
+                        height: 36,
+                        child: FittedBox(
+                          fit: BoxFit.contain,
+                          child: Icon(
+                            targetIcon(iconId),
+                            color: targetColor(iconId),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ],
         ),

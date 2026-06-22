@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:kidsapp_treasurehunt/features/seek_find/models/dummy_item.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/models/rare_treasure.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_interaction.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/trail_color.dart';
@@ -166,10 +167,16 @@ class _SceneViewState extends ConsumerState<_SceneView>
     final cleared = ref
         .read(progressRepositoryProvider)
         .isCleared(widget.mode, widget.scene.id);
-    if (isFree || cleared) {
-      return widget.scene.withShuffledPositions(math.Random());
+    if (!isFree && !cleared) {
+      return widget.scene; // 初回（未クリア）は作者の安定配置・レアも出さない
     }
-    return widget.scene;
+    // 再訪/フリーモード: 配置をシャッフルし、低確率でレア宝（C4）を 1 つ足す。
+    final random = math.Random();
+    var scene = widget.scene.withShuffledPositions(random);
+    if (random.nextDouble() < kRareTreasureChance) {
+      scene = scene.withRareTreasure(pickRare(random), random);
+    }
+    return scene;
   }
 
   @override
@@ -315,6 +322,10 @@ class _SceneViewState extends ConsumerState<_SceneView>
     // お題発見（A3）: 今さがすカテゴリ（ソフトガイド・無ければ非表示）。
     final questCategory = nextQuestCategory(scene.targets, found);
 
+    // 完了は「画面上の全宝（レア宝 C4 を含む _scene.targets）を見つけたら」。
+    // レアは出れば必ず見つけられる位置にあり、完了に含めることで確実に図鑑へ
+    // 記録される。レアは `cleared || isFree` のときだけ出るので、取り逃しても
+    // クリア済みフラグは維持され（un-clear しない）進行・100% 判定にも影響しない。
     ref.listen(foundControllerProvider(_foundKey), (previous, next) {
       final wasComplete = (previous?.length ?? 0) >= scene.targets.length;
       final nowComplete = next.length >= scene.targets.length;
