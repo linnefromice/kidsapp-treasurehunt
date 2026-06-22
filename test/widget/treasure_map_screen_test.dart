@@ -83,6 +83,9 @@ void main() {
         find.byKey(const ValueKey('node-cleared.scene01')),
         findsOneWidget,
       );
+      // クリア済みノードにはクリアスタンプ（B2）が出る。
+      expect(find.byKey(const ValueKey('clear-stamp.scene01')), findsOneWidget);
+      expect(find.byKey(const ValueKey('clear-stamp.scene02')), findsNothing);
       expect(
         find.byKey(const ValueKey('node-current.scene02')),
         findsOneWidget,

@@ -5,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:kidsapp_treasurehunt/data/collection_repository.dart';
+import 'package:kidsapp_treasurehunt/features/collection/collection_logic.dart';
 import 'package:kidsapp_treasurehunt/features/collection/models/collection_world.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/models/trail_color.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/target_icons.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/unfound_treasure_icon.dart';
 import 'package:kidsapp_treasurehunt/providers.dart';
@@ -66,57 +68,68 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
       body: catalogAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Text('error: $e')),
-        data: (worlds) => ListView(
-          key: const ValueKey('collection-list'),
-          padding: const EdgeInsets.all(16),
-          children: [
-            _ProgressHeader(
-              worlds: worlds,
-              discovered: discovered,
-              localeCode: localeCode,
-            ),
-            const SizedBox(height: 12),
-            for (final world in worlds)
-              _WorldSection(
-                world: world,
-                discovered: discovered,
-                unseen: _unseen,
-                localeCode: localeCode,
-              ),
-          ],
-        ),
+        data: (worlds) {
+          final progress = collectionProgressOf(worlds, discovered);
+          // F3: 図鑑をコンプリートしたら最上級トレイル（rainbowFull）を解放する
+          //（Hard 全クリアと並ぶもう 1 つの到達ルート）。ビルド中に副作用を出さない
+          // よう post-frame で実行する。_grantCompletionReward は冪等（解放済みなら
+          // no-op）なので、完成中の再ビルドで複数回スケジュールされても害はない。
+          if (progress.isComplete) {
+            WidgetsBinding.instance.addPostFrameCallback(
+              (_) => _grantCompletionReward(),
+            );
+          }
+          return ListView(
+            key: const ValueKey('collection-list'),
+            padding: const EdgeInsets.all(16),
+            children: [
+              _ProgressHeader(progress: progress, localeCode: localeCode),
+              const SizedBox(height: 12),
+              for (final world in worlds)
+                _WorldSection(
+                  world: world,
+                  discovered: discovered,
+                  unseen: _unseen,
+                  localeCode: localeCode,
+                ),
+            ],
+          );
+        },
       ),
+    );
+  }
+
+  /// 図鑑コンプリート報酬（F3）: 最上級トレイルを sticky 解放する。冪等。
+  void _grantCompletionReward() {
+    if (!mounted) return;
+    final settings = ref.read(settingsRepositoryProvider);
+    if (settings.trailStyleUnlocked(TrailStyle.rainbowFull.id)) {
+      return; // 既に解放済み（Hard 全クリア等）
+    }
+    // 永続化が完了してから解放集合を再評価する（invalidate と書き込みの競合回避）。
+    unawaited(
+      settings
+          .setTrailStyleUnlocked(TrailStyle.rainbowFull.id)
+          .then((_) {
+            if (mounted) ref.invalidate(unlockedTrailStylesProvider);
+          })
+          .catchError((Object e) {
+            debugPrint('collection reward unlock failed: $e');
+          }),
     );
   }
 }
 
 /// 全体の収集プログレス。完成で祝福（goal-gradient を内発的に）。
 class _ProgressHeader extends StatelessWidget {
-  const _ProgressHeader({
-    required this.worlds,
-    required this.discovered,
-    required this.localeCode,
-  });
+  const _ProgressHeader({required this.progress, required this.localeCode});
 
-  final List<CollectionWorld> worlds;
-  final Set<String> discovered;
+  final CollectionProgress progress;
   final String localeCode;
 
   @override
   Widget build(BuildContext context) {
-    var total = 0;
-    var found = 0;
-    for (final w in worlds) {
-      total += w.iconIds.length;
-      found += w.iconIds
-          .where(
-            (ic) => discovered.contains(
-              CollectionRepository.entryKey(w.sceneId, ic),
-            ),
-          )
-          .length;
-    }
-    final complete = total > 0 && found >= total;
+    final complete = progress.isComplete;
     return Card(
       key: const ValueKey('collection-progress'),
       color: complete ? Colors.amber.shade100 : null,
@@ -133,7 +146,8 @@ class _ProgressHeader extends StatelessWidget {
               child: Text(
                 complete
                     ? tr(localeCode, 'collection.allDone')
-                    : '${tr(localeCode, 'collection.collected')} $found/$total',
+                    : '${tr(localeCode, 'collection.collected')} '
+                          '${progress.found}/${progress.total}',
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,

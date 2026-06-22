@@ -116,4 +116,34 @@ void main() {
     // fake worlds: 合計 5 個（apple/duck/star + ball/flower）、収集 1 個。
     expect(find.textContaining('1/5'), findsOneWidget);
   });
+
+  testWidgets('completing the collection unlocks the rainbowFull trail (F3)', (
+    tester,
+  ) async {
+    // fake worlds の全 5 エントリを収集済みにする → コンプリート。
+    final prefs = await _pump(tester, [
+      'scene01:apple',
+      'scene01:duck',
+      'scene01:star',
+      'scene02:ball',
+      'scene02:flower',
+    ]);
+    await tester.pump(); // post-frame の報酬付与を反映
+
+    expect(find.textContaining('5/5'), findsNothing); // 完成時は祝福文言に切替
+    // コンプリート報酬: 最上級トレイルが sticky 解放される。
+    expect(prefs.getBool('settings.trailUnlock.rainbowFull'), isTrue);
+  });
+
+  testWidgets('an incomplete collection does NOT unlock the reward', (
+    tester,
+  ) async {
+    final prefs = await _pump(tester, ['scene01:apple']);
+    await tester.pump();
+
+    expect(
+      prefs.getBool('settings.trailUnlock.rainbowFull'),
+      anyOf(isNull, isFalse),
+    );
+  });
 }
