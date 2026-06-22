@@ -146,4 +146,22 @@ void main() {
       anyOf(isNull, isFalse),
     );
   });
+
+  testWidgets('found rare treasures show in the とくべつ section (C4)', (
+    tester,
+  ) async {
+    await _pump(tester, ['scene01:apple', 'scene01:rare_gem']);
+
+    expect(find.byKey(const ValueKey('collection-rare')), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('collection-rare.rare_gem')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('no rare section when no rare has been found', (tester) async {
+    await _pump(tester, ['scene01:apple']);
+
+    expect(find.byKey(const ValueKey('collection-rare')), findsNothing);
+  });
 }

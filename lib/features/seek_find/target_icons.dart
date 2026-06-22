@@ -40,6 +40,10 @@ const Map<String, IconData> _kTargetIcons = {
   'cover_leaves': Icons.grass,
   'cover_snow': Icons.ac_unit,
   'cover_box': Icons.inventory_2,
+  // 低頻度レア宝（C4）専用アイコン。base のターゲット/おとりとは衝突しない。
+  'rare_gem': Icons.diamond,
+  'rare_crown': Icons.workspace_premium,
+  'rare_medal': Icons.military_tech,
 };
 
 const Map<String, Color> _kTargetColors = {
@@ -78,6 +82,10 @@ const Map<String, Color> _kTargetColors = {
   'cover_leaves': Color(0xFF558B2F),
   'cover_snow': Color(0xFF90CAF9),
   'cover_box': Color(0xFF8D6E63),
+  // レア宝（きらびやかな色）。
+  'rare_gem': Color(0xFF00BCD4),
+  'rare_crown': Color(0xFFFFC107),
+  'rare_medal': Color(0xFFFF7043),
 };
 
 IconData targetIcon(String id) => _kTargetIcons[id] ?? Icons.help_outline;

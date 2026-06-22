@@ -6,6 +6,7 @@ import 'package:flutter/services.dart' show rootBundle;
 
 import 'package:kidsapp_treasurehunt/features/seek_find/models/dummy_item.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/find_target.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/models/rare_treasure.dart';
 
 /// 1シーンの定義(背景 + 隠し宝のリスト)。
 class SceneDef {
@@ -114,6 +115,38 @@ class SceneDef {
       targets: newTargets,
       dummies: newDummies,
       hardDummies: newHardDummies,
+    );
+  }
+
+  /// 低頻度レア宝（C4）を 1 つ足した新しい [SceneDef] を返す。
+  ///
+  /// おとり（[dummies]）が 1 つでもあれば、そのうち 1 つの**位置を借りて**レア宝
+  /// （ターゲット）に置き換える。これにより配置は必ず非重複（既存の升を再利用）で、
+  /// レアは「出れば必ず見つけられる」（no-fail）。おとりが無ければ何もしない。
+  /// 図鑑 100% 判定はベースカタログのみなので、レアは運に左右される必須要素には
+  /// ならない（ボーナス）。
+  SceneDef withRareTreasure(RareTreasure rare, Random random) {
+    if (dummies.isEmpty) {
+      return this;
+    }
+    final borrow = random.nextInt(dummies.length);
+    final slot = dummies[borrow];
+    final rareTarget = FindTarget(
+      id: rare.iconId, // base のターゲット id（apple_1 等）と衝突しない
+      iconId: rare.iconId,
+      labelKey: rare.labelKey,
+      normalizedRect: slot.normalizedRect,
+    );
+    return SceneDef(
+      id: id,
+      titleKey: titleKey,
+      imageAsset: imageAsset,
+      targets: [...targets, rareTarget],
+      dummies: [
+        for (var i = 0; i < dummies.length; i++)
+          if (i != borrow) dummies[i],
+      ],
+      hardDummies: hardDummies,
     );
   }
 }
