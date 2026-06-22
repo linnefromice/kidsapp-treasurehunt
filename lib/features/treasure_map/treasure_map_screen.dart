@@ -503,13 +503,26 @@ class _MapNodeState extends State<_MapNode>
                 if (!widget.unlocked)
                   const Icon(Icons.lock, color: Colors.brown, size: 26),
                 if (widget.cleared)
-                  const Positioned(
-                    right: 4,
-                    top: 4,
-                    child: Icon(
-                      Icons.check_circle,
-                      color: Colors.green,
-                      size: 22,
+                  Positioned(
+                    right: 2,
+                    top: 2,
+                    // クリアの「スタンプ」（B2）。少し傾けてポンと押した感を出す。
+                    child: Transform.rotate(
+                      angle: -0.22,
+                      child: Container(
+                        key: ValueKey('clear-stamp.${widget.entry.id}'),
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.shade600,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                        child: const Icon(
+                          Icons.star,
+                          color: Colors.white,
+                          size: 16,
+                        ),
+                      ),
                     ),
                   ),
               ],
