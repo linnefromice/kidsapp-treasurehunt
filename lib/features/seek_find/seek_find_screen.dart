@@ -15,20 +15,18 @@ import 'package:kidsapp_treasurehunt/features/seek_find/models/trail_color.dart'
 import 'package:kidsapp_treasurehunt/features/seek_find/models/treasure_category.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/scene_background.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/seek_find_logic.dart';
-import 'package:kidsapp_treasurehunt/features/seek_find/target_icons.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/widgets/clear_overlay.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/collection_bar.dart';
-import 'package:kidsapp_treasurehunt/features/seek_find/widgets/found_burst.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/hint_glow.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/widgets/interaction_toggle.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/miss_bubble.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/widgets/quest_banner.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/widgets/target_view.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/trail_sparkle.dart';
-import 'package:kidsapp_treasurehunt/features/seek_find/widgets/unfound_treasure_icon.dart';
 import 'package:kidsapp_treasurehunt/providers.dart';
 import 'package:kidsapp_treasurehunt/save_slots_catalog.dart';
 import 'package:kidsapp_treasurehunt/scenes_catalog.dart';
 import 'package:kidsapp_treasurehunt/shared/game_mode.dart';
-import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
-import 'package:kidsapp_treasurehunt/shared/theme/kids_theme.dart';
-import 'package:kidsapp_treasurehunt/shared/widgets/kids_button.dart';
 
 /// 操作が無いまま何秒経過したら未発見の宝を 1 つヒント点滅させるか
 /// （アイドル時のみ。タップ/なぞりのたびにカウントはリセットされ、急かさない）。
@@ -365,13 +363,13 @@ class _SceneViewState extends ConsumerState<_SceneView>
                   runSpacing: 8,
                   children: [
                     if (questCategory != null)
-                      _QuestBanner(
+                      QuestBanner(
                         key: const ValueKey('quest-banner'),
                         category: questCategory,
                         localeCode: localeCode,
                       ),
                     if (_isLargeArea)
-                      _InteractionToggle(
+                      InteractionToggle(
                         interaction: _interaction,
                         localeCode: localeCode,
                         onChanged: (i) => setState(() => _interaction = i),
@@ -496,7 +494,7 @@ class _SceneViewState extends ConsumerState<_SceneView>
           ],
         ),
         if (_completed)
-          _ClearOverlay(localeCode: localeCode, onBack: () => context.go('/')),
+          ClearOverlay(localeCode: localeCode, onBack: () => context.go('/')),
       ],
     );
   }
@@ -509,7 +507,7 @@ class _SceneViewState extends ConsumerState<_SceneView>
     int unfoundCount,
   ) {
     final t = _scene.targets[index];
-    final view = _TargetView(
+    final view = TargetView(
       key: ValueKey(t.id),
       iconId: t.iconId,
       found: found.contains(t.id),
@@ -524,7 +522,7 @@ class _SceneViewState extends ConsumerState<_SceneView>
       sceneSize,
       child: clock == null || !blinking
           ? view
-          : _BlinkingTarget(
+          : BlinkingTarget(
               clock: clock,
               slot: index,
               count: _scene.targets.length,
@@ -537,12 +535,12 @@ class _SceneViewState extends ConsumerState<_SceneView>
   /// おとりはヒット判定の対象外なので、当たり判定（[_hiddenTargetIds]）には
   /// 影響しない（消えていても元々押せない）。位相は [slot]/[count] でずらす。
   Widget _buildDecoy(DummyItem decoy, int slot, int count) {
-    final view = _TargetView(iconId: decoy.iconId, found: false);
+    final view = TargetView(iconId: decoy.iconId, found: false);
     final clock = _blinkClock;
     if (clock == null) {
       return view; // Normal: おとりは静止
     }
-    return _BlinkingTarget(clock: clock, slot: slot, count: count, child: view);
+    return BlinkingTarget(clock: clock, slot: slot, count: count, child: view);
   }
 
   Future<void> _handleComplete(String sceneId) async {
@@ -626,595 +624,6 @@ class _SceneViewState extends ConsumerState<_SceneView>
             debugPrint('collection record failed: $e');
             return false;
           }),
-    );
-  }
-}
-
-/// お題発見（A3）のソフトガイド・バナー。「○○ を さがそう」を 🔍＋カテゴリ絵＋
-/// ラベルで示す（読字に依存しない）。タップで効果音（注目）。強制ではなく、未発見が
-/// 進むと自然に次のカテゴリへ切り替わる（罰なし）。
-class _QuestBanner extends StatelessWidget {
-  const _QuestBanner({
-    super.key,
-    required this.category,
-    required this.localeCode,
-  });
-
-  final TreasureCategory category;
-  final String localeCode;
-
-  @override
-  Widget build(BuildContext context) {
-    // 表示専用のガイド（非タップ）。発見音（報酬）を流用しないことで「発見＝報酬音」
-    // の連合を汚さない。読字に依存しないよう 🔍＋カテゴリ絵＋ラベルで示す。
-    return Material(
-      color: KidsTheme.toggleSurface,
-      borderRadius: BorderRadius.circular(24),
-      elevation: 2,
-      child: Container(
-        constraints: const BoxConstraints(minHeight: 56),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.search, size: 26, color: Colors.brown.shade600),
-            const SizedBox(width: 8),
-            Icon(category.icon, size: 28, color: Colors.brown.shade700),
-            const SizedBox(width: 8),
-            Text(
-              tr(localeCode, category.labelKey),
-              key: ValueKey('quest-label.${category.name}'),
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// 「うごかす（地図パン） / さがす（なぞって発見）」を切り替えるピル型トグル。
-/// 大エリア（Normal/Hard）でのみ表示し、1 本指ドラッグの用途を明示的に選ばせる。
-/// タップ発見はどちらのモードでも有効なので、これはドラッグの割り当てだけを変える。
-class _InteractionToggle extends StatelessWidget {
-  const _InteractionToggle({
-    required this.interaction,
-    required this.localeCode,
-    required this.onChanged,
-  });
-
-  final SceneInteraction interaction;
-  final String localeCode;
-  final ValueChanged<SceneInteraction> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      key: const ValueKey('interaction-toggle'),
-      color: KidsTheme.toggleSurface,
-      borderRadius: BorderRadius.circular(24),
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(4),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _InteractionChip(
-              keyValue: 'interaction-move',
-              icon: Icons.open_with,
-              label: tr(localeCode, 'seek.move'),
-              selected: interaction == SceneInteraction.move,
-              onTap: () => onChanged(SceneInteraction.move),
-            ),
-            const SizedBox(width: 4),
-            _InteractionChip(
-              keyValue: 'interaction-trace',
-              icon: Icons.gesture,
-              label: tr(localeCode, 'seek.trace'),
-              selected: interaction == SceneInteraction.trace,
-              onTap: () => onChanged(SceneInteraction.trace),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _InteractionChip extends StatelessWidget {
-  const _InteractionChip({
-    required this.keyValue,
-    required this.icon,
-    required this.label,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String keyValue;
-  final IconData icon;
-  final String label;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    // ホームの難易度トグル（_ModeChip）と同じ配色で見た目を統一する。
-    final fg = selected ? Colors.white : Colors.brown.shade700;
-    return Semantics(
-      button: true,
-      selected: selected,
-      label: label,
-      child: GestureDetector(
-        key: ValueKey(keyValue),
-        onTap: onTap,
-        child: Container(
-          // タッチターゲット 60dp 以上（子供向け UX 基準）。
-          constraints: const BoxConstraints(minWidth: 96, minHeight: 60),
-          decoration: BoxDecoration(
-            color: selected ? Colors.amber.shade600 : Colors.transparent,
-            borderRadius: BorderRadius.circular(20),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 24, color: fg),
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: fg,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _TargetView extends StatelessWidget {
-  const _TargetView({
-    super.key,
-    required this.iconId,
-    required this.found,
-    this.hinting = false,
-    this.burstIntensity = 1.0,
-    this.coverIconId,
-  });
-
-  final String iconId;
-  final bool found;
-  final bool hinting;
-
-  /// 発見バーストの派手さ（連鎖 A5 / ラスト B6）。おとり・未発見では未使用。
-  final double burstIntensity;
-
-  /// めくり露出（A1）の「かぶせもの」アイコン id。未発見の間はこのカバー絵を
-  /// 影絵の代わりに表示する。発見すると消えて宝が現れる（＝めくれる演出）。
-  final String? coverIconId;
-
-  @override
-  Widget build(BuildContext context) {
-    final cover = coverIconId;
-    return Stack(
-      alignment: Alignment.center,
-      // Clip.none lets FoundBurst sparks radiate beyond the target bounds
-      clipBehavior: Clip.none,
-      children: [
-        if (found)
-          RepaintBoundary(child: _FoundGlow(color: targetColor(iconId))),
-        if (!found && hinting)
-          // カバー表示中は、画面に見えているカバーの色で光らせる（誘目の一致）。
-          RepaintBoundary(
-            child: HintGlow(
-              color: cover != null ? targetColor(cover) : targetColor(iconId),
-            ),
-          ),
-        FittedBox(
-          fit: BoxFit.contain,
-          child: found
-              ? Icon(targetIcon(iconId), color: targetColor(iconId))
-              : (cover != null
-                    // 未発見かつカバー有り: 影絵でなく「かぶせもの」を見せる（A1）。
-                    ? Icon(targetIcon(cover), color: targetColor(cover))
-                    : UnfoundTreasureIcon(iconId: iconId)),
-        ),
-        if (found)
-          FoundBurst(color: targetColor(iconId), intensity: burstIntensity),
-      ],
-    );
-  }
-}
-
-/// ハードモードの宝点滅ラッパ。共有クロックに合わせて [Opacity] のみを更新し、
-/// [child]（宝の見た目）は再構築しない。点滅させるかどうかは呼び出し側
-/// （[_SceneViewState._isBlinking]）が判定済みで、このウィジェットは常に点滅する。
-/// [RepaintBoundary] で毎フレームの再描画をシーン全体から隔離する
-/// （兄弟の [_FoundGlow] / [HintGlow] と同じ方針）。
-class _BlinkingTarget extends StatelessWidget {
-  const _BlinkingTarget({
-    required this.clock,
-    required this.slot,
-    required this.count,
-    required this.child,
-  });
-
-  final Animation<double> clock;
-  final int slot;
-  final int count;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return RepaintBoundary(
-      child: AnimatedBuilder(
-        animation: clock,
-        child: child,
-        builder: (context, ch) {
-          final opacity = treasureBlinkOpacity(
-            slot: slot,
-            count: count,
-            clock: clock.value,
-          );
-          return Opacity(opacity: opacity, child: ch);
-        },
-      ),
-    );
-  }
-}
-
-class _FoundGlow extends StatefulWidget {
-  const _FoundGlow({required this.color});
-
-  final Color color;
-
-  @override
-  State<_FoundGlow> createState() => _FoundGlowState();
-}
-
-class _FoundGlowState extends State<_FoundGlow>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _c = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1200),
-  )..repeat(reverse: true);
-
-  @override
-  void dispose() {
-    _c.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(
-      animation: _c,
-      builder: (context, _) {
-        final t = _c.value; // 0.0 → 1.0 → 0.0 (reverse)
-        return Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: widget.color.withValues(alpha: 0.45 * t),
-                blurRadius: 16 + 8 * t,
-                spreadRadius: 2 + 4 * t,
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-}
-
-// ──────────────────────────────────────────
-// Clear overlay: full-screen キラキラ + message + back button
-// ──────────────────────────────────────────
-
-class _ClearOverlay extends StatefulWidget {
-  const _ClearOverlay({required this.localeCode, required this.onBack});
-
-  final String localeCode;
-  final VoidCallback onBack;
-
-  @override
-  State<_ClearOverlay> createState() => _ClearOverlayState();
-}
-
-class _ClearOverlayState extends State<_ClearOverlay>
-    with TickerProviderStateMixin {
-  late final AnimationController _entry = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 700),
-  )..forward();
-
-  late final AnimationController _sparkle = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1400),
-  )..repeat();
-
-  // クリアの瞬間に一度だけ降る紙吹雪（B1: セレモニー強化）。山場だけ豪華に
-  // し、常時はループさせない（calm 哲学・過剰刺激を避ける）。
-  late final AnimationController _confetti = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 1800),
-  )..forward();
-
-  // 紙吹雪 1 片: [startX(0–1), 色index(0–5), 横ゆれ量(-1–1), 大きさ(0.7–1.3), 開始遅延(0–0.35)]
-  static const List<List<double>> _kConfetti = [
-    [0.05, 0, 0.8, 1.1, 0.00],
-    [0.14, 2, -0.6, 0.9, 0.10],
-    [0.23, 4, 0.5, 1.2, 0.05],
-    [0.32, 1, -0.9, 0.8, 0.18],
-    [0.41, 3, 0.7, 1.0, 0.02],
-    [0.50, 5, -0.4, 1.3, 0.12],
-    [0.59, 0, 0.9, 0.9, 0.07],
-    [0.68, 2, -0.7, 1.1, 0.20],
-    [0.77, 4, 0.6, 0.8, 0.03],
-    [0.86, 1, -0.8, 1.2, 0.15],
-    [0.95, 3, 0.4, 1.0, 0.09],
-    [0.10, 5, -0.5, 1.1, 0.25],
-    [0.19, 1, 0.8, 0.9, 0.30],
-    [0.28, 3, -0.6, 1.2, 0.08],
-    [0.37, 0, 0.7, 0.8, 0.22],
-    [0.46, 2, -0.9, 1.0, 0.04],
-    [0.55, 4, 0.5, 1.3, 0.17],
-    [0.64, 1, -0.4, 0.9, 0.28],
-    [0.73, 5, 0.9, 1.1, 0.06],
-    [0.82, 0, -0.7, 0.8, 0.13],
-    [0.91, 2, 0.6, 1.2, 0.24],
-    [0.01, 4, -0.8, 1.0, 0.11],
-    [0.43, 5, 0.5, 0.9, 0.33],
-    [0.61, 3, -0.6, 1.1, 0.19],
-  ];
-
-  // Normalized [x, y, phaseOffset] for twinkling stars. Explicit List<List<double>>
-  // type prevents Dart inferring List<List<num>> from the literal.
-  static const List<List<double>> _kStars = [
-    [0.06, 0.08, 0.0],
-    [0.22, 0.05, 0.3],
-    [0.42, 0.12, 0.6],
-    [0.62, 0.06, 0.1],
-    [0.80, 0.10, 0.5],
-    [0.93, 0.04, 0.8],
-    [0.14, 0.24, 0.2],
-    [0.36, 0.20, 0.7],
-    [0.58, 0.27, 0.4],
-    [0.78, 0.22, 0.9],
-    [0.04, 0.44, 0.6],
-    [0.28, 0.40, 0.1],
-    [0.52, 0.38, 0.3],
-    [0.74, 0.45, 0.8],
-    [0.94, 0.42, 0.2],
-    [0.10, 0.62, 0.5],
-    [0.35, 0.68, 0.0],
-    [0.66, 0.60, 0.7],
-    [0.86, 0.65, 0.4],
-    [0.20, 0.80, 0.9],
-    [0.50, 0.84, 0.2],
-    [0.72, 0.78, 0.6],
-    [0.90, 0.88, 0.1],
-  ];
-
-  @override
-  void dispose() {
-    _entry.dispose();
-    _sparkle.dispose();
-    _confetti.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: FadeTransition(
-        opacity: _entry,
-        child: Stack(
-          children: [
-            // Dark translucent backdrop — SizedBox.expand prevents the
-            // DecoratedBox from collapsing to zero under loose Stack constraints.
-            const SizedBox.expand(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Color(0xCC000830), Color(0xCC001040)],
-                  ),
-                ),
-              ),
-            ),
-            // Twinkling stars（毎フレーム再描画をオーバーレイ全体から隔離）
-            RepaintBoundary(
-              child: AnimatedBuilder(
-                animation: _sparkle,
-                builder: (context, _) {
-                  return CustomPaint(
-                    painter: _SparklePainter(_sparkle.value, _kStars),
-                    size: Size.infinite,
-                  );
-                },
-              ),
-            ),
-            // Falling confetti (plays once)
-            RepaintBoundary(
-              child: AnimatedBuilder(
-                animation: _confetti,
-                builder: (context, _) {
-                  return CustomPaint(
-                    painter: _ConfettiPainter(_confetti.value, _kConfetti),
-                    size: Size.infinite,
-                  );
-                },
-              ),
-            ),
-            // Center message + button
-            Center(
-              child: ScaleTransition(
-                scale: CurvedAnimation(
-                  parent: _entry,
-                  curve: Curves.elasticOut,
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _PulsingStarIcon(controller: _sparkle),
-                    const SizedBox(height: 20),
-                    Text(
-                      tr(widget.localeCode, 'seek.complete'),
-                      style: const TextStyle(
-                        fontSize: 34,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        shadows: [
-                          Shadow(
-                            blurRadius: 16,
-                            color: Colors.amber,
-                            offset: Offset(0, 0),
-                          ),
-                        ],
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 36),
-                    KidsButton(
-                      label: tr(widget.localeCode, 'seek.toMap'),
-                      onPressed: widget.onBack,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _SparklePainter extends CustomPainter {
-  const _SparklePainter(this.t, this.stars);
-
-  final double t;
-  final List<List<double>> stars;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    for (final s in stars) {
-      final phase = (t + s[2]) % 1.0;
-      final brightness = math.sin(phase * math.pi);
-      final opacity = (brightness * 0.85).clamp(0.0, 1.0);
-      final r = 3.0 + brightness * 7.0;
-      final cx = s[0] * size.width;
-      final cy = s[1] * size.height;
-      // Outer glow
-      canvas.drawCircle(
-        Offset(cx, cy),
-        r * 1.8,
-        Paint()..color = Colors.amber.withValues(alpha: opacity * 0.35),
-      );
-      // Core dot
-      canvas.drawCircle(
-        Offset(cx, cy),
-        r,
-        Paint()..color = Colors.amber.withValues(alpha: opacity),
-      );
-      // White center
-      canvas.drawCircle(
-        Offset(cx, cy),
-        r * 0.38,
-        Paint()..color = Colors.white.withValues(alpha: opacity * 0.9),
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(_SparklePainter old) => old.t != t;
-}
-
-/// クリア時に一度だけ上から降る紙吹雪。各片は回転しながら落下し、
-/// 終盤でフェードアウトする。[t] は 0→1 の一回再生進捗。
-class _ConfettiPainter extends CustomPainter {
-  const _ConfettiPainter(this.t, this.pieces);
-
-  final double t;
-  final List<List<double>> pieces;
-
-  static const List<Color> _palette = [
-    Color(0xFFFFC107), // amber
-    Color(0xFFE91E63), // pink
-    Color(0xFF42A5F5), // sky
-    Color(0xFF66BB6A), // green
-    Color(0xFFAB47BC), // purple
-    Color(0xFFFF7043), // orange
-  ];
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    for (final p in pieces) {
-      final startX = p[0];
-      final color = _palette[p[1].toInt() % _palette.length];
-      final drift = p[2];
-      final sizeF = p[3];
-      final delay = p[4];
-
-      if (delay >= 1.0) {
-        continue; // ゼロ除算ガード（将来データに delay=1.0 が混じっても安全）
-      }
-      // 開始遅延を抜いた各片の進捗。
-      final local = ((t - delay) / (1.0 - delay)).clamp(0.0, 1.0);
-      if (local <= 0.0) {
-        continue;
-      }
-      // 上から下へ落下（画面外まで）。横はゆっくり左右に揺れる。
-      final y = (-0.05 + local * 1.15) * size.height;
-      final x =
-          (startX + drift * 0.06 * math.sin(local * math.pi * 2 + p[1])) *
-          size.width;
-      // フェードイン（0–0.1）→ フェードアウト（0.8–1.0）。
-      final opacity = (local < 0.1
-          ? local / 0.1
-          : (local > 0.8 ? (1.0 - local) / 0.2 : 1.0));
-      final w = 10.0 * sizeF;
-      final h = 6.0 * sizeF;
-
-      canvas.save();
-      canvas.translate(x, y);
-      canvas.rotate((startX * 6 + local * 8) % (2 * math.pi));
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromCenter(center: Offset.zero, width: w, height: h),
-          const Radius.circular(2),
-        ),
-        Paint()..color = color.withValues(alpha: opacity.clamp(0.0, 1.0)),
-      );
-      canvas.restore();
-    }
-  }
-
-  @override
-  bool shouldRepaint(_ConfettiPainter old) =>
-      old.t != t || old.pieces != pieces;
-}
-
-class _PulsingStarIcon extends AnimatedWidget {
-  const _PulsingStarIcon({required this.controller})
-    : super(listenable: controller);
-
-  // Typed field avoids unsafe `as AnimationController` cast in build.
-  final AnimationController controller;
-
-  @override
-  Widget build(BuildContext context) {
-    final scale = 1.0 + math.sin(controller.value * 2 * math.pi) * 0.15;
-    return Transform.scale(
-      scale: scale,
-      child: const Icon(Icons.auto_awesome, color: Colors.amber, size: 80),
     );
   }
 }
