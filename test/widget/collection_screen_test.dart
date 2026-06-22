@@ -164,4 +164,40 @@ void main() {
 
     expect(find.byKey(const ValueKey('collection-rare')), findsNothing);
   });
+
+  testWidgets('toggling to なかま shows category sections (D4)', (tester) async {
+    await _pump(tester, ['scene01:apple']);
+
+    // 既定はワールド別: ワールドセクションが出る。
+    expect(
+      find.byKey(const ValueKey('collection-world.scene01')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('collection-category.food')),
+      findsNothing,
+    );
+
+    // 「なかま」へ切替 → カテゴリセクションに変わる。
+    await tester.tap(find.text('なかま'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey('collection-category.food')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('collection-category.animal')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('collection-world.scene01')),
+      findsNothing,
+    );
+    // food=apple は収集済み → カラー表示。
+    expect(
+      find.byKey(const ValueKey('collection-found.cat.food.apple')),
+      findsOneWidget,
+    );
+  });
 }
