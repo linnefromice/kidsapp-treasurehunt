@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -32,6 +33,10 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
 
   /// 図鑑のビュー: false=ワールド別（既定・D6）/ true=なかま別（D4）。
   bool _byCategory = false;
+
+  /// シール帳の現在ページ。なかま⇄ワールドのビュー往復で _StickerBook が
+  /// 作り直されてもページ位置を保つために親が覚えておく（D1）。
+  int _bookPage = 0;
 
   @override
   void initState() {
@@ -92,34 +97,56 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
               .where(isRareIcon)
               .toSet()
               .toList();
-          return ListView(
+          return Column(
             key: const ValueKey('collection-list'),
-            padding: const EdgeInsets.all(16),
             children: [
-              _ProgressHeader(progress: progress, localeCode: localeCode),
-              const SizedBox(height: 12),
-              // D4: ワールド別 / なかま別 のビュー切替。
-              _ViewToggle(
-                byCategory: _byCategory,
-                localeCode: localeCode,
-                onChanged: (v) => setState(() => _byCategory = v),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                child: Column(
+                  children: [
+                    _ProgressHeader(progress: progress, localeCode: localeCode),
+                    const SizedBox(height: 12),
+                    // D4: ワールド別 / なかま別 のビュー切替。
+                    _ViewToggle(
+                      byCategory: _byCategory,
+                      localeCode: localeCode,
+                      onChanged: (v) => setState(() => _byCategory = v),
+                    ),
+                    if (foundRares.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      _RareSection(
+                        rareIconIds: foundRares,
+                        localeCode: localeCode,
+                      ),
+                    ],
+                  ],
+                ),
               ),
-              const SizedBox(height: 12),
-              if (foundRares.isNotEmpty) ...[
-                _RareSection(rareIconIds: foundRares, localeCode: localeCode),
-                const SizedBox(height: 12),
-              ],
-              if (_byCategory)
-                for (final group in buildCategoryView(worlds, discovered))
-                  _CategorySection(group: group, localeCode: localeCode)
-              else
-                for (final world in worlds)
-                  _WorldSection(
-                    world: world,
-                    discovered: discovered,
-                    unseen: _unseen,
-                    localeCode: localeCode,
-                  ),
+              // ワールド別はページめくり式の「シール帳」（D1）、なかま別はリスト。
+              Expanded(
+                child: _byCategory
+                    ? ListView(
+                        padding: const EdgeInsets.all(16),
+                        children: [
+                          for (final group in buildCategoryView(
+                            worlds,
+                            discovered,
+                          ))
+                            _CategorySection(
+                              group: group,
+                              localeCode: localeCode,
+                            ),
+                        ],
+                      )
+                    : _StickerBook(
+                        worlds: worlds,
+                        discovered: discovered,
+                        unseen: _unseen,
+                        localeCode: localeCode,
+                        initialPage: _bookPage.clamp(0, worlds.length - 1),
+                        onPageChanged: (i) => _bookPage = i,
+                      ),
+              ),
             ],
           );
         },
@@ -349,9 +376,107 @@ class _RareSection extends StatelessWidget {
   }
 }
 
-/// 1 ワールド分のカード。見出し（ワールド名 ＋ n/total）＋ 宝セルの折り返し。
-class _WorldSection extends StatelessWidget {
-  const _WorldSection({
+/// シール帳（D1）: ワールドを 1 ページ＝1 枚の「ページ」として横にめくる。
+/// 下にページ位置ドット。ページめくりに触覚を添える。
+class _StickerBook extends StatefulWidget {
+  const _StickerBook({
+    required this.worlds,
+    required this.discovered,
+    required this.unseen,
+    required this.localeCode,
+    required this.initialPage,
+    required this.onPageChanged,
+  });
+
+  final List<CollectionWorld> worlds;
+  final Set<String> discovered;
+  final Set<String> unseen;
+  final String localeCode;
+  final int initialPage;
+  final ValueChanged<int> onPageChanged;
+
+  @override
+  State<_StickerBook> createState() => _StickerBookState();
+}
+
+class _StickerBookState extends State<_StickerBook> {
+  late final PageController _controller = PageController(
+    initialPage: widget.initialPage,
+  );
+  late int _page = widget.initialPage;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Expanded(
+          child: PageView.builder(
+            key: const ValueKey('sticker-book'),
+            controller: _controller,
+            itemCount: widget.worlds.length,
+            onPageChanged: (i) {
+              HapticFeedback.selectionClick(); // めくる触覚
+              widget.onPageChanged(i); // 親に現在ページを覚えさせる
+              setState(() => _page = i);
+            },
+            itemBuilder: (context, i) => _WorldPage(
+              world: widget.worlds[i],
+              discovered: widget.discovered,
+              unseen: widget.unseen,
+              localeCode: widget.localeCode,
+            ),
+          ),
+        ),
+        _PageDots(count: widget.worlds.length, current: _page),
+      ],
+    );
+  }
+}
+
+/// シール帳のページ位置ドット。
+class _PageDots extends StatelessWidget {
+  const _PageDots({required this.count, required this.current});
+
+  final int count;
+  final int current;
+
+  @override
+  Widget build(BuildContext context) {
+    // 装飾（ページ位置）なので読み上げ対象から除外する。
+    return ExcludeSemantics(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            for (var i = 0; i < count; i++)
+              Container(
+                width: 8,
+                height: 8,
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: i == current
+                      ? Colors.brown.shade600
+                      : Colors.brown.shade200,
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// シール帳の 1 ページ（1 ワールド）。見出し（ワールド名 ＋ n/total）＋ 宝シール。
+class _WorldPage extends StatelessWidget {
+  const _WorldPage({
     required this.world,
     required this.discovered,
     required this.unseen,
@@ -375,11 +500,16 @@ class _WorldSection extends StatelessWidget {
     final total = world.iconIds.length;
     final complete = total > 0 && foundCount >= total;
 
-    return Card(
-      key: ValueKey('collection-world.${world.sceneId}'),
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+      child: Container(
+        key: ValueKey('collection-world.${world.sceneId}'),
+        decoration: BoxDecoration(
+          color: const Color(0xFFFBF3E0), // 羊皮紙風のページ
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.brown.shade200, width: 2),
+        ),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -389,35 +519,44 @@ class _WorldSection extends StatelessWidget {
                   child: Text(
                     tr(localeCode, world.titleKey),
                     style: const TextStyle(
-                      fontSize: 18,
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
-                Text(
-                  '$foundCount/$total ${complete ? '🏆' : ''}',
-                  style: const TextStyle(fontSize: 16),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    '$foundCount/$total ${complete ? '🏆' : ''}',
+                    style: const TextStyle(fontSize: 16),
+                    overflow: TextOverflow.fade,
+                    softWrap: false,
+                  ),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                for (final iconId in world.iconIds)
-                  _CollectionCell(
-                    sceneId: world.sceneId,
-                    iconId: iconId,
-                    discovered: discovered.contains(
-                      CollectionRepository.entryKey(world.sceneId, iconId),
-                    ),
-                    isNew: unseen.contains(
-                      CollectionRepository.entryKey(world.sceneId, iconId),
-                    ),
-                    localeCode: localeCode,
-                  ),
-              ],
+            const SizedBox(height: 12),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  children: [
+                    for (final iconId in world.iconIds)
+                      _CollectionCell(
+                        sceneId: world.sceneId,
+                        iconId: iconId,
+                        discovered: discovered.contains(
+                          CollectionRepository.entryKey(world.sceneId, iconId),
+                        ),
+                        isNew: unseen.contains(
+                          CollectionRepository.entryKey(world.sceneId, iconId),
+                        ),
+                        localeCode: localeCode,
+                      ),
+                  ],
+                ),
+              ),
             ),
           ],
         ),
