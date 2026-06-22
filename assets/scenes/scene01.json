@@ -28,7 +28,8 @@
       "left": 0.838,
       "top": 0.804,
       "width": 0.11,
-      "height": 0.13
+      "height": 0.13,
+      "cover": "cover_leaves"
     },
     {
       "id": "heart_1",
@@ -55,7 +56,8 @@
       "left": 0.349,
       "top": 0.651,
       "width": 0.11,
-      "height": 0.13
+      "height": 0.13,
+      "cover": "cover_snow"
     },
     {
       "id": "star_2",

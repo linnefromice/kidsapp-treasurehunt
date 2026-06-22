@@ -63,6 +63,8 @@ void main() {
       final scene = await load(sceneId);
       final unknown = [
         ...scene.targets.map((t) => t.iconId),
+        // めくり露出（A1）の cover アイコンも未知だと "?" になるので検証する。
+        ...scene.targets.map((t) => t.coverIconId).whereType<String>(),
         ...scene.dummies.map((d) => d.iconId),
       ].where((id) => !hasTargetIcon(id)).toSet();
 

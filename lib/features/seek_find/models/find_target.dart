@@ -7,6 +7,7 @@ class FindTarget {
     required this.iconId,
     required this.labelKey,
     required this.normalizedRect,
+    this.coverIconId,
   });
 
   final String id;
@@ -15,6 +16,11 @@ class FindTarget {
   final String iconId;
   final String labelKey;
   final Rect normalizedRect;
+
+  /// めくり露出（A1）用の「かぶせもの」アイコン id（任意・JSON `cover`）。
+  /// 未発見の間はグレーの影絵ではなく、このカバー絵（葉/雪/箱など）で表示し、
+  /// タップで発見すると宝が現れる。ヒット判定は通常と同じで難易度は不変。
+  final String? coverIconId;
 
   factory FindTarget.fromJson(Map<String, dynamic> json) {
     final id = json['id'] as String;
@@ -29,6 +35,7 @@ class FindTarget {
         (json['width'] as num).toDouble(),
         (json['height'] as num).toDouble(),
       ),
+      coverIconId: json['cover'] as String?,
     );
   }
 }

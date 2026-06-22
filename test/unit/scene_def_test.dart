@@ -31,6 +31,37 @@ void main() {
     expect(t.normalizedRect, const Rect.fromLTWH(0.1, 0.2, 0.3, 0.4));
   });
 
+  test('FindTarget parses the optional cover (A1), default null', () {
+    final scene = SceneDef.fromJson(const {
+      'id': 'scene01',
+      'titleKey': 'k',
+      'imageAsset': 'a.png',
+      'targets': [
+        {
+          'id': 'a',
+          'iconId': 'apple',
+          'labelKey': 'target.apple',
+          'left': 0.1,
+          'top': 0.2,
+          'width': 0.1,
+          'height': 0.1,
+          'cover': 'cover_leaves',
+        },
+        {
+          'id': 'b',
+          'iconId': 'star',
+          'labelKey': 'target.star',
+          'left': 0.3,
+          'top': 0.4,
+          'width': 0.1,
+          'height': 0.1,
+        },
+      ],
+    });
+    expect(scene.targets[0].coverIconId, 'cover_leaves');
+    expect(scene.targets[1].coverIconId, isNull);
+  });
+
   test('loads scenes with the expanded target count (8 per scene)', () async {
     final s2 = await SceneDef.loadAsset('scene02');
     expect(s2.targets, hasLength(8));

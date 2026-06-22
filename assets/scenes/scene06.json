@@ -28,7 +28,8 @@
       "left": 0.681,
       "top": 0.647,
       "width": 0.11,
-      "height": 0.13
+      "height": 0.13,
+      "cover": "cover_box"
     },
     {
       "id": "ball_1",
@@ -55,7 +56,8 @@
       "left": 0.698,
       "top": 0.342,
       "width": 0.11,
-      "height": 0.13
+      "height": 0.13,
+      "cover": "cover_leaves"
     },
     {
       "id": "duck_2",

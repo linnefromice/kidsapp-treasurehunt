@@ -28,7 +28,8 @@
       "left": 0.35,
       "top": 0.024,
       "width": 0.11,
-      "height": 0.13
+      "height": 0.13,
+      "cover": "cover_leaves"
     },
     {
       "id": "ball_1",
@@ -55,7 +56,8 @@
       "left": 0.839,
       "top": 0.496,
       "width": 0.11,
-      "height": 0.13
+      "height": 0.13,
+      "cover": "cover_snow"
     },
     {
       "id": "heart_2",

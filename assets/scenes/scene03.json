@@ -28,7 +28,8 @@
       "left": 0.512,
       "top": 0.487,
       "width": 0.11,
-      "height": 0.13
+      "height": 0.13,
+      "cover": "cover_box"
     },
     {
       "id": "flower_1",
@@ -55,7 +56,8 @@
       "left": 0.84,
       "top": 0.03,
       "width": 0.11,
-      "height": 0.13
+      "height": 0.13,
+      "cover": "cover_leaves"
     },
     {
       "id": "duck_2",

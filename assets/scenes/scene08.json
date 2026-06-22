@@ -28,7 +28,8 @@
       "left": 0.513,
       "top": 0.029,
       "width": 0.11,
-      "height": 0.13
+      "height": 0.13,
+      "cover": "cover_snow"
     },
     {
       "id": "flower_1",
@@ -55,7 +56,8 @@
       "left": 0.859,
       "top": 0.035,
       "width": 0.11,
-      "height": 0.13
+      "height": 0.13,
+      "cover": "cover_box"
     },
     {
       "id": "apple_2",
