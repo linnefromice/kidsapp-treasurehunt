@@ -377,125 +377,120 @@ class _SceneViewState extends ConsumerState<_SceneView>
                   ],
                 ),
               ),
-            Expanded(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  final viewport = Size(
-                    constraints.maxWidth,
-                    constraints.maxHeight,
-                  );
-                  // Normal / Hard はビューポートより広い論理キャンバスにして、
-                  // パンで表示部分をずらさないと全体が見えないようにする。
-                  final sceneSize = _isLargeArea
-                      ? Size(
-                          viewport.width * kLargeAreaFactor,
-                          viewport.height * kLargeAreaFactor,
-                        )
-                      : viewport;
-                  final decoys = decoysForMode(scene, widget.mode);
-                  // ドラッグの割り当て（パン or なぞり）。タップ発見は別途常に有効。
-                  final drag = dragBehaviorFor(widget.mode, _interaction);
-                  final content = GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    // Easy は押した瞬間に発見（パン競合が無いので onTapDown）。
-                    // 大エリアは onTapUp（タップ確定時のみ）にして、地図パンの
-                    // 指タッチで誤発見しないようにする（Bug B: ずらしと発見の分離）。
-                    onTapDown: _isLargeArea
-                        ? null
-                        : (d) => _handleHit(d.localPosition, sceneSize),
-                    onTapUp: _isLargeArea
-                        ? (d) => _handleHit(d.localPosition, sceneSize)
-                        : null,
-                    // なぞって探す。なぞり中はミスバブルを出さず、代わりに色付き
-                    // キラキラを追従させる。大エリアでは「さがす」モードのみ有効。
-                    onPanStart: drag.traceEnabled
-                        ? (d) {
-                            _lastTrailSpawn = null; // 新しいなぞりの開始
-                            // にじは各なぞりを先頭の色相から始める（境界の肥大も防ぐ）。
-                            _trailSeq = 0;
-                            _handleHit(
-                              d.localPosition,
-                              sceneSize,
-                              allowMiss: false,
-                            );
-                            _handlePanTrail(d.localPosition);
-                          }
-                        : null,
-                    onPanUpdate: drag.traceEnabled
-                        ? (d) {
-                            _handleHit(
-                              d.localPosition,
-                              sceneSize,
-                              allowMiss: false,
-                            );
-                            _handlePanTrail(d.localPosition);
-                          }
-                        : null,
-                    child: SizedBox(
-                      width: sceneSize.width,
-                      height: sceneSize.height,
-                      child: Stack(
-                        key: const ValueKey('scene-content'),
-                        fit: StackFit.expand,
-                        children: [
-                          sceneBackground(scene.id),
-                          // 季節/時間バリアント（C3）: 背景の上・宝の下に半透明
-                          // ティントを 1 枚。IgnorePointer でタップを邪魔しない。
-                          if (_ambient.tint != null)
-                            Positioned.fill(
-                              child: IgnorePointer(
-                                child: ColoredBox(color: _ambient.tint!),
-                              ),
-                            ),
-                          for (var i = 0; i < decoys.length; i++)
-                            _positioned(
-                              scaledTreasureRect(
-                                decoys[i].normalizedRect,
-                                itemScale: decoys[i].scale,
-                              ),
-                              sceneSize,
-                              // Hard ではおとりも点滅させる（ヒット判定外なので
-                              // 見た目の不透明度のみ。宝とは別カウントで位相を
-                              // ずらし、全部が同時に消えないようにする）。
-                              child: _buildDecoy(decoys[i], i, decoys.length),
-                            ),
-                          for (var i = 0; i < scene.targets.length; i++)
-                            _buildTarget(i, sceneSize, found, unfoundCount),
-                          for (final b in _missBubbles)
-                            MissBubble(key: b.key, position: b.position),
-                          for (final s in _trailSparkles)
-                            TrailSparkle(
-                              key: s.key,
-                              position: s.position,
-                              color: s.color,
-                            ),
-                        ],
-                      ),
-                    ),
-                  );
-                  if (!_isLargeArea) {
-                    return content;
-                  }
-                  // 「うごかす」= 1 本指パン＋ピンチ拡大。「なぞる」= パン/拡大とも
-                  // 無効にして単一指のなぞりに専念させる（2 本指がなぞり開始と競合して
-                  // 誤発見するのを防ぐ）。拡大率は move で設定した値が保持される。
-                  return InteractiveViewer(
-                    constrained: false,
-                    minScale: 1.0,
-                    maxScale: kLargeAreaMaxScale,
-                    panEnabled: drag.panEnabled,
-                    scaleEnabled: drag.panEnabled,
-                    child: content,
-                  );
-                },
-              ),
-            ),
+            Expanded(child: _buildSceneArea(found, unfoundCount)),
             CollectionBar(targets: scene.targets, foundIds: found),
           ],
         ),
         if (_completed)
           ClearOverlay(localeCode: localeCode, onBack: () => context.go('/')),
       ],
+    );
+  }
+
+  /// シーン本体（ジェスチャ + 背景 + おとり/宝 + 演出オーバーレイ）を組む。
+  /// ビューポートより広い論理キャンバスを敷き、Normal/Hard では
+  /// [InteractiveViewer] でパン/拡大できるようにする。タップ発見は常に有効。
+  Widget _buildSceneArea(Set<String> found, int unfoundCount) {
+    final scene = _scene;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final viewport = Size(constraints.maxWidth, constraints.maxHeight);
+        // Normal / Hard はビューポートより広い論理キャンバスにして、
+        // パンで表示部分をずらさないと全体が見えないようにする。
+        final sceneSize = _isLargeArea
+            ? Size(
+                viewport.width * kLargeAreaFactor,
+                viewport.height * kLargeAreaFactor,
+              )
+            : viewport;
+        final decoys = decoysForMode(scene, widget.mode);
+        // ドラッグの割り当て（パン or なぞり）。タップ発見は別途常に有効。
+        final drag = dragBehaviorFor(widget.mode, _interaction);
+        final content = GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          // Easy は押した瞬間に発見（パン競合が無いので onTapDown）。
+          // 大エリアは onTapUp（タップ確定時のみ）にして、地図パンの
+          // 指タッチで誤発見しないようにする（Bug B: ずらしと発見の分離）。
+          onTapDown: _isLargeArea
+              ? null
+              : (d) => _handleHit(d.localPosition, sceneSize),
+          onTapUp: _isLargeArea
+              ? (d) => _handleHit(d.localPosition, sceneSize)
+              : null,
+          // なぞって探す。なぞり中はミスバブルを出さず、代わりに色付き
+          // キラキラを追従させる。大エリアでは「さがす」モードのみ有効。
+          onPanStart: drag.traceEnabled
+              ? (d) {
+                  _lastTrailSpawn = null; // 新しいなぞりの開始
+                  // にじは各なぞりを先頭の色相から始める（境界の肥大も防ぐ）。
+                  _trailSeq = 0;
+                  _handleHit(d.localPosition, sceneSize, allowMiss: false);
+                  _handlePanTrail(d.localPosition);
+                }
+              : null,
+          onPanUpdate: drag.traceEnabled
+              ? (d) {
+                  _handleHit(d.localPosition, sceneSize, allowMiss: false);
+                  _handlePanTrail(d.localPosition);
+                }
+              : null,
+          child: SizedBox(
+            width: sceneSize.width,
+            height: sceneSize.height,
+            child: Stack(
+              key: const ValueKey('scene-content'),
+              fit: StackFit.expand,
+              children: [
+                sceneBackground(scene.id),
+                // 季節/時間バリアント（C3）: 背景の上・宝の下に半透明
+                // ティントを 1 枚。IgnorePointer でタップを邪魔しない。
+                if (_ambient.tint != null)
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      child: ColoredBox(color: _ambient.tint!),
+                    ),
+                  ),
+                for (var i = 0; i < decoys.length; i++)
+                  _positioned(
+                    scaledTreasureRect(
+                      decoys[i].normalizedRect,
+                      itemScale: decoys[i].scale,
+                    ),
+                    sceneSize,
+                    // Hard ではおとりも点滅させる（ヒット判定外なので
+                    // 見た目の不透明度のみ。宝とは別カウントで位相を
+                    // ずらし、全部が同時に消えないようにする）。
+                    child: _buildDecoy(decoys[i], i, decoys.length),
+                  ),
+                for (var i = 0; i < scene.targets.length; i++)
+                  _buildTarget(i, sceneSize, found, unfoundCount),
+                for (final b in _missBubbles)
+                  MissBubble(key: b.key, position: b.position),
+                for (final s in _trailSparkles)
+                  TrailSparkle(
+                    key: s.key,
+                    position: s.position,
+                    color: s.color,
+                  ),
+              ],
+            ),
+          ),
+        );
+        if (!_isLargeArea) {
+          return content;
+        }
+        // 「うごかす」= 1 本指パン＋ピンチ拡大。「なぞる」= パン/拡大とも
+        // 無効にして単一指のなぞりに専念させる（2 本指がなぞり開始と競合して
+        // 誤発見するのを防ぐ）。拡大率は move で設定した値が保持される。
+        return InteractiveViewer(
+          constrained: false,
+          minScale: 1.0,
+          maxScale: kLargeAreaMaxScale,
+          panEnabled: drag.panEnabled,
+          scaleEnabled: drag.panEnabled,
+          child: content,
+        );
+      },
     );
   }
 
