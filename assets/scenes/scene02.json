@@ -28,7 +28,8 @@
       "left": 0.515,
       "top": 0.799,
       "width": 0.11,
-      "height": 0.13
+      "height": 0.13,
+      "cover": "cover_snow"
     },
     {
       "id": "flower_1",
@@ -55,7 +56,8 @@
       "left": 0.185,
       "top": 0.183,
       "width": 0.11,
-      "height": 0.13
+      "height": 0.13,
+      "cover": "cover_box"
     },
     {
       "id": "star_2",

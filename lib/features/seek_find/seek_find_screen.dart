@@ -464,6 +464,7 @@ class _SceneViewState extends ConsumerState<_SceneView>
       found: found.contains(t.id),
       hinting: _hintingId == t.id,
       burstIntensity: _burstIntensity[t.id] ?? 1.0,
+      coverIconId: t.coverIconId,
     );
     final clock = _blinkClock;
     final blinking = _isBlinking(index, found, unfoundCount);
@@ -688,6 +689,7 @@ class _TargetView extends StatelessWidget {
     required this.found,
     this.hinting = false,
     this.burstIntensity = 1.0,
+    this.coverIconId,
   });
 
   final String iconId;
@@ -697,8 +699,13 @@ class _TargetView extends StatelessWidget {
   /// 発見バーストの派手さ（連鎖 A5 / ラスト B6）。おとり・未発見では未使用。
   final double burstIntensity;
 
+  /// めくり露出（A1）の「かぶせもの」アイコン id。未発見の間はこのカバー絵を
+  /// 影絵の代わりに表示する。発見すると消えて宝が現れる（＝めくれる演出）。
+  final String? coverIconId;
+
   @override
   Widget build(BuildContext context) {
+    final cover = coverIconId;
     return Stack(
       alignment: Alignment.center,
       // Clip.none lets FoundBurst sparks radiate beyond the target bounds
@@ -707,12 +714,20 @@ class _TargetView extends StatelessWidget {
         if (found)
           RepaintBoundary(child: _FoundGlow(color: targetColor(iconId))),
         if (!found && hinting)
-          RepaintBoundary(child: HintGlow(color: targetColor(iconId))),
+          // カバー表示中は、画面に見えているカバーの色で光らせる（誘目の一致）。
+          RepaintBoundary(
+            child: HintGlow(
+              color: cover != null ? targetColor(cover) : targetColor(iconId),
+            ),
+          ),
         FittedBox(
           fit: BoxFit.contain,
           child: found
               ? Icon(targetIcon(iconId), color: targetColor(iconId))
-              : UnfoundTreasureIcon(iconId: iconId),
+              : (cover != null
+                    // 未発見かつカバー有り: 影絵でなく「かぶせもの」を見せる（A1）。
+                    ? Icon(targetIcon(cover), color: targetColor(cover))
+                    : UnfoundTreasureIcon(iconId: iconId)),
         ),
         if (found)
           FoundBurst(color: targetColor(iconId), intensity: burstIntensity),

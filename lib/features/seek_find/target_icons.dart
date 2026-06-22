@@ -36,6 +36,10 @@ const Map<String, IconData> _kTargetIcons = {
   'crown': Icons.emoji_events,
   'fire': Icons.local_fire_department,
   'kite': Icons.toys,
+  // めくり露出（A1）用の「かぶせもの」。宝に被せ、タップ発見でめくれて宝が現れる。
+  'cover_leaves': Icons.grass,
+  'cover_snow': Icons.ac_unit,
+  'cover_box': Icons.inventory_2,
 };
 
 const Map<String, Color> _kTargetColors = {
@@ -70,6 +74,10 @@ const Map<String, Color> _kTargetColors = {
   'crown': Color(0xFFFFD54F),
   'fire': Color(0xFFF4511E),
   'kite': Color(0xFF00897B),
+  // かぶせもの（自然物っぽい色）。
+  'cover_leaves': Color(0xFF558B2F),
+  'cover_snow': Color(0xFF90CAF9),
+  'cover_box': Color(0xFF8D6E63),
 };
 
 IconData targetIcon(String id) => _kTargetIcons[id] ?? Icons.help_outline;
