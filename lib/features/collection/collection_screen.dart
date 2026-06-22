@@ -30,6 +30,9 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   /// この入場中はこれでバッジを出し、永続側は開いた時点で既読にする。
   Set<String> _unseen = const {};
 
+  /// 図鑑のビュー: false=ワールド別（既定・D6）/ true=なかま別（D4）。
+  bool _byCategory = false;
+
   @override
   void initState() {
     super.initState();
@@ -95,17 +98,28 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
             children: [
               _ProgressHeader(progress: progress, localeCode: localeCode),
               const SizedBox(height: 12),
+              // D4: ワールド別 / なかま別 のビュー切替。
+              _ViewToggle(
+                byCategory: _byCategory,
+                localeCode: localeCode,
+                onChanged: (v) => setState(() => _byCategory = v),
+              ),
+              const SizedBox(height: 12),
               if (foundRares.isNotEmpty) ...[
                 _RareSection(rareIconIds: foundRares, localeCode: localeCode),
                 const SizedBox(height: 12),
               ],
-              for (final world in worlds)
-                _WorldSection(
-                  world: world,
-                  discovered: discovered,
-                  unseen: _unseen,
-                  localeCode: localeCode,
-                ),
+              if (_byCategory)
+                for (final group in buildCategoryView(worlds, discovered))
+                  _CategorySection(group: group, localeCode: localeCode)
+              else
+                for (final world in worlds)
+                  _WorldSection(
+                    world: world,
+                    discovered: discovered,
+                    unseen: _unseen,
+                    localeCode: localeCode,
+                  ),
             ],
           );
         },
@@ -167,6 +181,94 @@ class _ProgressHeader extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 図鑑のビュー切替（ワールド別 / なかま別・D4）。
+class _ViewToggle extends StatelessWidget {
+  const _ViewToggle({
+    required this.byCategory,
+    required this.localeCode,
+    required this.onChanged,
+  });
+
+  final bool byCategory;
+  final String localeCode;
+  final ValueChanged<bool> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SegmentedButton<bool>(
+        key: const ValueKey('collection-view-toggle'),
+        segments: [
+          ButtonSegment(
+            value: false,
+            label: Text(tr(localeCode, 'collection.byWorld')),
+            icon: const Icon(Icons.public),
+          ),
+          ButtonSegment(
+            value: true,
+            label: Text(tr(localeCode, 'collection.byCategory')),
+            icon: const Icon(Icons.category),
+          ),
+        ],
+        selected: {byCategory},
+        onSelectionChanged: (s) => onChanged(s.first),
+      ),
+    );
+  }
+}
+
+/// なかま（カテゴリ）別の 1 グループ。カテゴリ絵＋ラベル＋宝セル（影絵→カラー）。
+class _CategorySection extends StatelessWidget {
+  const _CategorySection({required this.group, required this.localeCode});
+
+  final CategoryGroup group;
+  final String localeCode;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      key: ValueKey('collection-category.${group.category.name}'),
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(group.category.icon, color: Colors.brown.shade700),
+                const SizedBox(width: 8),
+                Text(
+                  tr(localeCode, group.category.labelKey),
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 10,
+              runSpacing: 10,
+              children: [
+                for (final e in group.icons)
+                  _CollectionCell(
+                    sceneId: 'cat.${group.category.name}',
+                    iconId: e.iconId,
+                    discovered: e.found,
+                    isNew: false,
+                    localeCode: localeCode,
+                  ),
+              ],
             ),
           ],
         ),
