@@ -10,6 +10,7 @@ import 'package:kidsapp_treasurehunt/features/seek_find/models/dummy_item.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_interaction.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/trail_color.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/models/treasure_category.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/scene_background.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/seek_find_logic.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/target_icons.dart';
@@ -311,6 +312,8 @@ class _SceneViewState extends ConsumerState<_SceneView>
     final unfoundCount = scene.targets
         .where((t) => !found.contains(t.id))
         .length;
+    // お題発見（A3）: 今さがすカテゴリ（ソフトガイド・無ければ非表示）。
+    final questCategory = nextQuestCategory(scene.targets, found);
 
     ref.listen(foundControllerProvider(_foundKey), (previous, next) {
       final wasComplete = (previous?.length ?? 0) >= scene.targets.length;
@@ -324,16 +327,31 @@ class _SceneViewState extends ConsumerState<_SceneView>
       children: [
         Column(
           children: [
-            // 大エリア（Normal/Hard）のみ「うごかす / さがす」トグルをシーンの外
-            // （専用ストリップ）に置く。Stack で重ねるとピル下のターゲットへの
-            // タップを吸収してしまうため、レイアウト上で場所を分けて衝突を避ける。
-            if (_isLargeArea && !_completed)
+            // シーン外の上部ストリップ（1 段にまとめる）: お題発見（A3）の
+            // 「○○ を さがそう」ガイドと、大エリアの「うごかす / さがす」トグル。
+            // Wrap で横並び＋反流させ、縦の圧迫と（重ねた場合の）タップ吸収を避ける。
+            // Stack に重ねないのはピル下のターゲットへのタップ吸収を防ぐため。
+            if (!_completed && (questCategory != null || _isLargeArea))
               Padding(
                 padding: const EdgeInsets.only(top: 8, bottom: 4),
-                child: _InteractionToggle(
-                  interaction: _interaction,
-                  localeCode: localeCode,
-                  onChanged: (i) => setState(() => _interaction = i),
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: [
+                    if (questCategory != null)
+                      _QuestBanner(
+                        key: const ValueKey('quest-banner'),
+                        category: questCategory,
+                        localeCode: localeCode,
+                      ),
+                    if (_isLargeArea)
+                      _InteractionToggle(
+                        interaction: _interaction,
+                        localeCode: localeCode,
+                        onChanged: (i) => setState(() => _interaction = i),
+                      ),
+                  ],
                 ),
               ),
             Expanded(
@@ -575,6 +593,49 @@ class _SceneViewState extends ConsumerState<_SceneView>
             debugPrint('collection record failed: $e');
             return false;
           }),
+    );
+  }
+}
+
+/// お題発見（A3）のソフトガイド・バナー。「○○ を さがそう」を 🔍＋カテゴリ絵＋
+/// ラベルで示す（読字に依存しない）。タップで効果音（注目）。強制ではなく、未発見が
+/// 進むと自然に次のカテゴリへ切り替わる（罰なし）。
+class _QuestBanner extends StatelessWidget {
+  const _QuestBanner({
+    super.key,
+    required this.category,
+    required this.localeCode,
+  });
+
+  final TreasureCategory category;
+  final String localeCode;
+
+  @override
+  Widget build(BuildContext context) {
+    // 表示専用のガイド（非タップ）。発見音（報酬）を流用しないことで「発見＝報酬音」
+    // の連合を汚さない。読字に依存しないよう 🔍＋カテゴリ絵＋ラベルで示す。
+    return Material(
+      color: KidsTheme.toggleSurface,
+      borderRadius: BorderRadius.circular(24),
+      elevation: 2,
+      child: Container(
+        constraints: const BoxConstraints(minHeight: 56),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.search, size: 26, color: Colors.brown.shade600),
+            const SizedBox(width: 8),
+            Icon(category.icon, size: 28, color: Colors.brown.shade700),
+            const SizedBox(width: 8),
+            Text(
+              tr(localeCode, category.labelKey),
+              key: ValueKey('quest-label.${category.name}'),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
