@@ -1,17 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:kidsapp_treasurehunt/data/collection_repository.dart';
 import 'package:kidsapp_treasurehunt/features/collection/collection_logic.dart';
-import 'package:kidsapp_treasurehunt/features/collection/models/collection_world.dart';
+import 'package:kidsapp_treasurehunt/features/collection/widgets/collection_sections.dart';
+import 'package:kidsapp_treasurehunt/features/collection/widgets/sticker_book.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/rare_treasure.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/trail_color.dart';
-import 'package:kidsapp_treasurehunt/features/seek_find/target_icons.dart';
-import 'package:kidsapp_treasurehunt/features/seek_find/widgets/unfound_treasure_icon.dart';
 import 'package:kidsapp_treasurehunt/providers.dart';
 import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
 
@@ -34,7 +31,7 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   /// 図鑑のビュー: false=ワールド別（既定・D6）/ true=なかま別（D4）。
   bool _byCategory = false;
 
-  /// シール帳の現在ページ。なかま⇄ワールドのビュー往復で _StickerBook が
+  /// シール帳の現在ページ。なかま⇄ワールドのビュー往復で StickerBook が
   /// 作り直されてもページ位置を保つために親が覚えておく（D1）。
   int _bookPage = 0;
 
@@ -104,17 +101,17 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
                 child: Column(
                   children: [
-                    _ProgressHeader(progress: progress, localeCode: localeCode),
+                    ProgressHeader(progress: progress, localeCode: localeCode),
                     const SizedBox(height: 12),
                     // D4: ワールド別 / なかま別 のビュー切替。
-                    _ViewToggle(
+                    ViewToggle(
                       byCategory: _byCategory,
                       localeCode: localeCode,
                       onChanged: (v) => setState(() => _byCategory = v),
                     ),
                     if (foundRares.isNotEmpty) ...[
                       const SizedBox(height: 12),
-                      _RareSection(
+                      RareSection(
                         rareIconIds: foundRares,
                         localeCode: localeCode,
                       ),
@@ -132,13 +129,13 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                             worlds,
                             discovered,
                           ))
-                            _CategorySection(
+                            CategorySection(
                               group: group,
                               localeCode: localeCode,
                             ),
                         ],
                       )
-                    : _StickerBook(
+                    : StickerBook(
                         worlds: worlds,
                         discovered: discovered,
                         unseen: _unseen,
@@ -171,472 +168,6 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
           .catchError((Object e) {
             debugPrint('collection reward unlock failed: $e');
           }),
-    );
-  }
-}
-
-/// 全体の収集プログレス。完成で祝福（goal-gradient を内発的に）。
-class _ProgressHeader extends StatelessWidget {
-  const _ProgressHeader({required this.progress, required this.localeCode});
-
-  final CollectionProgress progress;
-  final String localeCode;
-
-  @override
-  Widget build(BuildContext context) {
-    final complete = progress.isComplete;
-    return Card(
-      key: const ValueKey('collection-progress'),
-      color: complete ? Colors.amber.shade100 : null,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          children: [
-            Icon(
-              complete ? Icons.emoji_events : Icons.menu_book,
-              color: complete ? Colors.amber.shade800 : Colors.brown.shade400,
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: Text(
-                complete
-                    ? tr(localeCode, 'collection.allDone')
-                    : '${tr(localeCode, 'collection.collected')} '
-                          '${progress.found}/${progress.total}',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// 図鑑のビュー切替（ワールド別 / なかま別・D4）。
-class _ViewToggle extends StatelessWidget {
-  const _ViewToggle({
-    required this.byCategory,
-    required this.localeCode,
-    required this.onChanged,
-  });
-
-  final bool byCategory;
-  final String localeCode;
-  final ValueChanged<bool> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: SegmentedButton<bool>(
-        key: const ValueKey('collection-view-toggle'),
-        segments: [
-          ButtonSegment(
-            value: false,
-            label: Text(tr(localeCode, 'collection.byWorld')),
-            icon: const Icon(Icons.public),
-          ),
-          ButtonSegment(
-            value: true,
-            label: Text(tr(localeCode, 'collection.byCategory')),
-            icon: const Icon(Icons.category),
-          ),
-        ],
-        selected: {byCategory},
-        onSelectionChanged: (s) => onChanged(s.first),
-      ),
-    );
-  }
-}
-
-/// なかま（カテゴリ）別の 1 グループ。カテゴリ絵＋ラベル＋宝セル（影絵→カラー）。
-class _CategorySection extends StatelessWidget {
-  const _CategorySection({required this.group, required this.localeCode});
-
-  final CategoryGroup group;
-  final String localeCode;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      key: ValueKey('collection-category.${group.category.name}'),
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(group.category.icon, color: Colors.brown.shade700),
-                const SizedBox(width: 8),
-                Text(
-                  tr(localeCode, group.category.labelKey),
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                for (final e in group.icons)
-                  _CollectionCell(
-                    sceneId: 'cat.${group.category.name}',
-                    iconId: e.iconId,
-                    discovered: e.found,
-                    isNew: false,
-                    localeCode: localeCode,
-                  ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// 見つけたレア宝（C4）を並べる「とくべつ」カード。見つけた分だけカラーで表示し、
-/// 影絵（未収集）は出さない（サプライズ性を保つ・100% 判定にも影響しない）。
-class _RareSection extends StatelessWidget {
-  const _RareSection({required this.rareIconIds, required this.localeCode});
-
-  final List<String> rareIconIds;
-  final String localeCode;
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      key: const ValueKey('collection-rare'),
-      color: Colors.amber.shade50,
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.auto_awesome, color: Colors.amber.shade700),
-                const SizedBox(width: 8),
-                Text(
-                  tr(localeCode, 'collection.rare'),
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 10,
-              runSpacing: 10,
-              children: [
-                for (final iconId in rareIconIds)
-                  Container(
-                    key: ValueKey('collection-rare.$iconId'),
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      color: Colors.amber.shade100,
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: Colors.amber.shade400,
-                        width: 2,
-                      ),
-                    ),
-                    child: Center(
-                      child: SizedBox(
-                        width: 36,
-                        height: 36,
-                        child: FittedBox(
-                          fit: BoxFit.contain,
-                          child: Icon(
-                            targetIcon(iconId),
-                            color: targetColor(iconId),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// シール帳（D1）: ワールドを 1 ページ＝1 枚の「ページ」として横にめくる。
-/// 下にページ位置ドット。ページめくりに触覚を添える。
-class _StickerBook extends StatefulWidget {
-  const _StickerBook({
-    required this.worlds,
-    required this.discovered,
-    required this.unseen,
-    required this.localeCode,
-    required this.initialPage,
-    required this.onPageChanged,
-  });
-
-  final List<CollectionWorld> worlds;
-  final Set<String> discovered;
-  final Set<String> unseen;
-  final String localeCode;
-  final int initialPage;
-  final ValueChanged<int> onPageChanged;
-
-  @override
-  State<_StickerBook> createState() => _StickerBookState();
-}
-
-class _StickerBookState extends State<_StickerBook> {
-  late final PageController _controller = PageController(
-    initialPage: widget.initialPage,
-  );
-  late int _page = widget.initialPage;
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: PageView.builder(
-            key: const ValueKey('sticker-book'),
-            controller: _controller,
-            itemCount: widget.worlds.length,
-            onPageChanged: (i) {
-              HapticFeedback.selectionClick(); // めくる触覚
-              widget.onPageChanged(i); // 親に現在ページを覚えさせる
-              setState(() => _page = i);
-            },
-            itemBuilder: (context, i) => _WorldPage(
-              world: widget.worlds[i],
-              discovered: widget.discovered,
-              unseen: widget.unseen,
-              localeCode: widget.localeCode,
-            ),
-          ),
-        ),
-        _PageDots(count: widget.worlds.length, current: _page),
-      ],
-    );
-  }
-}
-
-/// シール帳のページ位置ドット。
-class _PageDots extends StatelessWidget {
-  const _PageDots({required this.count, required this.current});
-
-  final int count;
-  final int current;
-
-  @override
-  Widget build(BuildContext context) {
-    // 装飾（ページ位置）なので読み上げ対象から除外する。
-    return ExcludeSemantics(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            for (var i = 0; i < count; i++)
-              Container(
-                width: 8,
-                height: 8,
-                margin: const EdgeInsets.symmetric(horizontal: 3),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: i == current
-                      ? Colors.brown.shade600
-                      : Colors.brown.shade200,
-                ),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// シール帳の 1 ページ（1 ワールド）。見出し（ワールド名 ＋ n/total）＋ 宝シール。
-class _WorldPage extends StatelessWidget {
-  const _WorldPage({
-    required this.world,
-    required this.discovered,
-    required this.unseen,
-    required this.localeCode,
-  });
-
-  final CollectionWorld world;
-  final Set<String> discovered;
-  final Set<String> unseen;
-  final String localeCode;
-
-  @override
-  Widget build(BuildContext context) {
-    final foundCount = world.iconIds
-        .where(
-          (ic) => discovered.contains(
-            CollectionRepository.entryKey(world.sceneId, ic),
-          ),
-        )
-        .length;
-    final total = world.iconIds.length;
-    final complete = total > 0 && foundCount >= total;
-
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-      child: Container(
-        key: ValueKey('collection-world.${world.sceneId}'),
-        decoration: BoxDecoration(
-          color: const Color(0xFFFBF3E0), // 羊皮紙風のページ
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.brown.shade200, width: 2),
-        ),
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    tr(localeCode, world.titleKey),
-                    style: const TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Flexible(
-                  child: Text(
-                    '$foundCount/$total ${complete ? '🏆' : ''}',
-                    style: const TextStyle(fontSize: 16),
-                    overflow: TextOverflow.fade,
-                    softWrap: false,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Expanded(
-              child: SingleChildScrollView(
-                child: Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  children: [
-                    for (final iconId in world.iconIds)
-                      _CollectionCell(
-                        sceneId: world.sceneId,
-                        iconId: iconId,
-                        discovered: discovered.contains(
-                          CollectionRepository.entryKey(world.sceneId, iconId),
-                        ),
-                        isNew: unseen.contains(
-                          CollectionRepository.entryKey(world.sceneId, iconId),
-                        ),
-                        localeCode: localeCode,
-                      ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// 宝 1 つのセル。収集済みはカラー、未収集は影絵。初発見は new! バッジ付き。
-class _CollectionCell extends StatelessWidget {
-  const _CollectionCell({
-    required this.sceneId,
-    required this.iconId,
-    required this.discovered,
-    required this.isNew,
-    required this.localeCode,
-  });
-
-  final String sceneId;
-  final String iconId;
-  final bool discovered;
-  final bool isNew;
-  final String localeCode;
-
-  @override
-  Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          key: ValueKey('collection-cell.$sceneId.$iconId'),
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            color: discovered ? Colors.amber.shade100 : Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.brown.shade300, width: 2),
-          ),
-          child: Center(
-            child: SizedBox(
-              width: 36,
-              height: 36,
-              child: FittedBox(
-                fit: BoxFit.contain,
-                child: discovered
-                    ? Icon(
-                        targetIcon(iconId),
-                        color: targetColor(iconId),
-                        key: ValueKey('collection-found.$sceneId.$iconId'),
-                      )
-                    : UnfoundTreasureIcon(
-                        key: ValueKey('collection-silhouette.$sceneId.$iconId'),
-                        iconId: iconId,
-                      ),
-              ),
-            ),
-          ),
-        ),
-        if (discovered && isNew)
-          Positioned(
-            top: -6,
-            right: -6,
-            child: Container(
-              key: ValueKey('collection-new.$sceneId.$iconId'),
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.red.shade600,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                tr(localeCode, 'collection.new'),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-      ],
     );
   }
 }
