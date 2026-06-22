@@ -165,6 +165,31 @@ void main() {
     expect(find.byKey(const ValueKey('collection-rare')), findsNothing);
   });
 
+  testWidgets(
+    'world view is a page-turning sticker book; swipe turns the page (D1)',
+    (tester) async {
+      await _pump(tester, ['scene01:apple']);
+
+      // 既定はシール帳（PageView）。1 ページ目は scene01。
+      expect(find.byKey(const ValueKey('sticker-book')), findsOneWidget);
+      expect(
+        find.byKey(const ValueKey('collection-world.scene01')),
+        findsOneWidget,
+      );
+
+      // 横にめくると 2 ページ目（scene02）へ。
+      await tester.drag(
+        find.byKey(const ValueKey('sticker-book')),
+        const Offset(-500, 0),
+      );
+      await tester.pumpAndSettle();
+      expect(
+        find.byKey(const ValueKey('collection-world.scene02')),
+        findsOneWidget,
+      );
+    },
+  );
+
   testWidgets('toggling to なかま shows category sections (D4)', (tester) async {
     await _pump(tester, ['scene01:apple']);
 
