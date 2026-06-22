@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:kidsapp_treasurehunt/features/seek_find/models/dummy_item.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/rare_treasure.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_ambient_variant.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_interaction.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/trail_color.dart';
@@ -103,6 +104,11 @@ class _SceneViewState extends ConsumerState<_SceneView>
   /// シャッフルして「毎回ちがう場所」にする（C1）。初回（未クリア）は安定配置のまま。
   late final SceneDef _scene = _maybeShuffleOnReplay();
 
+  /// 季節/時間バリアント（C3）。再訪/フリーで抽選、初回は normal（素のまま）。
+  late final SceneAmbientVariant _ambient = _isReplay()
+      ? pickAmbientVariant(math.Random())
+      : SceneAmbientVariant.normal;
+
   bool _completed = false;
   final List<({Offset position, Key key})> _missBubbles = [];
 
@@ -156,23 +162,31 @@ class _SceneViewState extends ConsumerState<_SceneView>
 
   /// 再訪（クリア済み）またはフリーモードなら配置をシャッフルし、初回は
   /// 作者の安定配置のまま返す（C1）。入場ごとに新しい乱数 → 毎回ちがう配置。
-  SceneDef _maybeShuffleOnReplay() {
-    // ref.read（watch でなく）で 1 回だけ判定する。activeSlot が null のときは
-    // progressRepositoryProvider が throw するため、先に null ガードして避ける。
+  /// 再訪（クリア済み）またはフリーモードか。配置シャッフル(C1)・おとり抽選(C2)・
+  /// 季節バリアント(C3)・レア宝(C4) はすべて「再訪/フリーのときだけ」発動し、
+  /// 初回（未クリア）は作者の安定配置・素の見た目のままにする。
+  bool _isReplay() {
     final activeSlot = ref.read(activeSlotProvider);
     if (activeSlot == null) {
-      return widget.scene; // スロット未選択（通常起こらない）はそのまま
+      return false; // スロット未選択（通常起こらない）
     }
-    final isFree = activeSlot == kFreeModeSlotId;
-    final cleared = ref
+    if (activeSlot == kFreeModeSlotId) {
+      return true;
+    }
+    return ref
         .read(progressRepositoryProvider)
         .isCleared(widget.mode, widget.scene.id);
-    if (!isFree && !cleared) {
+  }
+
+  SceneDef _maybeShuffleOnReplay() {
+    if (!_isReplay()) {
       return widget.scene; // 初回（未クリア）は作者の安定配置・レアも出さない
     }
-    // 再訪/フリーモード: 配置をシャッフルし、低確率でレア宝（C4）を 1 つ足す。
+    // 再訪/フリーモード: 配置シャッフル(C1)＋おとり抽選(C2)＋低確率レア宝(C4)。
     final random = math.Random();
-    var scene = widget.scene.withShuffledPositions(random);
+    var scene = widget.scene
+        .withShuffledPositions(random)
+        .withReseededDecoyIcons(random);
     if (random.nextDouble() < kRareTreasureChance) {
       scene = scene.withRareTreasure(pickRare(random), random);
     }
@@ -427,6 +441,14 @@ class _SceneViewState extends ConsumerState<_SceneView>
                         fit: StackFit.expand,
                         children: [
                           sceneBackground(scene.id),
+                          // 季節/時間バリアント（C3）: 背景の上・宝の下に半透明
+                          // ティントを 1 枚。IgnorePointer でタップを邪魔しない。
+                          if (_ambient.tint != null)
+                            Positioned.fill(
+                              child: IgnorePointer(
+                                child: ColoredBox(color: _ambient.tint!),
+                              ),
+                            ),
                           for (var i = 0; i < decoys.length; i++)
                             _positioned(
                               scaledTreasureRect(
