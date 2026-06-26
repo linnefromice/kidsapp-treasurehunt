@@ -19,6 +19,7 @@ const Map<String, Map<String, String>> _strings = {
     'rare.gem': 'ほうせき',
     'rare.crown': 'おうかん',
     'rare.medal': 'メダル',
+    'collection.complete': 'コンプリート！',
     // 称号バッチ。
     'badge.earned': '🏅 バッチ ゲット！',
     'collection.byBadge': 'しょうごう',
@@ -177,6 +178,7 @@ const Map<String, Map<String, String>> _strings = {
     'rare.gem': 'Gem',
     'rare.crown': 'Crown',
     'rare.medal': 'Medal',
+    'collection.complete': 'Complete!',
     // Badges.
     'badge.earned': '🏅 Badge get!',
     'collection.byBadge': 'Badges',
