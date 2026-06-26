@@ -207,6 +207,11 @@ class _ShapeChip extends StatelessWidget {
     TrailShape.circle => Icons.circle,
     TrailShape.star => Icons.star,
     TrailShape.heart => Icons.favorite,
+    TrailShape.bubble => Icons.bubble_chart,
+    TrailShape.flower => Icons.local_florist,
+    TrailShape.neon => Icons.flare,
+    TrailShape.ribbon => Icons.gesture,
+    TrailShape.comet => Icons.mode_standby,
   };
 
   @override
