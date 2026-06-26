@@ -17,6 +17,7 @@ import 'package:kidsapp_treasurehunt/features/seek_find/scene_background.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/scene_covers.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/scene_decoys.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/seek_find_logic.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/widgets/celebration_overlay.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/clear_overlay.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/collection_bar.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/hint_glow.dart';
@@ -29,6 +30,7 @@ import 'package:kidsapp_treasurehunt/providers.dart';
 import 'package:kidsapp_treasurehunt/save_slots_catalog.dart';
 import 'package:kidsapp_treasurehunt/scenes_catalog.dart';
 import 'package:kidsapp_treasurehunt/shared/game_mode.dart';
+import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
 
 /// 操作が無いまま何秒経過したら未発見の宝を 1 つヒント点滅させるか
 /// （アイドル時のみ。タップ/なぞりのたびにカウントはリセットされ、急かさない）。
@@ -110,6 +112,10 @@ class _SceneViewState extends ConsumerState<_SceneView>
       : SceneAmbientVariant.normal;
 
   bool _completed = false;
+
+  /// 発見したレア宝の icon id（非 null の間、専用リビール演出を最前面に出す）。
+  String? _rareReveal;
+
   final List<({Offset position, Key key})> _missBubbles = [];
 
   /// 連続発見（連鎖）数。発見で +1、空振りで 0 に戻す（A5）。
@@ -410,6 +416,14 @@ class _SceneViewState extends ConsumerState<_SceneView>
         ),
         if (_completed)
           ClearOverlay(localeCode: localeCode, onBack: () => context.go('/')),
+        // レア宝のリビール（A-2）。クリアと同時でも最前面で先に祝福する。
+        if (_rareReveal != null)
+          CelebrationOverlay(
+            iconId: _rareReveal!,
+            title: tr(localeCode, 'rare.found'),
+            subtitle: tr(localeCode, 'rare.${_rareReveal!.substring(5)}'),
+            onDismiss: () => setState(() => _rareReveal = null),
+          ),
       ],
     );
   }
@@ -660,5 +674,9 @@ class _SceneViewState extends ConsumerState<_SceneView>
             return false;
           }),
     );
+    // レア宝(A-2): 専用リビール演出を最前面に出す（climax）。
+    if (isRareIcon(hitIcon)) {
+      setState(() => _rareReveal = hitIcon);
+    }
   }
 }
