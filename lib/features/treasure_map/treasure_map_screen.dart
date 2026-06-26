@@ -6,7 +6,7 @@ import 'package:kidsapp_treasurehunt/data/progress_repository.dart';
 import 'package:kidsapp_treasurehunt/features/treasure_map/widgets/current_leg_footprints.dart';
 import 'package:kidsapp_treasurehunt/features/treasure_map/widgets/map_mode_toggle.dart';
 import 'package:kidsapp_treasurehunt/features/treasure_map/widgets/map_node.dart';
-import 'package:kidsapp_treasurehunt/features/treasure_map/widgets/trail_badge.dart';
+import 'package:kidsapp_treasurehunt/features/treasure_map/widgets/pen_menu_button.dart';
 import 'package:kidsapp_treasurehunt/features/treasure_map/widgets/treasure_map_canvas.dart';
 import 'package:kidsapp_treasurehunt/providers.dart';
 import 'package:kidsapp_treasurehunt/save_slots_catalog.dart';
@@ -63,6 +63,7 @@ class _TreasureMapScreenState extends ConsumerState<TreasureMapScreen> {
     final progress = ref.watch(progressRepositoryProvider);
     final localeCode = ref.watch(localeControllerProvider).languageCode;
     final trail = ref.watch(trailSettingControllerProvider);
+    final trailShape = ref.watch(trailShapeControllerProvider);
     final activeSlotId = ref.watch(activeSlotProvider);
     // 難易度は永続化された設定から取得する。クリア後にホームへ戻って画面が
     // 作り直されても選択が維持される（Bug A: easy へのリセットを防ぐ）。
@@ -108,7 +109,6 @@ class _TreasureMapScreenState extends ConsumerState<TreasureMapScreen> {
               ),
             ),
           ),
-          TrailBadge(setting: trail, onTap: () => context.go('/settings')),
           IconButton(
             key: const ValueKey('collection-button'),
             icon: const Icon(Icons.menu_book),
@@ -178,6 +178,20 @@ class _TreasureMapScreenState extends ConsumerState<TreasureMapScreen> {
                     localeCode: localeCode,
                     onChanged: (m) =>
                         ref.read(gameModeControllerProvider.notifier).select(m),
+                  ),
+                ),
+              ),
+              // 6. なぞりペンの大きな入口メニュー（下部・第一級の導線）。
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 16,
+                child: Center(
+                  child: PenMenuButton(
+                    setting: trail,
+                    shape: trailShape,
+                    label: tr(localeCode, 'home.pen'),
+                    onTap: () => context.go('/pen'),
                   ),
                 ),
               ),
