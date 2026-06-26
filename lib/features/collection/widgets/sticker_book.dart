@@ -136,9 +136,22 @@ class _WorldPage extends StatelessWidget {
       child: Container(
         key: ValueKey('collection-world.${world.sceneId}'),
         decoration: BoxDecoration(
-          color: const Color(0xFFFBF3E0), // 羊皮紙風のページ
+          // 完成したワールドは羊皮紙が少し明るく、金枠＋やわらかい金グロー（#5）。
+          color: complete ? const Color(0xFFFFFBEA) : const Color(0xFFFBF3E0),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.brown.shade200, width: 2),
+          border: Border.all(
+            color: complete ? Colors.amber.shade400 : Colors.brown.shade200,
+            width: complete ? 3.5 : 2,
+          ),
+          boxShadow: complete
+              ? [
+                  BoxShadow(
+                    color: Colors.amber.withValues(alpha: 0.45),
+                    blurRadius: 16,
+                    spreadRadius: 1,
+                  ),
+                ]
+              : null,
         ),
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -156,14 +169,36 @@ class _WorldPage extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Flexible(
-                  child: Text(
-                    '$foundCount/$total ${complete ? '🏆' : ''}',
-                    style: const TextStyle(fontSize: 16),
-                    overflow: TextOverflow.fade,
-                    softWrap: false,
+                // 完成は「コンプリート」チップ、途中は n/total 表示。
+                if (complete)
+                  Container(
+                    key: ValueKey('collection-world-complete.${world.sceneId}'),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.amber.shade600,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Text(
+                      '🏆 ${tr(localeCode, 'collection.complete')}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  )
+                else
+                  Flexible(
+                    child: Text(
+                      '$foundCount/$total',
+                      style: const TextStyle(fontSize: 16),
+                      overflow: TextOverflow.fade,
+                      softWrap: false,
+                    ),
                   ),
-                ),
               ],
             ),
             const SizedBox(height: 12),
