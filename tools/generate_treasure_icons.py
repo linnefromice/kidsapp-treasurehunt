@@ -32,14 +32,14 @@ def spark(cx,cy,s,op=1.0):
 def halo(color):
     return rgrad("halo",50,52,52,[(0,color,0.9),(0.55,color,0.4),(1,color,0)])
 
-def wrap(slug, hc, defs, body, sparks, shadow=True):
+def wrap(slug, hc, defs, body, sparks, shadow=True, out=None):
     d = halo(color=hc)+"".join(defs)
     sh = '<ellipse cx="50" cy="92" rx="22" ry="4.5" fill="#000000" opacity="0.11"/>' if shadow else ""
     sp = "".join(spark(*s) for s in sparks)
     svg=(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">'
          f'<defs>{d}</defs>'
          f'<circle cx="50" cy="52" r="52" fill="url(#halo)"/>{sh}{body}{sp}</svg>')
-    open(f"{OUT}/{slug}.svg","w").write(svg)
+    open(f"{out or OUT}/{slug}.svg","w").write(svg)
 
 # ---- volume overlay helper (vertical bottom shade) ----
 def volgrad(i, dark):
@@ -885,3 +885,71 @@ for slug,cfg in icons.items():
     wrap(slug,cfg["hc"],cfg["defs"],cfg["body"],cfg["sparks"])
 print("generated",len(icons),"icons")
 print(sorted(icons.keys()))
+
+# ===== 称号バッジ（assets/badges/）======================================
+# 共通のメダル土台（リボン＋丸メダリオン）＋中央エンブレム。統一感のある勲章風。
+BADGE_OUT = os.path.normpath(os.path.join(HERE, "..", "assets", "badges"))
+os.makedirs(BADGE_OUT, exist_ok=True)
+
+def medal(emblem, ring="#E8950C", face_top="#FFF3BF", face_bot="#FCC419", ribbon="#FF6B6B"):
+    return (
+      # リボン（2枚）
+      f'<path d="M38 18 L34 44 L46 38 Z" fill="{ribbon}"/>'
+      f'<path d="M62 18 L66 44 L54 38 Z" fill="#FA5252"/>'
+      # メダリオン
+      '<defs><radialGradient id="mf" cx="42%" cy="34%" r="75%">'
+      f'<stop offset="0" stop-color="{face_top}"/><stop offset="100%" stop-color="{face_bot}"/>'
+      '</radialGradient></defs>'
+      f'<circle cx="50" cy="58" r="26" fill="{ring}"/>'
+      '<circle cx="50" cy="58" r="21" fill="url(#mf)"/>'
+      # ギザギザ縁
+      + "".join(f'<circle cx="{50+24*math.cos(math.radians(k*30)):.1f}" cy="{58+24*math.sin(math.radians(k*30)):.1f}" r="2.4" fill="{ring}"/>' for k in range(12))
+      + emblem +
+      '<ellipse cx="42" cy="50" rx="5" ry="7" fill="#FFFFFF" opacity="0.35"/>'
+    )
+
+badges = {}
+badges["badge_star"]=dict(hc="#FFD43B", ring="#E8950C", emblem=(
+  '<path d="M50 46 L54 56 L65 56 L56 63 L59 74 L50 67 L41 74 L44 63 L35 56 L46 56 Z" fill="#FF8F00"/>'))
+badges["badge_flag"]=dict(hc="#FF8787", ring="#C92A2A", ribbon="#FFD43B", emblem=(
+  '<rect x="40" y="44" width="3.5" height="30" rx="1.5" fill="#8C5A2B"/>'
+  '<path d="M43 46 L64 50 L43 56 Z" fill="#FA5252"/>'))
+badges["badge_world"]=dict(hc="#4DABF7", ring="#1971C2", ribbon="#74C0FC", emblem=(
+  '<circle cx="50" cy="58" r="13" fill="#4DABF7"/>'
+  '<path d="M38 56 Q50 52 62 56 M38 60 Q50 64 62 60 M50 45 L50 71" stroke="#1864AB" stroke-width="1.6" fill="none" opacity="0.7"/>'
+  '<path d="M44 48 Q40 58 44 68 M56 48 Q60 58 56 68" stroke="#1864AB" stroke-width="1.6" fill="none" opacity="0.7"/>'))
+badges["badge_easy"]=dict(hc="#51CF66", ring="#2F9E44", ribbon="#69DB7C", face_top="#D3F9D8", face_bot="#69DB7C", emblem=(
+  '<path d="M40 58 L47 66 L62 50" stroke="#2B8A3E" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'))
+badges["badge_normal"]=dict(hc="#4DABF7", ring="#1971C2", ribbon="#74C0FC", face_top="#D0EBFF", face_bot="#74C0FC", emblem=(
+  '<path d="M40 58 L47 66 L62 50" stroke="#1864AB" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'
+  '<path d="M50 46 L53 53 L60 53 L54 58 L57 65 L50 60 L43 65 L46 58 L40 53 L47 53 Z" fill="#1971C2" opacity="0.25"/>'))
+badges["badge_hard"]=dict(hc="#FF6B6B", ring="#C92A2A", ribbon="#FFA94D", face_top="#FFE3E3", face_bot="#FF8787", emblem=(
+  '<path d="M50 44 C58 52 60 58 58 64 A8 8 0 0 1 42 64 C42 58 46 56 48 52 C49 57 52 56 50 50 Z" fill="#E8590C"/>'))
+badges["badge_book"]=dict(hc="#FFB066", ring="#8C5A2B", ribbon="#FFD43B", face_top="#FFF0E0", face_bot="#FFD8A8", emblem=(
+  '<path d="M50 48 C44 44 36 44 34 47 L34 68 C36 65 44 65 50 69 Z" fill="#74C0FC"/>'
+  '<path d="M50 48 C56 44 64 44 66 47 L66 68 C64 65 56 65 50 69 Z" fill="#4DABF7"/>'
+  '<path d="M50 48 L50 69" stroke="#1864AB" stroke-width="1.6"/>'))
+badges["badge_gem"]=dict(hc="#E599F7", ring="#9C36B5", ribbon="#DA77F2", face_top="#F3D9FA", face_bot="#DA77F2", emblem=(
+  '<path d="M40 50 L60 50 L66 57 L50 72 L34 57 Z" fill="#4DABF7"/>'
+  '<path d="M40 50 L44 57 L56 57 L60 50 Z" fill="#A5D8FF"/>'
+  '<path d="M44 57 L56 57 L50 72 Z" fill="#1971C2"/>'))
+badges["badge_crown"]=dict(hc="#FFD43B", ring="#E8950C", emblem=(
+  '<path d="M37 66 L34 48 L43 55 L50 44 L57 55 L66 48 L63 66 Z" fill="#FCC419"/>'
+  '<rect x="37" y="66" width="26" height="5" rx="2" fill="#E8950C"/>'
+  '<circle cx="50" cy="46" r="2.6" fill="#FF6B6B"/>'))
+badges["badge_compass"]=dict(hc="#63E6BE", ring="#0CA678", ribbon="#74C0FC", face_top="#E6FCF5", face_bot="#63E6BE", emblem=(
+  '<circle cx="50" cy="58" r="14" fill="#E6FCF5" stroke="#0CA678" stroke-width="2"/>'
+  '<path d="M50 58 L58 50 L52 60 Z" fill="#FA5252"/>'
+  '<path d="M50 58 L42 66 L48 56 Z" fill="#495057"/>'
+  '<circle cx="50" cy="58" r="2.2" fill="#343A40"/>'))
+
+for slug,cfg in badges.items():
+    emblem = cfg["emblem"]
+    body = medal(emblem,
+                 ring=cfg.get("ring","#E8950C"),
+                 face_top=cfg.get("face_top","#FFF3BF"),
+                 face_bot=cfg.get("face_bot","#FCC419"),
+                 ribbon=cfg.get("ribbon","#FF6B6B"))
+    wrap(slug, cfg["hc"], [], body, [(70,30,4,0.85),(30,40,3,0.8)], out=BADGE_OUT)
+print("generated",len(badges),"badges ->",BADGE_OUT)
+print(sorted(badges.keys()))

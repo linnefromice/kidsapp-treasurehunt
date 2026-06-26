@@ -51,6 +51,7 @@ flutter:
     - assets/scenes/
     - assets/sfx/
     - assets/treasure_icons/
+    - assets/badges/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

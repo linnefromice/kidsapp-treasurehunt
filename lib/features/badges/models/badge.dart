@@ -107,3 +107,6 @@ const List<BadgeDef> kBadgeCatalog = [
 final Map<String, BadgeDef> kBadgeById = {
   for (final b in kBadgeCatalog) b.id: b,
 };
+
+/// バッジ画像の SVG アセットパス（`assets/badges/<iconId>.svg`）。
+String badgeSvgAsset(String iconId) => 'assets/badges/$iconId.svg';
