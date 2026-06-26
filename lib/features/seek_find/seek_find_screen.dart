@@ -41,6 +41,10 @@ import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
 /// （アイドル時のみ。タップ/なぞりのたびにカウントはリセットされ、急かさない）。
 const Duration _kHintIdleDelay = Duration(seconds: 8);
 
+/// 上部ストリップ（お題バナー / 操作トグル）の予約高さ。クリアで中身が消えても
+/// この高さを常に確保し、シーン領域が縦にズレないようにする。
+const double _kTopStripHeight = 80.0;
+
 /// なぞりキラキラを生成する最小移動距離（px）。これ未満の移動では粒を足さず、
 /// 粒の密集（描画負荷とちらつき）を抑える。
 const double _kTrailSpawnMinDistance = 18.0;
@@ -433,32 +437,40 @@ class _SceneViewState extends ConsumerState<_SceneView>
             // 「○○ を さがそう」ガイドと、大エリアの「うごかす / さがす」トグル。
             // Wrap で横並び＋反流させ、縦の圧迫と（重ねた場合の）タップ吸収を避ける。
             // Stack に重ねないのはピル下のターゲットへのタップ吸収を防ぐため。
-            if (!_completed &&
-                ((questCategory != null && questTarget != null) ||
-                    _isLargeArea))
-              Padding(
-                padding: const EdgeInsets.only(top: 8, bottom: 4),
-                child: Wrap(
-                  alignment: WrapAlignment.center,
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    if (questCategory != null && questTarget != null)
-                      QuestBanner(
-                        key: const ValueKey('quest-banner'),
-                        iconId: questTarget.iconId,
-                        category: questCategory,
-                        localeCode: localeCode,
+            // 高さは常に [_kTopStripHeight] を確保する。中身（お題/トグル）が
+            // クリアや発見で出入りしても、シーン領域が縦にズレないようにするため。
+            SizedBox(
+              height: _kTopStripHeight,
+              child:
+                  (!_completed &&
+                      ((questCategory != null && questTarget != null) ||
+                          _isLargeArea))
+                  ? Padding(
+                      padding: const EdgeInsets.only(top: 8, bottom: 4),
+                      child: Wrap(
+                        alignment: WrapAlignment.center,
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
+                          if (questCategory != null && questTarget != null)
+                            QuestBanner(
+                              key: const ValueKey('quest-banner'),
+                              iconId: questTarget.iconId,
+                              category: questCategory,
+                              localeCode: localeCode,
+                            ),
+                          if (_isLargeArea)
+                            InteractionToggle(
+                              interaction: _interaction,
+                              localeCode: localeCode,
+                              onChanged: (i) =>
+                                  setState(() => _interaction = i),
+                            ),
+                        ],
                       ),
-                    if (_isLargeArea)
-                      InteractionToggle(
-                        interaction: _interaction,
-                        localeCode: localeCode,
-                        onChanged: (i) => setState(() => _interaction = i),
-                      ),
-                  ],
-                ),
-              ),
+                    )
+                  : null,
+            ),
             Expanded(child: _buildSceneArea(found, unfoundCount)),
             CollectionBar(targets: scene.targets, foundIds: found),
           ],
