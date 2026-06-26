@@ -438,6 +438,65 @@ icons["rare_medal"]=dict(hc="#FFD43B",
        '<ellipse cx="42" cy="56" rx="5" ry="7" fill="#FFFFFF" opacity="0.35"/>'),
  sparks=[(70,52,5,0.95),(32,72,3.5,0.85)])
 
+# ===== めくり露出(A1)用の追加カバー（テーマ別箱隠し） ==========================
+# 既存: cover_leaves / cover_snow / cover_box。以下はステージのイメージに合わせた箱。
+
+# cover_chest（木の宝箱）森/山/海/城など
+icons["cover_chest"]=dict(hc="#C68A4A",
+ defs=[lgrad("wood",0,0,0,1,[(0,"#D9A066",1),(1,"#8C5A2B",1)]),
+       lgrad("lid",0,0,0,1,[(0,"#C68A4A",1),(1,"#9A6633",1)])],
+ body=('<rect x="22" y="52" width="56" height="30" rx="3" fill="url(#wood)"/>'
+       '<path d="M20 52 Q50 32 80 52 L80 56 L20 56 Z" fill="url(#lid)"/>'
+       '<rect x="20" y="53" width="60" height="6" fill="#6E4423"/>'
+       '<rect x="24" y="56" width="4" height="26" fill="#E8A100" opacity="0.85"/>'
+       '<rect x="72" y="56" width="4" height="26" fill="#E8A100" opacity="0.85"/>'
+       '<rect x="44" y="48" width="12" height="14" rx="2" fill="#FFD43B"/>'
+       '<circle cx="50" cy="56" r="2.4" fill="#8C5A2B"/>'),
+ sparks=[(68,46,4,0.85)])
+
+# cover_shell（貝）海/海中
+icons["cover_shell"]=dict(hc="#FFC9DE",
+ defs=[rgrad("sh",50,80,80,[(0,"#FFF0F6",1),(60,"#FFC9DE",1),(100,"#F06595",1)])],
+ body=('<path d="M50 26 C24 30 14 64 22 80 Q50 72 78 80 C86 64 76 30 50 26 Z" fill="url(#sh)"/>'
+       '<g stroke="#E08DAA" stroke-width="2" opacity="0.55" fill="none" stroke-linecap="round">'
+       '<path d="M50 34 L50 74"/><path d="M40 36 L33 72"/><path d="M60 36 L67 72"/>'
+       '<path d="M32 42 L23 74"/><path d="M68 42 L77 74"/></g>'
+       '<circle cx="50" cy="30" r="5" fill="#FFE0EC"/>'),
+ sparks=[(70,40,4,0.85)])
+
+# cover_cloud（雲）夜/宇宙/虹/銀河
+icons["cover_cloud"]=dict(hc="#A5D8FF",
+ defs=[lgrad("cl",0,0,0,1,[(0,"#FFFFFF",1),(1,"#CBE2F5",1)])],
+ body=('<g fill="url(#cl)"><circle cx="34" cy="58" r="16"/><circle cx="52" cy="48" r="21"/>'
+       '<circle cx="68" cy="58" r="15"/><rect x="30" y="58" width="42" height="18" rx="9"/></g>'
+       '<ellipse cx="46" cy="44" rx="11" ry="5" fill="#FFFFFF" opacity="0.65"/>'),
+ sparks=[(72,44,4,0.85)])
+
+# cover_bush（茂み）森/街/花畑/海中
+icons["cover_bush"]=dict(hc="#51CF66",
+ defs=[rgrad("bs",42,34,82,[(0,"#B2F2BB",1),(60,"#51CF66",1),(100,"#2B8A3E",1)])],
+ body=('<g fill="url(#bs)"><circle cx="35" cy="60" r="15"/><circle cx="52" cy="50" r="18"/>'
+       '<circle cx="66" cy="60" r="14"/><circle cx="50" cy="64" r="16"/></g>'
+       '<circle cx="46" cy="49" r="4" fill="#D3F9D8" opacity="0.5"/>'
+       '<circle cx="62" cy="56" r="3" fill="#D3F9D8" opacity="0.45"/>'),
+ sparks=[(70,46,4,0.85)])
+
+# cover_rock（岩）山/砂漠/海中/宇宙/城/銀河
+icons["cover_rock"]=dict(hc="#CED4DA",
+ defs=[lgrad("rk",0,0,0,1,[(0,"#CED4DA",1),(1,"#868E96",1)])],
+ body=('<path d="M22 78 Q19 56 36 50 Q44 40 58 46 Q80 44 80 66 Q82 78 72 78 Z" fill="url(#rk)"/>'
+       '<path d="M36 54 Q47 49 57 54" stroke="#FFFFFF" stroke-width="2.5" opacity="0.3" fill="none" stroke-linecap="round"/>'
+       '<path d="M50 56 L46 72 M59 60 L63 74" stroke="#5C636A" stroke-width="1.6" opacity="0.5" fill="none"/>'),
+ sparks=[(68,46,3.5,0.8)])
+
+# cover_star（星のかたまり）夜/宇宙/銀河
+icons["cover_star"]=dict(hc="#FFE066",
+ defs=[rgrad("st",50,40,70,[(0,"#FFFDEB",1),(45,"#FFE066",1),(100,"#F08C00",1)])],
+ body=('<path d="M50 28 L57 44 L74 45 L61 56 L65 73 L50 63 L35 73 L39 56 L26 45 L43 44 Z" '
+       'fill="url(#st)" stroke="#E8950C" stroke-width="2" stroke-linejoin="round"/>'
+       '<path d="M50 28 L57 44 L50 56 L43 44 Z" fill="#FFFFFF" opacity="0.35"/>'),
+ sparks=[(76,34,4.5,0.9),(28,66,3.5,0.85)])
+
 for slug,cfg in icons.items():
     wrap(slug,cfg["hc"],cfg["defs"],cfg["body"],cfg["sparks"])
 print("generated",len(icons),"icons")

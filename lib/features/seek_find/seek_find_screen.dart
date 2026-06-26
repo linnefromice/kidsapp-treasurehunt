@@ -14,6 +14,7 @@ import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_interaction
 import 'package:kidsapp_treasurehunt/features/seek_find/models/trail_color.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/treasure_category.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/scene_background.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/scene_covers.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/seek_find_logic.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/clear_overlay.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/collection_bar.dart';
@@ -179,14 +180,13 @@ class _SceneViewState extends ConsumerState<_SceneView>
   SceneDef _maybeShuffleOnReplay() {
     final replay = _isReplay();
     final hard = widget.mode == GameMode.hard;
-    // Easy/Normal の初回（未クリア）は作者の安定配置を維持。
-    // Hard は初回からスキャッタ配置にして「規則正しさ」を崩す（要望[1]）。
-    if (!replay && !hard) {
-      return widget.scene;
-    }
     final random = math.Random();
-    // 配置スキャッタ(C1+ジッター)。Hard 初回・全モードのリプレイで適用。
-    var scene = widget.scene.withShuffledPositions(random);
+    var scene = widget.scene;
+    // 配置スキャッタ(C1+ジッター)。Hard は初回から、Easy/Normal はリプレイで適用し
+    // 「規則正しさ」を崩す（要望[1]）。初回 Easy/Normal は作者の安定配置を維持。
+    if (replay || hard) {
+      scene = scene.withShuffledPositions(random);
+    }
     // おとり抽選(C2)＋低確率レア宝(C4) は再訪/フリーのみ（初回の見た目は変えない）。
     if (replay) {
       scene = scene.withReseededDecoyIcons(random);
@@ -194,6 +194,13 @@ class _SceneViewState extends ConsumerState<_SceneView>
         scene = scene.withRareTreasure(pickRare(random), random);
       }
     }
+    // テーマ別カバー(A1 箱隠し)を常時適用し、出現率を底上げ（要望[2][3]）。
+    // ステージのイメージに合う複数種から各ターゲットへ確率で被せる。
+    scene = scene.withThemedCovers(
+      coversForScene(widget.scene.id),
+      random,
+      kThemedCoverChance,
+    );
     return scene;
   }
 
