@@ -233,4 +233,43 @@ class SceneDef {
       hardDummies: hardDummies,
     );
   }
+
+  /// 各ターゲットに、ステージのテーマプール [pool] からカバー（A1 箱隠し）を
+  /// 確率 [rate] で被せた新しい [SceneDef] を返す（要望[2][3]）。
+  ///
+  /// - カバーは複数種からランダムに選ぶ（同じステージ内でも種類がばらつく）。
+  /// - レア宝（C4）は驚き要素なので隠さない。
+  /// - 既存（JSON authored）の cover は本変換で置き換わる（rate 未満なら無し）。
+  /// - [pool] が空なら何もしない。位置・id・icon・個数は不変。
+  SceneDef withThemedCovers(List<String> pool, Random random, double rate) {
+    if (pool.isEmpty) return this;
+    FindTarget withCover(FindTarget t) {
+      // レアは隠さず必ず見せる（驚きを保つ）。
+      if (isRareIcon(t.iconId)) {
+        return FindTarget(
+          id: t.id,
+          iconId: t.iconId,
+          labelKey: t.labelKey,
+          normalizedRect: t.normalizedRect,
+        );
+      }
+      final covered = random.nextDouble() < rate;
+      return FindTarget(
+        id: t.id,
+        iconId: t.iconId,
+        labelKey: t.labelKey,
+        normalizedRect: t.normalizedRect,
+        coverIconId: covered ? pool[random.nextInt(pool.length)] : null,
+      );
+    }
+
+    return SceneDef(
+      id: id,
+      titleKey: titleKey,
+      imageAsset: imageAsset,
+      targets: [for (final t in targets) withCover(t)],
+      dummies: dummies,
+      hardDummies: hardDummies,
+    );
+  }
 }

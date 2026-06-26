@@ -37,9 +37,16 @@ const Map<String, IconData> _kTargetIcons = {
   'fire': Icons.local_fire_department,
   'kite': Icons.toys,
   // めくり露出（A1）用の「かぶせもの」。宝に被せ、タップ発見でめくれて宝が現れる。
+  // ステージのイメージに合わせて使い分ける（scene_covers.dart のプール参照）。
   'cover_leaves': Icons.grass,
   'cover_snow': Icons.ac_unit,
   'cover_box': Icons.inventory_2,
+  'cover_chest': Icons.cases_rounded,
+  'cover_shell': Icons.waves,
+  'cover_cloud': Icons.cloud,
+  'cover_bush': Icons.park,
+  'cover_rock': Icons.terrain,
+  'cover_star': Icons.auto_awesome,
   // 低頻度レア宝（C4）専用アイコン。base のターゲット/おとりとは衝突しない。
   'rare_gem': Icons.diamond,
   'rare_crown': Icons.workspace_premium,
@@ -78,10 +85,16 @@ const Map<String, Color> _kTargetColors = {
   'crown': Color(0xFFFFD54F),
   'fire': Color(0xFFF4511E),
   'kite': Color(0xFF00897B),
-  // かぶせもの（自然物っぽい色）。
+  // かぶせもの（自然物っぽい色・ヒントグローの発光色にも使う）。
   'cover_leaves': Color(0xFF558B2F),
   'cover_snow': Color(0xFF90CAF9),
   'cover_box': Color(0xFF8D6E63),
+  'cover_chest': Color(0xFF9A6633),
+  'cover_shell': Color(0xFFF06595),
+  'cover_cloud': Color(0xFF90CAF9),
+  'cover_bush': Color(0xFF2B8A3E),
+  'cover_rock': Color(0xFF868E96),
+  'cover_star': Color(0xFFF59F00),
   // レア宝（きらびやかな色）。
   'rare_gem': Color(0xFF00BCD4),
   'rare_crown': Color(0xFFFFC107),
