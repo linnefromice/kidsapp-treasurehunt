@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 
 import 'package:kidsapp_treasurehunt/features/seek_find/models/trail_color.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/trail_shape.dart';
+import 'package:kidsapp_treasurehunt/features/settings/widgets/trail_preview.dart';
 import 'package:kidsapp_treasurehunt/providers.dart';
 import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
 
@@ -143,6 +144,9 @@ class SettingsScreen extends ConsumerWidget {
                 text: tr(localeCode, 'trailShape.${shape.id}.lockedHint'),
               ),
           ],
+          const SizedBox(height: 16),
+          // 試し描きキャンバス（#3）。選んだ色＋ブラシを実際になぞって確かめられる。
+          const TrailPreview(),
         ],
       ),
     );
