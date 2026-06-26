@@ -147,17 +147,17 @@ void main() {
     });
   });
 
-  group('trail badge', () {
-    testWidgets('solid style — badge key exists', (tester) async {
+  group('pen menu button', () {
+    testWidgets('solid style — button key exists', (tester) async {
       await _pumpHome(tester, {
         'progress.slot1.unlockedSceneIds': ['scene01'],
         'settings.trail_style_id': 'solid',
         'settings.trail_color_id': 'sky',
       });
-      expect(find.byKey(const ValueKey('trail-badge')), findsOneWidget);
+      expect(find.byKey(const ValueKey('pen-menu-button')), findsOneWidget);
     });
 
-    testWidgets('rainbow3 style — badge key exists', (tester) async {
+    testWidgets('rainbow3 style — button key exists', (tester) async {
       await _pumpHome(tester, {
         'progress.slot1.unlockedSceneIds': ['scene01'],
         'settings.trail_style_id': 'rainbow3',
@@ -165,16 +165,16 @@ void main() {
         // 保存された style id を読み込むため、ここでは表示テストに絞る。
         'settings.trail_style_unlocked.rainbow3': true,
       });
-      expect(find.byKey(const ValueKey('trail-badge')), findsOneWidget);
+      expect(find.byKey(const ValueKey('pen-menu-button')), findsOneWidget);
     });
 
-    testWidgets('rainbowFull style — badge key exists', (tester) async {
+    testWidgets('rainbowFull style — button key exists', (tester) async {
       await _pumpHome(tester, {
         'progress.slot1.unlockedSceneIds': ['scene01'],
         'settings.trail_style_id': 'rainbowFull',
         'settings.trail_style_unlocked.rainbowFull': true,
       });
-      expect(find.byKey(const ValueKey('trail-badge')), findsOneWidget);
+      expect(find.byKey(const ValueKey('pen-menu-button')), findsOneWidget);
     });
   });
 

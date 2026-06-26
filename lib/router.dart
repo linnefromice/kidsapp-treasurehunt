@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:kidsapp_treasurehunt/features/collection/collection_screen.dart';
+import 'package:kidsapp_treasurehunt/features/pen/pen_screen.dart';
 import 'package:kidsapp_treasurehunt/features/save_slots/slot_select_screen.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/seek_find_screen.dart';
 import 'package:kidsapp_treasurehunt/features/settings/settings_screen.dart';
@@ -38,6 +39,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/collection',
         builder: (context, state) => const CollectionScreen(),
       ),
+      GoRoute(path: '/pen', builder: (context, state) => const PenScreen()),
       GoRoute(
         path: '/settings',
         builder: (context, state) => const SettingsScreen(),
