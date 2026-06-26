@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:kidsapp_treasurehunt/features/collection/widgets/treasure_viewer.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/treasure_glyph.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/unfound_treasure_icon.dart';
 import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
@@ -24,60 +25,72 @@ class CollectionCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        Container(
-          key: ValueKey('collection-cell.$sceneId.$iconId'),
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            color: discovered ? Colors.amber.shade100 : Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: Colors.brown.shade300, width: 2),
-          ),
-          child: Center(
-            child: SizedBox(
-              width: 36,
-              height: 36,
-              child: FittedBox(
-                fit: BoxFit.contain,
-                child: discovered
-                    ? TreasureGlyph(
-                        key: ValueKey('collection-found.$sceneId.$iconId'),
-                        iconId: iconId,
-                        found: true,
-                      )
-                    : UnfoundTreasureIcon(
-                        key: ValueKey('collection-silhouette.$sceneId.$iconId'),
-                        iconId: iconId,
-                      ),
-              ),
+    // 収集済みはタップで「大きく見て愛でる」ビューア（#3）。未収集は反応しない。
+    return GestureDetector(
+      onTap: discovered
+          ? () => showTreasureViewer(
+              context,
+              iconId: iconId,
+              name: tr(localeCode, 'target.$iconId'),
+            )
+          : null,
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Container(
+            key: ValueKey('collection-cell.$sceneId.$iconId'),
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: discovered ? Colors.amber.shade100 : Colors.white,
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: Colors.brown.shade300, width: 2),
             ),
-          ),
-        ),
-        if (discovered && isNew)
-          Positioned(
-            top: -6,
-            right: -6,
-            child: Container(
-              key: ValueKey('collection-new.$sceneId.$iconId'),
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.red.shade600,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                tr(localeCode, 'collection.new'),
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
+            child: Center(
+              child: SizedBox(
+                width: 36,
+                height: 36,
+                child: FittedBox(
+                  fit: BoxFit.contain,
+                  child: discovered
+                      ? TreasureGlyph(
+                          key: ValueKey('collection-found.$sceneId.$iconId'),
+                          iconId: iconId,
+                          found: true,
+                        )
+                      : UnfoundTreasureIcon(
+                          key: ValueKey(
+                            'collection-silhouette.$sceneId.$iconId',
+                          ),
+                          iconId: iconId,
+                        ),
                 ),
               ),
             ),
           ),
-      ],
+          if (discovered && isNew)
+            Positioned(
+              top: -6,
+              right: -6,
+              child: Container(
+                key: ValueKey('collection-new.$sceneId.$iconId'),
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade600,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  tr(localeCode, 'collection.new'),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
