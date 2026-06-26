@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:kidsapp_treasurehunt/features/seek_find/models/trail_color.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/models/trail_shape.dart';
 import 'package:kidsapp_treasurehunt/providers.dart';
 import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
 
@@ -28,6 +29,13 @@ class SettingsScreen extends ConsumerWidget {
     final lockedStyles = [
       for (final style in TrailStyle.values)
         if (!unlockedStyles.contains(style)) style,
+    ];
+    final trailShape = ref.watch(trailShapeControllerProvider);
+    final shapeController = ref.read(trailShapeControllerProvider.notifier);
+    final unlockedShapes = ref.watch(unlockedTrailShapesProvider);
+    final lockedShapes = [
+      for (final shape in TrailShape.values)
+        if (!unlockedShapes.contains(shape)) shape,
     ];
 
     return Scaffold(
@@ -106,6 +114,35 @@ class SettingsScreen extends ConsumerWidget {
             ),
             TrailStyle.rainbowFull => _RainbowFullHint(localeCode: localeCode),
           },
+          const SizedBox(height: 24),
+          // なぞりの粒の「形」（コスメ・#4）。バッチ取得で解放する収集要素。
+          Text(
+            tr(localeCode, 'settings.trailShape'),
+            style: const TextStyle(fontSize: 20),
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              for (final shape in TrailShape.values)
+                _ShapeChip(
+                  shape: shape,
+                  label: tr(localeCode, 'trailShape.${shape.id}'),
+                  selected: trailShape == shape,
+                  locked: !unlockedShapes.contains(shape),
+                  onSelected: () => shapeController.select(shape),
+                ),
+            ],
+          ),
+          if (lockedShapes.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            for (final shape in lockedShapes)
+              _LockedStyleHint(
+                key: ValueKey('trailShapeLockedHint.${shape.id}'),
+                text: tr(localeCode, 'trailShape.${shape.id}.lockedHint'),
+              ),
+          ],
         ],
       ),
     );
@@ -144,6 +181,50 @@ class _StyleChip extends StatelessWidget {
         label: Text(label),
         selected: selected,
         // ロック中は onSelected:null で選択不可（失敗を罰しない＝無反応で十分）。
+        onSelected: locked ? null : (_) => onSelected(),
+      ),
+    );
+  }
+}
+
+/// トレイルの粒の「形」選択チップ（#4）。ロック中は🔒で選択不可。
+class _ShapeChip extends StatelessWidget {
+  const _ShapeChip({
+    required this.shape,
+    required this.label,
+    required this.selected,
+    required this.locked,
+    required this.onSelected,
+  });
+
+  final TrailShape shape;
+  final String label;
+  final bool selected;
+  final bool locked;
+  final VoidCallback onSelected;
+
+  IconData get _icon => switch (shape) {
+    TrailShape.circle => Icons.circle,
+    TrailShape.star => Icons.star,
+    TrailShape.heart => Icons.favorite,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    return ConstrainedBox(
+      constraints: const BoxConstraints(
+        minWidth: _kMinTapTarget,
+        minHeight: _kMinTapTarget,
+      ),
+      child: ChoiceChip(
+        key: ValueKey('trailShape.${shape.id}'),
+        avatar: Icon(
+          locked ? Icons.lock_outline : _icon,
+          size: 18,
+          color: locked ? Colors.black54 : Colors.amber.shade700,
+        ),
+        label: Text(label),
+        selected: selected,
         onSelected: locked ? null : (_) => onSelected(),
       ),
     );

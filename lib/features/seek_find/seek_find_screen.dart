@@ -493,6 +493,8 @@ class _SceneViewState extends ConsumerState<_SceneView>
   /// [InteractiveViewer] でパン/拡大できるようにする。タップ発見は常に有効。
   Widget _buildSceneArea(Set<String> found, int unfoundCount) {
     final scene = _scene;
+    // なぞり/つつきのきらめきの形（コスメ・#4）。
+    final trailShape = ref.watch(trailShapeControllerProvider);
     return LayoutBuilder(
       builder: (context, constraints) {
         final viewport = Size(constraints.maxWidth, constraints.maxHeight);
@@ -572,6 +574,7 @@ class _SceneViewState extends ConsumerState<_SceneView>
                     key: s.key,
                     position: s.position,
                     color: s.color,
+                    shape: trailShape,
                   ),
               ],
             ),
