@@ -19,25 +19,32 @@ class CollectionBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final groups = groupTargetsByIcon(targets, foundIds);
-    // 背景色は画面端まで伸ばしつつ、中身だけを下端/左右のシステムインセット
-    // （Android ナビゲーションバー等）ぶん押し上げる。top は上のシーン領域が
-    // 守るので除外する。
-    return Container(
-      color: Colors.black.withValues(alpha: 0.05),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              for (final g in groups)
-                Padding(
-                  key: ValueKey('slot.${g.iconId}'),
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: _CollectionSlot(group: g),
-                ),
-            ],
+    // シーン上に半透明オーバーレイされる前提（省スペース化）。中身を抱える
+    // コンパクトな“トレイ”を下端中央に置き、両脇はシーンが見える。下端の
+    // システムインセット（Android ナビゲーションバー等）ぶんは SafeArea で押し上げる。
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 4),
+        child: Center(
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.82),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: Colors.brown.shade200, width: 1.5),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                for (final g in groups)
+                  Padding(
+                    key: ValueKey('slot.${g.iconId}'),
+                    padding: const EdgeInsets.symmetric(horizontal: 5),
+                    child: _CollectionSlot(group: g),
+                  ),
+              ],
+            ),
           ),
         ),
       ),
@@ -55,23 +62,23 @@ class _CollectionSlot extends StatelessWidget {
   Widget build(BuildContext context) {
     final complete = group.isComplete;
     return SizedBox(
-      width: 64,
-      height: 64,
+      width: 46,
+      height: 46,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
           Container(
-            width: 64,
-            height: 64,
+            width: 46,
+            height: 46,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.brown, width: 3),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.brown, width: 2.5),
               color: complete ? Colors.amber.shade200 : Colors.white,
             ),
             alignment: Alignment.center,
             child: SizedBox(
-              width: 36,
-              height: 36,
+              width: 30,
+              height: 30,
               child: TreasureGlyph(
                 key: ValueKey(
                   complete

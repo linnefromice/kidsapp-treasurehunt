@@ -41,10 +41,6 @@ import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
 /// （アイドル時のみ。タップ/なぞりのたびにカウントはリセットされ、急かさない）。
 const Duration _kHintIdleDelay = Duration(seconds: 8);
 
-/// 上部ストリップ（お題バナー / 操作トグル）の予約高さ。クリアで中身が消えても
-/// この高さを常に確保し、シーン領域が縦にズレないようにする。
-const double _kTopStripHeight = 80.0;
-
 /// なぞりキラキラを生成する最小移動距離（px）。これ未満の移動では粒を足さず、
 /// 粒の密集（描画負荷とちらつき）を抑える。
 const double _kTrailSpawnMinDistance = 18.0;
@@ -431,50 +427,54 @@ class _SceneViewState extends ConsumerState<_SceneView>
 
     return Stack(
       children: [
-        Column(
-          children: [
-            // シーン外の上部ストリップ（1 段にまとめる）: お題発見（A3）の
-            // 「○○ を さがそう」ガイドと、大エリアの「うごかす / さがす」トグル。
-            // Wrap で横並び＋反流させ、縦の圧迫と（重ねた場合の）タップ吸収を避ける。
-            // Stack に重ねないのはピル下のターゲットへのタップ吸収を防ぐため。
-            // 高さは常に [_kTopStripHeight] を確保する。中身（お題/トグル）が
-            // クリアや発見で出入りしても、シーン領域が縦にズレないようにするため。
-            SizedBox(
-              height: _kTopStripHeight,
-              child:
-                  (!_completed &&
-                      ((questCategory != null && questTarget != null) ||
-                          _isLargeArea))
-                  ? Padding(
-                      padding: const EdgeInsets.only(top: 8, bottom: 4),
-                      child: Wrap(
-                        alignment: WrapAlignment.center,
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: [
-                          if (questCategory != null && questTarget != null)
-                            QuestBanner(
-                              key: const ValueKey('quest-banner'),
-                              iconId: questTarget.iconId,
-                              category: questCategory,
-                              localeCode: localeCode,
-                            ),
-                          if (_isLargeArea)
-                            InteractionToggle(
-                              interaction: _interaction,
-                              localeCode: localeCode,
-                              onChanged: (i) =>
-                                  setState(() => _interaction = i),
-                            ),
-                        ],
-                      ),
-                    )
-                  : null,
+        // プレイ領域はボディ全面。表示専用クローム（お題バナー / 図鑑バー）は
+        // IgnorePointer で上下に半透明オーバーレイし、行を消して探索領域を最大化する
+        // （下の宝へタップが透過するので吸収しない＝以前 Stack を避けた懸念を解消）。
+        Positioned.fill(child: _buildSceneArea(found, unfoundCount)),
+        // フッター: 図鑑バー（表示専用）を下端に半透明オーバーレイ。
+        if (!_completed)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: IgnorePointer(
+              child: Opacity(
+                opacity: 0.85,
+                child: CollectionBar(targets: scene.targets, foundIds: found),
+              ),
             ),
-            Expanded(child: _buildSceneArea(found, unfoundCount)),
-            CollectionBar(targets: scene.targets, foundIds: found),
-          ],
-        ),
+          ),
+        // ヘッダー: お題バナー（表示専用）を上端中央に半透明オーバーレイ。
+        if (!_completed && questCategory != null && questTarget != null)
+          Positioned(
+            top: 6,
+            left: 0,
+            right: 0,
+            child: IgnorePointer(
+              child: Opacity(
+                opacity: 0.9,
+                child: Center(
+                  child: QuestBanner(
+                    key: const ValueKey('quest-banner'),
+                    iconId: questTarget.iconId,
+                    category: questCategory,
+                    localeCode: localeCode,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        // 操作トグル（大エリアのみ）。操作可能なので IgnorePointer 不可・右上に小さく。
+        if (!_completed && _isLargeArea)
+          Positioned(
+            top: 6,
+            right: 8,
+            child: InteractionToggle(
+              interaction: _interaction,
+              localeCode: localeCode,
+              onChanged: (i) => setState(() => _interaction = i),
+            ),
+          ),
         if (_completed)
           ClearOverlay(localeCode: localeCode, onBack: () => context.go('/')),
         // レア宝のリビール（A-2）。クリアと同時でも最前面で先に祝福する。
