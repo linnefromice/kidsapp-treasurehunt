@@ -104,6 +104,12 @@ Color targetColor(String id) => _kTargetColors[id] ?? const Color(0xFF9E9E9E);
 /// フォールバックし子供が認識できないため、シーン整合性テストで弾く。
 bool hasTargetIcon(String id) => _kTargetIcons.containsKey(id);
 
+/// 全宝アイコン id（描画対象・整合性テスト用）。`_kTargetIcons` のキー全件。
+/// 各 id には `assets/treasure_icons/<id>.svg` が 1:1 で対応する
+/// （ドリフトは treasure_icons_assets_test で検出する）。
+List<String> get kAllTreasureIconIds =>
+    List<String>.unmodifiable(_kTargetIcons.keys);
+
 /// 宝アイコンの SVG アセットパス（`assets/treasure_icons/<id>.svg`）。
 String treasureSvgAsset(String id) => 'assets/treasure_icons/$id.svg';
 
