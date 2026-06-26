@@ -98,7 +98,7 @@ class _SceneView extends ConsumerStatefulWidget {
 }
 
 class _SceneViewState extends ConsumerState<_SceneView>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   /// 実際に描画するシーン。クリア済みの再訪やフリーモードでは入場時に配置を
   /// シャッフルして「毎回ちがう場所」にする（C1）。初回（未クリア）は安定配置のまま。
   late final SceneDef _scene = _maybeShuffleOnReplay();
@@ -136,6 +136,13 @@ class _SceneViewState extends ConsumerState<_SceneView>
   /// ハードモードの宝点滅を駆動する共有クロック（0.0–1.0 を周期反復）。
   /// 通常モードでは生成せず null のまま（点滅なし）。
   AnimationController? _blinkClock;
+
+  /// 未発見アイテムのアイドル揺れを駆動する共有クロック（全モード共通・低速反復）。
+  /// 1 本のクロックを全アイテムで共有し、位相だけずらして同期を外す。
+  late final AnimationController _idleClock = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 3600),
+  )..repeat();
 
   /// 発見状態のキー。モード間で発見が混ざらないようモードごとに名前空間化する
   /// （Easy はレガシー互換のため素の sceneId）。これは画面セッション内の
@@ -221,6 +228,7 @@ class _SceneViewState extends ConsumerState<_SceneView>
     _hintTimer?.cancel();
     _hintClearTimer?.cancel();
     _blinkClock?.dispose();
+    _idleClock.dispose();
     super.dispose();
   }
 
@@ -515,6 +523,8 @@ class _SceneViewState extends ConsumerState<_SceneView>
     int unfoundCount,
   ) {
     final t = _scene.targets[index];
+    final clock = _blinkClock;
+    final blinking = _isBlinking(index, found, unfoundCount);
     final view = TargetView(
       key: ValueKey(t.id),
       iconId: t.iconId,
@@ -522,9 +532,10 @@ class _SceneViewState extends ConsumerState<_SceneView>
       hinting: _hintingId == t.id,
       burstIntensity: _burstIntensity[t.id] ?? 1.0,
       coverIconId: t.coverIconId,
+      // 点滅中は揺らさない（動きの重複を避ける）。それ以外はアイドル揺れ。
+      idleClock: blinking ? null : _idleClock,
+      idlePhase: _idlePhaseFor(t.id),
     );
-    final clock = _blinkClock;
-    final blinking = _isBlinking(index, found, unfoundCount);
     return _positioned(
       scaledTreasureRect(t.normalizedRect),
       sceneSize,
@@ -543,13 +554,23 @@ class _SceneViewState extends ConsumerState<_SceneView>
   /// おとりはヒット判定の対象外なので、当たり判定（[_hiddenTargetIds]）には
   /// 影響しない（消えていても元々押せない）。位相は [slot]/[count] でずらす。
   Widget _buildDecoy(DummyItem decoy, int slot, int count) {
-    final view = TargetView(iconId: decoy.iconId, found: false);
     final clock = _blinkClock;
+    final view = TargetView(
+      iconId: decoy.iconId,
+      found: false,
+      // Hard は点滅させるのでアイドル揺れは無し。Easy/Normal は静止でなく微揺れ。
+      idleClock: clock == null ? _idleClock : null,
+      idlePhase: _idlePhaseFor(decoy.id),
+    );
     if (clock == null) {
-      return view; // Normal: おとりは静止
+      return view; // Easy/Normal: おとりは点滅せずアイドル揺れのみ
     }
     return BlinkingTarget(clock: clock, slot: slot, count: count, child: view);
   }
+
+  /// アイテム id から安定したアイドル位相（0..1）を作る。これで全アイテムが
+  /// 同期して揺れず、ばらけて「生きている」見え方になる。
+  double _idlePhaseFor(String id) => (id.hashCode & 0x7fffffff) % 1000 / 1000.0;
 
   Future<void> _handleComplete(String sceneId) async {
     if (_completed) return; // 二重発火ガード（連続通知でも完了処理は一度だけ）
