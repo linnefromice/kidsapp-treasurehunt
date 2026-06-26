@@ -47,12 +47,6 @@ SceneDef _scene() => SceneDef(
   ],
 );
 
-Set<Offset> _centers(SceneDef s) => {
-  ...s.targets.map((t) => t.normalizedRect.center),
-  ...s.dummies.map((d) => d.normalizedRect.center),
-  ...s.hardDummies.map((d) => d.normalizedRect.center),
-};
-
 void main() {
   test('preserves identity: id/titleKey/imageAsset and counts', () {
     final base = _scene();
@@ -101,14 +95,27 @@ void main() {
     }
   });
 
-  test(
-    'the set of centers is preserved (positions are permuted, not invented)',
-    () {
-      final base = _scene();
-      final shuffled = base.withShuffledPositions(Random(4));
-      expect(_centers(shuffled), _centers(base));
-    },
-  );
+  test('scatter relocates items off the original grid (jitter applied)', () {
+    final base = _scene();
+    // ジッターで「中心がそのまま入れ替わるだけ」ではなく、元集合に無い座標へ
+    // 動くことがある（格子感を崩す）。複数シードのどれかで新座標が現れる。
+    final baseCenters = {
+      ...base.targets.map((t) => t.normalizedRect.center),
+      ...base.dummies.map((d) => d.normalizedRect.center),
+      ...base.hardDummies.map((d) => d.normalizedRect.center),
+    };
+    final invented =
+        [for (var s = 0; s < 6; s++) base.withShuffledPositions(Random(s))]
+            .expand(
+              (sh) => [
+                ...sh.targets.map((t) => t.normalizedRect.center),
+                ...sh.dummies.map((d) => d.normalizedRect.center),
+                ...sh.hardDummies.map((d) => d.normalizedRect.center),
+              ],
+            )
+            .any((c) => !baseCenters.contains(c));
+    expect(invented, isTrue);
+  });
 
   test('is deterministic for a given seed', () {
     final base = _scene();

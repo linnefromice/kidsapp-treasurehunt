@@ -177,16 +177,22 @@ class _SceneViewState extends ConsumerState<_SceneView>
   }
 
   SceneDef _maybeShuffleOnReplay() {
-    if (!_isReplay()) {
-      return widget.scene; // 初回（未クリア）は作者の安定配置・レアも出さない
+    final replay = _isReplay();
+    final hard = widget.mode == GameMode.hard;
+    // Easy/Normal の初回（未クリア）は作者の安定配置を維持。
+    // Hard は初回からスキャッタ配置にして「規則正しさ」を崩す（要望[1]）。
+    if (!replay && !hard) {
+      return widget.scene;
     }
-    // 再訪/フリーモード: 配置シャッフル(C1)＋おとり抽選(C2)＋低確率レア宝(C4)。
     final random = math.Random();
-    var scene = widget.scene
-        .withShuffledPositions(random)
-        .withReseededDecoyIcons(random);
-    if (random.nextDouble() < kRareTreasureChance) {
-      scene = scene.withRareTreasure(pickRare(random), random);
+    // 配置スキャッタ(C1+ジッター)。Hard 初回・全モードのリプレイで適用。
+    var scene = widget.scene.withShuffledPositions(random);
+    // おとり抽選(C2)＋低確率レア宝(C4) は再訪/フリーのみ（初回の見た目は変えない）。
+    if (replay) {
+      scene = scene.withReseededDecoyIcons(random);
+      if (random.nextDouble() < kRareTreasureChance) {
+        scene = scene.withRareTreasure(pickRare(random), random);
+      }
     }
     return scene;
   }

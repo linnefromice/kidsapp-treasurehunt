@@ -69,16 +69,60 @@ class SceneDef {
       for (final d in dummies) d.normalizedRect.center,
       for (final d in hardDummies) d.normalizedRect.center,
     ]..shuffle(random);
+    // 各アイテムのサイズは順（targets → dummies → hardDummies）に保持する。
+    final sizes = <Size>[
+      for (final t in targets) t.normalizedRect.size,
+      for (final d in dummies) d.normalizedRect.size,
+      for (final d in hardDummies) d.normalizedRect.size,
+    ];
+
+    // 1) 入れ替えのみ（ジッター無し）の土台。元集合の非重なりを保つ実証済みの配置。
+    final baseRects = [
+      for (var k = 0; k < sizes.length; k++)
+        Rect.fromCenter(
+          center: centers[k],
+          width: sizes[k].width,
+          height: sizes[k].height,
+        ),
+    ];
+
+    // 2) 各点へランダムジッターを与えて「格子感」を崩す。画面内へクランプし、
+    //    既に置いた矩形と重ならない候補を採用（規定回数で諦め土台へ）。
+    const jitter = 0.05; // 正規化座標でのジッター半径
+    const margin = 0.02; // 画面端の余白
+    final scattered = <Rect>[];
+    for (var k = 0; k < sizes.length; k++) {
+      final halfW = sizes[k].width / 2;
+      final halfH = sizes[k].height / 2;
+      final base = centers[k];
+      Rect? chosen;
+      for (var attempt = 0; attempt < 12; attempt++) {
+        final cx = (base.dx + (random.nextDouble() * 2 - 1) * jitter).clamp(
+          margin + halfW,
+          1 - margin - halfW,
+        );
+        final cy = (base.dy + (random.nextDouble() * 2 - 1) * jitter).clamp(
+          margin + halfH,
+          1 - margin - halfH,
+        );
+        final cand = Rect.fromCenter(
+          center: Offset(cx.toDouble(), cy.toDouble()),
+          width: sizes[k].width,
+          height: sizes[k].height,
+        );
+        if (!scattered.any(cand.overlaps)) {
+          chosen = cand;
+          break;
+        }
+      }
+      scattered.add(chosen ?? baseRects[k]);
+    }
+
+    // 3) 散布結果が全体で非重なりなら採用、そうでなければ土台（入れ替えのみ）へ。
+    final rects = _hasOverlap(scattered) ? baseRects : scattered;
 
     var i = 0;
-    Rect place(Rect original) {
-      final c = centers[i++];
-      return Rect.fromCenter(
-        center: c,
-        width: original.width,
-        height: original.height,
-      );
-    }
+    Rect next() => rects[i++];
 
     // 中心の取り出しと同じ順（targets → dummies → hardDummies）で割り当てる。
     final newTargets = [
@@ -87,7 +131,8 @@ class SceneDef {
           id: t.id,
           iconId: t.iconId,
           labelKey: t.labelKey,
-          normalizedRect: place(t.normalizedRect),
+          normalizedRect: next(),
+          coverIconId: t.coverIconId,
         ),
     ];
     final newDummies = [
@@ -95,7 +140,7 @@ class SceneDef {
         DummyItem(
           id: d.id,
           iconId: d.iconId,
-          normalizedRect: place(d.normalizedRect),
+          normalizedRect: next(),
           scale: d.scale,
         ),
     ];
@@ -104,7 +149,7 @@ class SceneDef {
         DummyItem(
           id: d.id,
           iconId: d.iconId,
-          normalizedRect: place(d.normalizedRect),
+          normalizedRect: next(),
           scale: d.scale,
         ),
     ];
@@ -117,6 +162,16 @@ class SceneDef {
       dummies: newDummies,
       hardDummies: newHardDummies,
     );
+  }
+
+  /// 矩形集合に重なりが 1 つでもあるか（散布の検証用・AABB 厳密判定）。
+  static bool _hasOverlap(List<Rect> rects) {
+    for (var a = 0; a < rects.length; a++) {
+      for (var b = a + 1; b < rects.length; b++) {
+        if (rects[a].overlaps(rects[b])) return true;
+      }
+    }
+    return false;
   }
 
   /// おとり（dummies + hardDummies）のアイコンを [kDecoyIconPool] から引き直した
