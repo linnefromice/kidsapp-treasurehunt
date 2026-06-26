@@ -2,8 +2,6 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-import 'package:kidsapp_treasurehunt/features/seek_find/widgets/treasure_glyph.dart';
-
 /// 祝福のフルスクリーン演出（climax）。レア宝の発見（A-2）と称号バッチ取得（B-3）で
 /// 共有する。暗転スクリム → 中央へズームイン → 放射状の光線（回転）→ きらめき →
 /// タイトル/サブタイトル。タップで閉じ、一定時間で自動的に閉じる。SDK のみ。
@@ -12,7 +10,7 @@ import 'package:kidsapp_treasurehunt/features/seek_find/widgets/treasure_glyph.d
 class CelebrationOverlay extends StatefulWidget {
   const CelebrationOverlay({
     super.key,
-    required this.iconId,
+    required this.icon,
     required this.title,
     required this.subtitle,
     required this.onDismiss,
@@ -20,8 +18,8 @@ class CelebrationOverlay extends StatefulWidget {
     this.duration = const Duration(milliseconds: 2600),
   });
 
-  /// 中央に大きく出す宝/バッジのアイコン id（SVG）。
-  final String iconId;
+  /// 中央に大きく出すアイコン（宝の `TreasureGlyph` / バッジの `SvgPicture` 等）。
+  final Widget icon;
 
   /// 大きな見出し（例「✨ とくべつ！ ✨」「バッチ ゲット！」）。
   final String title;
@@ -124,10 +122,7 @@ class _CelebrationOverlayState extends State<CelebrationOverlay>
                                 MediaQuery.sizeOf(context).shortestSide * 0.36,
                             height:
                                 MediaQuery.sizeOf(context).shortestSide * 0.36,
-                            child: TreasureGlyph(
-                              iconId: widget.iconId,
-                              found: true,
-                            ),
+                            child: widget.icon,
                           ),
                         ),
                         const SizedBox(height: 12),

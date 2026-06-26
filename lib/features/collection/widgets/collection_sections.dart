@@ -50,39 +50,82 @@ class ProgressHeader extends StatelessWidget {
   }
 }
 
-/// 図鑑のビュー切替（ワールド別 / なかま別・D4）。
+/// 図鑑のビュー: ワールド別（D6）/ なかま別（D4）/ しょうごう（バッチ・B-3）。
+enum CollectionView { world, category, badge }
+
+/// 図鑑のビュー切替（ワールド別 / なかま別 / しょうごう）。
+/// [hasNewBadge] が真なら「しょうごう」に NEW ドットを付ける。
 class ViewToggle extends StatelessWidget {
   const ViewToggle({
     super.key,
-    required this.byCategory,
+    required this.view,
     required this.localeCode,
     required this.onChanged,
+    this.hasNewBadge = false,
   });
 
-  final bool byCategory;
+  final CollectionView view;
   final String localeCode;
-  final ValueChanged<bool> onChanged;
+  final ValueChanged<CollectionView> onChanged;
+  final bool hasNewBadge;
 
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: SegmentedButton<bool>(
+      child: SegmentedButton<CollectionView>(
         key: const ValueKey('collection-view-toggle'),
         segments: [
           ButtonSegment(
-            value: false,
+            value: CollectionView.world,
             label: Text(tr(localeCode, 'collection.byWorld')),
             icon: const Icon(Icons.public),
           ),
           ButtonSegment(
-            value: true,
+            value: CollectionView.category,
             label: Text(tr(localeCode, 'collection.byCategory')),
             icon: const Icon(Icons.category),
           ),
+          ButtonSegment(
+            value: CollectionView.badge,
+            label: Text(tr(localeCode, 'collection.byBadge')),
+            icon: hasNewBadge
+                ? const _NewDotIcon(Icons.military_tech)
+                : const Icon(Icons.military_tech),
+          ),
         ],
-        selected: {byCategory},
+        selected: {view},
         onSelectionChanged: (s) => onChanged(s.first),
       ),
+    );
+  }
+}
+
+/// アイコンの右上に小さな赤い NEW ドットを重ねる（未読バッチの合図）。
+class _NewDotIcon extends StatelessWidget {
+  const _NewDotIcon(this.icon);
+
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Icon(icon),
+        Positioned(
+          right: -3,
+          top: -3,
+          child: Container(
+            width: 9,
+            height: 9,
+            decoration: BoxDecoration(
+              color: Colors.red.shade600,
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 1.5),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
