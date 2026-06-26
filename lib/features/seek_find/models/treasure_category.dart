@@ -20,7 +20,7 @@ enum TreasureCategory {
   final IconData icon;
 }
 
-/// 宝アイコン id → カテゴリ。ターゲットに使う 6 種のみ定義（おとり等は null）。
+/// 宝アイコン id → カテゴリ。ターゲットに使う宝のみ定義（おとり等は null でも可）。
 const Map<String, TreasureCategory> _kCategoryByIcon = {
   'apple': TreasureCategory.food,
   'duck': TreasureCategory.animal,
@@ -28,6 +28,52 @@ const Map<String, TreasureCategory> _kCategoryByIcon = {
   'heart': TreasureCategory.shape,
   'ball': TreasureCategory.toy,
   'flower': TreasureCategory.nature,
+  // ステージ別テーマ宝。
+  'fox': TreasureCategory.animal,
+  'owl': TreasureCategory.animal,
+  'butterfly': TreasureCategory.animal,
+  'bird': TreasureCategory.animal,
+  'squirrel': TreasureCategory.animal,
+  'hedgehog': TreasureCategory.animal,
+  'crab': TreasureCategory.animal,
+  'starfish': TreasureCategory.animal,
+  'fish': TreasureCategory.animal,
+  'octopus': TreasureCategory.animal,
+  'seahorse': TreasureCategory.animal,
+  'jellyfish': TreasureCategory.animal,
+  'penguin': TreasureCategory.animal,
+  'camel': TreasureCategory.animal,
+  'snake': TreasureCategory.animal,
+  'bee': TreasureCategory.animal,
+  'firefly': TreasureCategory.animal,
+  'astronaut': TreasureCategory.animal,
+  'mushroom': TreasureCategory.nature,
+  'acorn': TreasureCategory.nature,
+  'shell': TreasureCategory.nature,
+  'pinetree': TreasureCategory.nature,
+  'cactus': TreasureCategory.nature,
+  'sun': TreasureCategory.nature,
+  'snowman': TreasureCategory.nature,
+  'sunflower': TreasureCategory.nature,
+  'trafficlight': TreasureCategory.shape,
+  'house': TreasureCategory.shape,
+  'comet': TreasureCategory.shape,
+  'pyramid': TreasureCategory.shape,
+  'planet': TreasureCategory.shape,
+  'snowflake': TreasureCategory.shape,
+  'rainbow': TreasureCategory.shape,
+  'flag': TreasureCategory.shape,
+  'saturn': TreasureCategory.shape,
+  'galaxy': TreasureCategory.shape,
+  'bucket': TreasureCategory.toy,
+  'balloon': TreasureCategory.toy,
+  'bus': TreasureCategory.toy,
+  'backpack': TreasureCategory.toy,
+  'rocket': TreasureCategory.toy,
+  'ufo': TreasureCategory.toy,
+  'mitten': TreasureCategory.toy,
+  'sled': TreasureCategory.toy,
+  'shield': TreasureCategory.toy,
 };
 
 /// アイコン id のカテゴリ（未定義は null）。
