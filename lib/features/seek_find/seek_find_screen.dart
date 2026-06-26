@@ -336,6 +336,43 @@ class _SceneViewState extends ConsumerState<_SceneView>
     });
   }
 
+  /// その座標が「おとり」の上か（#6 つつき反応の判定）。
+  bool _pokedDecoy(Offset localPosition, Size sceneSize) {
+    final normalized = Offset(
+      localPosition.dx / sceneSize.width,
+      localPosition.dy / sceneSize.height,
+    );
+    for (final d in decoysForMode(_scene, widget.mode)) {
+      if (scaledTreasureRect(
+        d.normalizedRect,
+        itemScale: d.scale,
+      ).contains(normalized)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /// おとりを「つついた」位置に、ごほうびのきらめきを 1 つ出す（#6）。
+  void _addPokeSparkle(Offset position) {
+    final key = UniqueKey();
+    setState(() {
+      _trailSparkles.add((
+        position: position,
+        key: key,
+        color: Colors.amber.shade400,
+      ));
+      if (_trailSparkles.length > _kTrailMaxParticles) {
+        _trailSparkles.removeAt(0);
+      }
+    });
+    Future.delayed(const Duration(milliseconds: 700), () {
+      if (mounted) {
+        setState(() => _trailSparkles.removeWhere((s) => s.key == key));
+      }
+    });
+  }
+
   /// なぞり位置に追従するキラキラ粒子を 1 つ生成する（Easy のなぞり中のみ呼ぶ）。
   /// 直近生成位置から [_kTrailSpawnMinDistance] 未満なら間引いて密集を防ぐ。
   void _handlePanTrail(Offset position) {
@@ -670,7 +707,7 @@ class _SceneViewState extends ConsumerState<_SceneView>
       hiddenIds: hidden,
     );
     if (hitId == null) {
-      // 消失中の宝の上をタップしたときは無反応（罰なし）。空の場所だけミスバブル。
+      // 消失中の宝の上をタップしたときは無反応（罰なし）。
       final onHidden = isPointOnHiddenTarget(
         scenePoint: localPosition,
         sceneSize: sceneSize,
@@ -678,10 +715,17 @@ class _SceneViewState extends ConsumerState<_SceneView>
         hiddenIds: hidden,
       );
       if (allowMiss && !onHidden) {
-        _addMissBubble(localPosition);
-        // タップの空振りでのみ連鎖が途切れる（なぞり中=allowMiss:false は対象外）。
-        // 静かにリセットするだけで、減点・不快音・×は出さない（no-fail 厳守）。
-        _streak = 0;
+        if (_pokedDecoy(localPosition, sceneSize)) {
+          // #6 イースターエッグ: おとりを「つつく」と、罰でなく ちいさなきらめき＋
+          // 触覚で反応する。世界が反応する楽しさ。連鎖は崩さない（中立な遊び）。
+          _addPokeSparkle(localPosition);
+          HapticFeedback.selectionClick();
+        } else {
+          // 空の場所だけミスバブル。タップの空振りでのみ連鎖が途切れる。
+          // 静かにリセットするだけで、減点・不快音・×は出さない（no-fail 厳守）。
+          _addMissBubble(localPosition);
+          _streak = 0;
+        }
       }
       return;
     }
