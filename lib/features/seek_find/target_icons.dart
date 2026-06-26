@@ -225,7 +225,12 @@ String treasurePngAsset(String id) => 'assets/treasure_icons_hd/$id.png';
 /// PNG ヒーローアートで描画する id（`kHeroPngIcons` に登録した分だけ PNG 優先）。
 /// 未登録は SVG のまま。差し替えは「PNG を置く＋ここに id を足す」の 2 ステップ。
 /// 詳細は docs/treasure-art-svg-vs-png.md。
-const Set<String> kHeroPngIcons = {'rare_gem', 'rare_crown', 'rare_medal'};
+///
+/// 現在は空（=全て SVG 描画）。レア3種の初期スタンドインは SVG を qlmanage で
+/// ラスタライズしたもので **背景が白に焼き込まれていた**（1-bit alpha）ため、
+/// 図鑑「とくべつ」等で白い四角として出る不備があり外した。真の透過 PNG
+/// （AI/3D 書き出し）を assets/treasure_icons_hd/ に置いたら id をここへ足して再有効化する。
+const Set<String> kHeroPngIcons = <String>{};
 
 /// この id を PNG ヒーローアートで描画するか。
 bool hasHeroPng(String id) => kHeroPngIcons.contains(id);
