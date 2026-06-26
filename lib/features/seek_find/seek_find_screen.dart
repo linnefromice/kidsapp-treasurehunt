@@ -16,6 +16,7 @@ import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_ambient_var
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_interaction.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/trail_color.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/models/trail_shape.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/treasure_category.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/scene_background.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/scene_covers.dart';
@@ -609,13 +610,27 @@ class _SceneViewState extends ConsumerState<_SceneView>
                   _buildTarget(i, sceneSize, found, unfoundCount),
                 for (final b in _missBubbles)
                   MissBubble(key: b.key, position: b.position),
-                for (final s in _trailSparkles)
-                  TrailSparkle(
-                    key: s.key,
-                    position: s.position,
-                    color: s.color,
-                    shape: trailShape,
-                  ),
+                // ストローク筆（リボン/コメット・#2）は軌跡を 1 本の線で、粒筆は
+                // 従来どおり点を散らして描く。
+                if (trailShape.isStroke)
+                  Positioned.fill(
+                    child: TrailStroke(
+                      points: [
+                        for (final s in _trailSparkles)
+                          (position: s.position, color: s.color),
+                      ],
+                      comet: trailShape == TrailShape.comet,
+                    ),
+                  )
+                else ...[
+                  for (final s in _trailSparkles)
+                    TrailSparkle(
+                      key: s.key,
+                      position: s.position,
+                      color: s.color,
+                      shape: trailShape,
+                    ),
+                ],
               ],
             ),
           ),

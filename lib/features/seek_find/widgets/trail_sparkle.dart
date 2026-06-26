@@ -83,7 +83,8 @@ class _TrailSparkleState extends State<TrailSparkle>
   }
 }
 
-/// 粒の形（丸/ほし/ハート）を、淡色でも見えるよう暗フチ＋やわらか発光付きで描く。
+/// 粒の形（丸/ほし/ハート/あわ/はな/ネオン）を、淡色でも見えるよう暗フチ＋
+/// やわらか発光付きで描く。ネオンは発光を強め、あわは光沢ハイライトを足す。
 class _SparklePainter extends CustomPainter {
   _SparklePainter({required this.shape, required this.color});
 
@@ -93,23 +94,37 @@ class _SparklePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final path = _shapePath(shape, size);
-    // やわらかい発光（淡色の視認も助ける）。
+    final neon = shape == TrailShape.neon;
+    // やわらかい発光（淡色の視認も助ける）。ネオンは強めに光らせる。
     canvas.drawPath(
       path,
       Paint()
-        ..color = color.withValues(alpha: 0.6)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
+        ..color = color.withValues(alpha: neon ? 0.9 : 0.6)
+        ..maskFilter = MaskFilter.blur(BlurStyle.normal, neon ? 7 : 4),
     );
-    // 本体塗り。
-    canvas.drawPath(path, Paint()..color = color);
-    // 暗フチ（明背景・淡色でも輪郭が立つ）。
+    // 本体塗り（ネオンは中心を白めに）。
     canvas.drawPath(
       path,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1
-        ..color = const Color(0x66000000),
+      Paint()..color = neon ? Color.lerp(color, Colors.white, 0.35)! : color,
     );
+    // あわ: 光沢ハイライト。
+    if (shape == TrailShape.bubble) {
+      canvas.drawCircle(
+        Offset(size.width * 0.36, size.height * 0.34),
+        size.width * 0.12,
+        Paint()..color = Colors.white.withValues(alpha: 0.85),
+      );
+    }
+    // 暗フチ（明背景・淡色でも輪郭が立つ）。ネオンは縁なし（発光優先）。
+    if (!neon) {
+      canvas.drawPath(
+        path,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1
+          ..color = const Color(0x66000000),
+      );
+    }
   }
 
   Path _shapePath(TrailShape shape, Size size) {
@@ -117,8 +132,6 @@ class _SparklePainter extends CustomPainter {
     final h = size.height;
     final c = Offset(w / 2, h / 2);
     switch (shape) {
-      case TrailShape.circle:
-        return Path()..addOval(Rect.fromCircle(center: c, radius: w / 2 - 1));
       case TrailShape.star:
         final path = Path();
         final r = w / 2 - 1;
@@ -136,10 +149,83 @@ class _SparklePainter extends CustomPainter {
         path.cubicTo(w * 0.05, h * 0.55, w * 0.12, h * 0.12, w * 0.5, h * 0.33);
         path.cubicTo(w * 0.88, h * 0.12, w * 0.95, h * 0.55, w * 0.5, h * 0.86);
         return path..close();
+      case TrailShape.flower:
+        // 5 枚の花びら（丸）＋ 中心。小さい粒なので丸の集合で十分「花」に見える。
+        final path = Path();
+        final pr = w * 0.16;
+        final d = w * 0.3;
+        for (var k = 0; k < 5; k++) {
+          final a = -math.pi / 2 + k * 2 * math.pi / 5;
+          path.addOval(
+            Rect.fromCircle(
+              center: c + Offset(d * math.cos(a), d * math.sin(a)),
+              radius: pr,
+            ),
+          );
+        }
+        return path..addOval(Rect.fromCircle(center: c, radius: pr));
+      // circle / bubble / neon / ストローク（ribbon/comet・ここでは未使用）は丸。
+      case TrailShape.circle:
+      case TrailShape.bubble:
+      case TrailShape.neon:
+      case TrailShape.ribbon:
+      case TrailShape.comet:
+        return Path()..addOval(Rect.fromCircle(center: c, radius: w / 2 - 1));
     }
   }
 
   @override
   bool shouldRepaint(_SparklePainter oldDelegate) =>
       oldDelegate.shape != shape || oldDelegate.color != color;
+}
+
+/// 連続ストローク（リボン/コメット）のトレイル。最近のなぞり点を 1 本の線で結び、
+/// 古い側ほど細く・薄くフェードさせる。コメットは頭を太く、リボンは一定幅。
+/// 点・色は親（`_SceneViewState` の `_trailSparkles`）から渡される（古い順）。
+class TrailStroke extends StatelessWidget {
+  const TrailStroke({super.key, required this.points, required this.comet});
+
+  /// なぞり点（古い順）。位置はシーン座標、色は粒ごとに解決済み。
+  final List<({Offset position, Color color})> points;
+
+  /// true=コメット（頭を太く）/ false=リボン（一定幅）。
+  final bool comet;
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: CustomPaint(
+        painter: _StrokePainter(points: points, comet: comet),
+        child: const SizedBox.expand(),
+      ),
+    );
+  }
+}
+
+class _StrokePainter extends CustomPainter {
+  _StrokePainter({required this.points, required this.comet});
+
+  final List<({Offset position, Color color})> points;
+  final bool comet;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (points.length < 2) return;
+    final n = points.length;
+    for (var i = 1; i < n; i++) {
+      // t: 0（最古=尾）..1（最新=頭）。
+      final t = i / (n - 1);
+      final width = comet ? (2.0 + 16.0 * t) : 9.0;
+      final paint = Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round
+        ..strokeWidth = width
+        ..color = points[i].color.withValues(alpha: 0.85 * t)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2);
+      canvas.drawLine(points[i - 1].position, points[i].position, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_StrokePainter oldDelegate) => true;
 }
