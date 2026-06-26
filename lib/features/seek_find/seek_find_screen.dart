@@ -15,6 +15,7 @@ import 'package:kidsapp_treasurehunt/features/seek_find/models/trail_color.dart'
 import 'package:kidsapp_treasurehunt/features/seek_find/models/treasure_category.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/scene_background.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/scene_covers.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/scene_decoys.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/seek_find_logic.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/clear_overlay.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/collection_bar.dart';
@@ -196,7 +197,10 @@ class _SceneViewState extends ConsumerState<_SceneView>
     }
     // おとり抽選(C2)＋低確率レア宝(C4) は再訪/フリーのみ（初回の見た目は変えない）。
     if (replay) {
-      scene = scene.withReseededDecoyIcons(random);
+      scene = scene.withReseededDecoyIcons(
+        random,
+        sourcePool: decoyPoolFor(widget.scene.id),
+      );
       if (random.nextDouble() < kRareTreasureChance) {
         scene = scene.withRareTreasure(pickRare(random), random);
       }

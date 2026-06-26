@@ -23,8 +23,14 @@ void main() {
       expect(worlds, hasLength(playable));
 
       final scene01 = worlds.firstWhere((w) => w.sceneId == 'scene01');
-      // scene01 の宝アイコンは apple/duck/star/heart（重複なし）。
-      expect(scene01.iconIds.toSet(), {'apple', 'duck', 'star', 'heart'});
+      // scene01（森）の宝はテーマ別の 5 種（重複なし・登場順）。
+      expect(scene01.iconIds.toSet(), {
+        'mushroom',
+        'acorn',
+        'fox',
+        'owl',
+        'butterfly',
+      });
       // 重複は畳まれている（distinct）。
       expect(scene01.iconIds.toSet().length, scene01.iconIds.length);
     },
