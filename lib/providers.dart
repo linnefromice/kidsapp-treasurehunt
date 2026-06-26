@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'package:kidsapp_treasurehunt/data/badge_repository.dart';
 import 'package:kidsapp_treasurehunt/data/collection_repository.dart';
 import 'package:kidsapp_treasurehunt/data/progress_repository.dart';
 import 'package:kidsapp_treasurehunt/data/save_slot_repository.dart';
@@ -153,6 +154,15 @@ final collectionRepositoryProvider = Provider<CollectionRepository>((ref) {
     throw StateError('No active save slot selected');
   }
   return CollectionRepository(ref.watch(sharedPreferencesProvider), slotId);
+});
+
+/// アクティブスロットにスコープした称号バッチ Repository。
+final badgeRepositoryProvider = Provider<BadgeRepository>((ref) {
+  final slotId = ref.watch(activeSlotProvider);
+  if (slotId == null) {
+    throw StateError('No active save slot selected');
+  }
+  return BadgeRepository(ref.watch(sharedPreferencesProvider), slotId);
 });
 
 /// 図鑑カタログ: 各プレイ可能シーンの (id, titleKey, 重複なし宝アイコン)。
