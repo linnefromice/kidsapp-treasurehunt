@@ -195,15 +195,17 @@ class _SceneViewState extends ConsumerState<_SceneView>
     if (replay || hard) {
       scene = scene.withShuffledPositions(random);
     }
-    // おとり抽選(C2)＋低確率レア宝(C4) は再訪/フリーのみ（初回の見た目は変えない）。
+    // おとり抽選(C2) は再訪/フリーのみ（初回の見た目は変えない）。
     if (replay) {
       scene = scene.withReseededDecoyIcons(
         random,
         sourcePool: decoyPoolFor(widget.scene.id),
       );
-      if (random.nextDouble() < kRareTreasureChance) {
-        scene = scene.withRareTreasure(pickRare(random), random);
-      }
+    }
+    // 低確率レア宝(C4) は全エントリで常時ロール（初回プレイ含む・要望[1]）。
+    // 出れば必ず見つけられる位置（ダミー枠を借用）で no-fail。毎回必ずは出さない。
+    if (random.nextDouble() < kRareTreasureChance) {
+      scene = scene.withRareTreasure(pickRare(random), random);
     }
     // テーマ別カバー(A1 箱隠し)を常時適用し、出現率を底上げ（要望[2][3]）。
     // ステージのイメージに合う複数種から各ターゲットへ確率で被せる。

@@ -26,5 +26,6 @@ bool isRareIcon(String iconId) => kRareIconIds.contains(iconId);
 RareTreasure pickRare(Random random) =>
     kRareTreasures[random.nextInt(kRareTreasures.length)];
 
-/// 再訪/フリーモード入場時にレア宝が出現する確率（低頻度＝「また出るかも」）。
-const double kRareTreasureChance = 0.18;
+/// 各シーン入場時にレア宝が出現する確率（全エントリ＝初回プレイ含む・低頻度で
+/// 「また出るかも」のワクワク感）。毎回必ずは出さない。
+const double kRareTreasureChance = 0.2;
