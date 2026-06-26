@@ -4,6 +4,7 @@ import 'package:kidsapp_treasurehunt/features/seek_find/seek_find_logic.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/target_icons.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/found_burst.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/hint_glow.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/widgets/treasure_glyph.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/unfound_treasure_icon.dart';
 
 /// 宝（またはおとり）1 つの見た目。発見前は影絵 or カバー絵（A1）、発見で
@@ -49,10 +50,10 @@ class TargetView extends StatelessWidget {
         FittedBox(
           fit: BoxFit.contain,
           child: found
-              ? Icon(targetIcon(iconId), color: targetColor(iconId))
+              ? TreasureGlyph(iconId: iconId, found: true)
               : (cover != null
                     // 未発見かつカバー有り: 影絵でなく「かぶせもの」を見せる（A1）。
-                    ? Icon(targetIcon(cover), color: targetColor(cover))
+                    ? TreasureGlyph(iconId: cover, found: true)
                     : UnfoundTreasureIcon(iconId: iconId)),
         ),
         if (found)

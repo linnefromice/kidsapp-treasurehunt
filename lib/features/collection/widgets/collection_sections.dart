@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:kidsapp_treasurehunt/features/collection/collection_logic.dart';
 import 'package:kidsapp_treasurehunt/features/collection/widgets/collection_cell.dart';
-import 'package:kidsapp_treasurehunt/features/seek_find/target_icons.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/widgets/treasure_glyph.dart';
 import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
 
 /// 全体の収集プログレス。完成で祝福（goal-gradient を内発的に）。
@@ -202,10 +202,7 @@ class RareSection extends StatelessWidget {
                         height: 36,
                         child: FittedBox(
                           fit: BoxFit.contain,
-                          child: Icon(
-                            targetIcon(iconId),
-                            color: targetColor(iconId),
-                          ),
+                          child: TreasureGlyph(iconId: iconId, found: true),
                         ),
                       ),
                     ),

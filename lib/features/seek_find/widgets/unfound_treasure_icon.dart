@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import 'package:kidsapp_treasurehunt/features/seek_find/target_icons.dart';
 
 /// 未発見の宝のシルエット。明るい背景に埋もれないよう、単色グレーではなく
 /// 「上＝薄いグレー → 下＝濃いグレー」の縦グラデを ShaderMask で焼き込む。
 /// 下側を濃く・不透明側へ寄せることで、明背景でも輪郭のコントラストが立つ。
+/// シルエットの形は発見後のリッチ SVG と同一形状（SVG のアルファを使う）。
 class UnfoundTreasureIcon extends StatelessWidget {
   const UnfoundTreasureIcon({super.key, required this.iconId});
 
@@ -29,9 +31,11 @@ class UnfoundTreasureIcon extends StatelessWidget {
       child: ShaderMask(
         shaderCallback: grayGradient.createShader,
         blendMode: BlendMode.srcIn,
-        // srcIn はアイコンの不透明部分をグラデで置き換える。child の色は無視されるが
-        // アルファ形状は使うため、不透明な白を渡してシルエットを確実に残す。
-        child: Icon(targetIcon(iconId), color: Colors.white),
+        // srcIn は child の不透明部分をグラデで置き換える（色は無視・アルファ形状を使う）。
+        // リッチ SVG があればその形状を、無ければ Material アイコンをシルエット化する。
+        child: hasTreasureSvg(iconId)
+            ? SvgPicture.asset(treasureSvgAsset(iconId), fit: BoxFit.contain)
+            : Icon(targetIcon(iconId), color: Colors.white),
       ),
     );
   }

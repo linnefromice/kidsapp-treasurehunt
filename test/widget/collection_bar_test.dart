@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/find_target.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/collection_bar.dart';
-import 'package:kidsapp_treasurehunt/features/seek_find/target_icons.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/widgets/treasure_glyph.dart';
 
 const _kRect = Rect.fromLTWH(0, 0, 0.1, 0.1);
 
@@ -55,7 +55,7 @@ void main() {
     expect(find.byKey(const ValueKey('found.duck')), findsNothing);
   });
 
-  testWidgets('shows target icons (grey when unfound, lit when found)', (
+  testWidgets('shows target glyphs (grey when unfound, lit when found)', (
     tester,
   ) async {
     await _pump(
@@ -64,14 +64,17 @@ void main() {
       foundIds: const {'apple'},
     );
 
-    final duck = tester.widget<Icon>(
+    // Unfound duck -> grey silhouette glyph; found apple -> full-colour glyph.
+    final duck = tester.widget<TreasureGlyph>(
       find.byKey(const ValueKey('unfound.duck')),
     );
-    expect(duck.icon, targetIcon('duck'));
-    final apple = tester.widget<Icon>(
+    expect(duck.iconId, 'duck');
+    expect(duck.found, isFalse);
+    final apple = tester.widget<TreasureGlyph>(
       find.byKey(const ValueKey('found.apple')),
     );
-    expect(apple.icon, targetIcon('apple'));
+    expect(apple.iconId, 'apple');
+    expect(apple.found, isTrue);
   });
 
   testWidgets('groups duplicate icons into one slot with a count-up badge', (

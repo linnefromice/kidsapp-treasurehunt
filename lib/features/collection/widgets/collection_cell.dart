@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:kidsapp_treasurehunt/features/seek_find/target_icons.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/widgets/treasure_glyph.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/unfound_treasure_icon.dart';
 import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
 
@@ -43,10 +43,10 @@ class CollectionCell extends StatelessWidget {
               child: FittedBox(
                 fit: BoxFit.contain,
                 child: discovered
-                    ? Icon(
-                        targetIcon(iconId),
-                        color: targetColor(iconId),
+                    ? TreasureGlyph(
                         key: ValueKey('collection-found.$sceneId.$iconId'),
+                        iconId: iconId,
+                        found: true,
                       )
                     : UnfoundTreasureIcon(
                         key: ValueKey('collection-silhouette.$sceneId.$iconId'),
