@@ -27,6 +27,7 @@ import 'package:kidsapp_treasurehunt/features/seek_find/widgets/collection_bar.d
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/hint_glow.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/interaction_toggle.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/miss_bubble.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/widgets/pause_menu.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/quest_banner.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/target_view.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/treasure_glyph.dart';
@@ -75,23 +76,50 @@ class SeekFindScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sceneAsync = ref.watch(sceneProvider(sceneId));
+    final localeCode = ref.watch(localeControllerProvider).languageCode;
     // 3 モードとも最初から選べるため、URL のモードをそのまま採用する
     // （難易度はおとり量・探索エリアの広さ・点滅で表現し、宝の数は不変）。
-    return Scaffold(
-      appBar: AppBar(leading: BackButton(onPressed: () => context.go('/'))),
-      body: sceneAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('error: $e')),
-        // key にシーン id ＋モードを含め、万一 _SceneView が同じ位置で別シーン/
-        // モードに差し替わっても State（_scene の 1 回シャッフル等）が確実に
-        // 作り直されるようにする（将来 PageView 等で再利用される場合の保険）。
-        data: (scene) => _SceneView(
-          key: ValueKey('${scene.id}-${mode.name}'),
-          scene: scene,
-          mode: mode,
+    // 戻る操作（AppBar の戻る・システムバック）の誤タップで即ホームに飛ばないよう、
+    // pause メニューで受け止める（「つづける」で宝探しを継続）。
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) {
+        if (didPop) return;
+        unawaited(_openPauseMenu(context, localeCode));
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          leading: IconButton(
+            key: const ValueKey('pause-button'),
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => unawaited(_openPauseMenu(context, localeCode)),
+          ),
+        ),
+        body: sceneAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (e, _) => Center(child: Text('error: $e')),
+          // key にシーン id ＋モードを含め、万一 _SceneView が同じ位置で別シーン/
+          // モードに差し替わっても State（_scene の 1 回シャッフル等）が確実に
+          // 作り直されるようにする（将来 PageView 等で再利用される場合の保険）。
+          data: (scene) => _SceneView(
+            key: ValueKey('${scene.id}-${mode.name}'),
+            scene: scene,
+            mode: mode,
+          ),
         ),
       ),
     );
+  }
+
+  /// pause メニューを開く。true（ちずに もどる）が返ったらホームへ、それ以外
+  /// （つづける / 外タップ）は何もしない（＝そのまま宝探しを継続）。
+  Future<void> _openPauseMenu(BuildContext context, String localeCode) async {
+    final leave = await showDialog<bool>(
+      context: context,
+      barrierDismissible: true,
+      builder: (_) => PauseMenu(localeCode: localeCode),
+    );
+    if (leave == true && context.mounted) context.go('/');
   }
 }
 
