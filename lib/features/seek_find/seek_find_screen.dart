@@ -4,7 +4,11 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
+
+import 'package:kidsapp_treasurehunt/features/badges/badge_service.dart';
+import 'package:kidsapp_treasurehunt/features/badges/models/badge.dart';
 
 import 'package:kidsapp_treasurehunt/features/seek_find/models/dummy_item.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/rare_treasure.dart';
@@ -25,6 +29,7 @@ import 'package:kidsapp_treasurehunt/features/seek_find/widgets/interaction_togg
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/miss_bubble.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/quest_banner.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/target_view.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/widgets/treasure_glyph.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/trail_sparkle.dart';
 import 'package:kidsapp_treasurehunt/providers.dart';
 import 'package:kidsapp_treasurehunt/save_slots_catalog.dart';
@@ -115,6 +120,9 @@ class _SceneViewState extends ConsumerState<_SceneView>
 
   /// 発見したレア宝の icon id（非 null の間、専用リビール演出を最前面に出す）。
   String? _rareReveal;
+
+  /// クリアで新規取得した称号バッチ id のキュー（先頭から 1 つずつ祝福する）。
+  final List<String> _badgeQueue = [];
 
   final List<({Offset position, Key key})> _missBubbles = [];
 
@@ -419,10 +427,21 @@ class _SceneViewState extends ConsumerState<_SceneView>
         // レア宝のリビール（A-2）。クリアと同時でも最前面で先に祝福する。
         if (_rareReveal != null)
           CelebrationOverlay(
-            iconId: _rareReveal!,
+            icon: TreasureGlyph(iconId: _rareReveal!, found: true),
             title: tr(localeCode, 'rare.found'),
             subtitle: tr(localeCode, 'rare.${_rareReveal!.substring(5)}'),
             onDismiss: () => setState(() => _rareReveal = null),
+          ),
+        // 称号バッチ取得の祝福（B-3）。キュー先頭を 1 つずつ。最前面。
+        if (_badgeQueue.isNotEmpty)
+          CelebrationOverlay(
+            key: ValueKey('badge.${_badgeQueue.first}'),
+            icon: SvgPicture.asset(
+              badgeSvgAsset(kBadgeById[_badgeQueue.first]!.iconId),
+            ),
+            title: tr(localeCode, 'badge.earned'),
+            subtitle: tr(localeCode, kBadgeById[_badgeQueue.first]!.labelKey),
+            onDismiss: () => setState(() => _badgeQueue.removeAt(0)),
           ),
       ],
     );
@@ -609,6 +628,23 @@ class _SceneViewState extends ConsumerState<_SceneView>
     _hintTimer?.cancel();
     _blinkClock?.stop(); // 完了後は点滅を止める（全て発見済みなので不要）
     setState(() => _completed = true);
+    // 称号バッチ(B-3): クリアで満たした条件を評価し、新規取得を祝福キューへ積む。
+    unawaited(
+      evaluateAndGrantBadges(ref)
+          .then((newly) {
+            if (!mounted || newly.isEmpty) return;
+            setState(() {
+              _badgeQueue.addAll(
+                kBadgeCatalog
+                    .where((b) => newly.contains(b.id))
+                    .map((b) => b.id),
+              );
+            });
+          })
+          .catchError((Object e) {
+            debugPrint('badge eval failed: $e');
+          }),
+    );
   }
 
   /// [allowMiss] が false のとき（なぞり中）はミスバブルを出さない。

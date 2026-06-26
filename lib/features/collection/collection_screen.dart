@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:kidsapp_treasurehunt/features/badges/badge_service.dart';
 import 'package:kidsapp_treasurehunt/features/collection/collection_logic.dart';
+import 'package:kidsapp_treasurehunt/features/collection/widgets/badge_gallery.dart';
 import 'package:kidsapp_treasurehunt/features/collection/widgets/collection_sections.dart';
 import 'package:kidsapp_treasurehunt/features/collection/widgets/sticker_book.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/rare_treasure.dart';
@@ -28,8 +30,11 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
   /// この入場中はこれでバッジを出し、永続側は開いた時点で既読にする。
   Set<String> _unseen = const {};
 
-  /// 図鑑のビュー: false=ワールド別（既定・D6）/ true=なかま別（D4）。
-  bool _byCategory = false;
+  /// 図鑑のビュー: ワールド別（既定・D6）/ なかま別（D4）/ しょうごう（B-3）。
+  CollectionView _view = CollectionView.world;
+
+  /// 「しょうごう」入場時の未読バッチスナップショット（この入場中だけ NEW を出す）。
+  Set<String> _badgeUnseenSnapshot = const {};
 
   /// シール帳の現在ページ。なかま⇄ワールドのビュー往復で StickerBook が
   /// 作り直されてもページ位置を保つために親が覚えておく（D1）。
@@ -103,11 +108,15 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                   children: [
                     ProgressHeader(progress: progress, localeCode: localeCode),
                     const SizedBox(height: 12),
-                    // D4: ワールド別 / なかま別 のビュー切替。
+                    // ワールド別 / なかま別 / しょうごう のビュー切替。
                     ViewToggle(
-                      byCategory: _byCategory,
+                      view: _view,
                       localeCode: localeCode,
-                      onChanged: (v) => setState(() => _byCategory = v),
+                      hasNewBadge: ref
+                          .watch(badgeRepositoryProvider)
+                          .unseen()
+                          .isNotEmpty,
+                      onChanged: _onViewChanged,
                     ),
                     if (foundRares.isNotEmpty) ...[
                       const SizedBox(height: 12),
@@ -119,35 +128,60 @@ class _CollectionScreenState extends ConsumerState<CollectionScreen> {
                   ],
                 ),
               ),
-              // ワールド別はページめくり式の「シール帳」（D1）、なかま別はリスト。
+              // ワールド別=シール帳（D1）/ なかま別=リスト / しょうごう=バッチ。
               Expanded(
-                child: _byCategory
-                    ? ListView(
-                        padding: const EdgeInsets.all(16),
-                        children: [
-                          for (final group in buildCategoryView(
-                            worlds,
-                            discovered,
-                          ))
-                            CategorySection(
-                              group: group,
-                              localeCode: localeCode,
-                            ),
-                        ],
-                      )
-                    : StickerBook(
-                        worlds: worlds,
-                        discovered: discovered,
-                        unseen: _unseen,
-                        localeCode: localeCode,
-                        initialPage: _bookPage.clamp(0, worlds.length - 1),
-                        onPageChanged: (i) => _bookPage = i,
-                      ),
+                child: switch (_view) {
+                  CollectionView.category => ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: [
+                      for (final group in buildCategoryView(worlds, discovered))
+                        CategorySection(group: group, localeCode: localeCode),
+                    ],
+                  ),
+                  CollectionView.badge => BadgeGallery(
+                    earned: ref.watch(badgeRepositoryProvider).earned(),
+                    unseen: _badgeUnseenSnapshot,
+                    localeCode: localeCode,
+                  ),
+                  CollectionView.world => StickerBook(
+                    worlds: worlds,
+                    discovered: discovered,
+                    unseen: _unseen,
+                    localeCode: localeCode,
+                    initialPage: _bookPage.clamp(0, worlds.length - 1),
+                    onPageChanged: (i) => _bookPage = i,
+                  ),
+                },
               ),
             ],
           );
         },
       ),
+    );
+  }
+
+  void _onViewChanged(CollectionView v) {
+    setState(() => _view = v);
+    if (v == CollectionView.badge) {
+      unawaited(_openBadges());
+    }
+  }
+
+  /// 「しょうごう」入場時: クリア外で満たしたバッチ（図鑑コンプ/レア等）も評価して
+  /// 取得を確定し、未読スナップショットで NEW を出しつつ永続側を既読化する。
+  Future<void> _openBadges() async {
+    try {
+      await evaluateAndGrantBadges(ref);
+    } on Object catch (e) {
+      debugPrint('badge grant on open failed: $e');
+    }
+    if (!mounted) return;
+    final repo = ref.read(badgeRepositoryProvider);
+    setState(() => _badgeUnseenSnapshot = repo.unseen());
+    unawaited(
+      repo.markSeen(_badgeUnseenSnapshot).catchError((Object e) {
+        debugPrint('badge markSeen failed: $e');
+      }),
     );
   }
 
