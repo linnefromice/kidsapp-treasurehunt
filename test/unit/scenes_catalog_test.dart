@@ -54,16 +54,26 @@ void main() {
     });
   }
 
-  test('completeScene chains are independent per mode', () async {
+  test('clearing a mode cascades down to easier modes, not up', () async {
     final progress = await _repo();
     await completeScene(progress, GameMode.normal, 'scene01');
 
-    // Normal advanced, but easy/hard chains are untouched.
-    expect(progress.isUnlocked(GameMode.normal, 'scene02'), isTrue);
+    // Normal advanced.
     expect(progress.isCleared(GameMode.normal, 'scene01'), isTrue);
-    expect(progress.isUnlocked(GameMode.easy, 'scene02'), isFalse);
-    expect(progress.isCleared(GameMode.easy, 'scene01'), isFalse);
+    expect(progress.isUnlocked(GameMode.normal, 'scene02'), isTrue);
+    // Easier (easy) is also satisfied: clearing Normal counts as Easy cleared.
+    expect(progress.isCleared(GameMode.easy, 'scene01'), isTrue);
+    expect(progress.isUnlocked(GameMode.easy, 'scene02'), isTrue);
+    // Harder (hard) is untouched.
+    expect(progress.isCleared(GameMode.hard, 'scene01'), isFalse);
     expect(progress.isUnlocked(GameMode.hard, 'scene02'), isFalse);
+  });
+
+  test('clearing Easy does not affect Normal/Hard', () async {
+    final progress = await _repo();
+    await completeScene(progress, GameMode.easy, 'scene01');
+    expect(progress.isCleared(GameMode.easy, 'scene01'), isTrue);
+    expect(progress.isCleared(GameMode.normal, 'scene01'), isFalse);
     expect(progress.isCleared(GameMode.hard, 'scene01'), isFalse);
   });
 }

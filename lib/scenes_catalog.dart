@@ -122,15 +122,21 @@ String? nextSceneId(String id) {
 }
 
 /// シーンクリア時の進行処理: クリア記録 + 次シーン解放（最後なら no-op）。
-/// 解放チェーンはモードごとに独立した一本道（[GameMode] ごとに別々の進捗）。
+///
+/// クリアしたモードに加え、**それより やさしいモードも「クリア済み」＋次シーン解放**
+/// にする（むずかしいを通せば やさしい/ふつう も達成扱い）。より難しいモード側には
+/// 影響しない。`GameMode` は easy < normal < hard の順（index で判定）。
 Future<void> completeScene(
   ProgressRepository progress,
   GameMode mode,
   String sceneId,
 ) async {
-  await progress.markCleared(mode, sceneId);
   final next = nextSceneId(sceneId);
-  if (next != null) {
-    await progress.unlock(mode, next);
+  for (final m in GameMode.values) {
+    if (m.index > mode.index) continue; // より難しいモードは触らない
+    await progress.markCleared(m, sceneId);
+    if (next != null) {
+      await progress.unlock(m, next);
+    }
   }
 }
