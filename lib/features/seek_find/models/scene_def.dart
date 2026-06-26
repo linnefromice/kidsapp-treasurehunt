@@ -174,13 +174,16 @@ class SceneDef {
     return false;
   }
 
-  /// おとり（dummies + hardDummies）のアイコンを [kDecoyIconPool] から引き直した
+  /// おとり（dummies + hardDummies）のアイコンを [sourcePool] から引き直した
   /// 新しい [SceneDef] を返す（C2 おとり抽選）。id・位置・scale・個数は保持し、
   /// アイコンだけを変えて「紛れ方」を毎回変える。ターゲットのアイコンは除外する
   /// （= 整合性: おとりが宝と同じ見た目にならない）。
-  SceneDef withReseededDecoyIcons(Random random) {
+  ///
+  /// [sourcePool] 省略時は汎用 [kDecoyIconPool]。ステージのテーマに合わせる場合は
+  /// `decoyPoolFor(sceneId)`（scene_decoys.dart）を渡す。
+  SceneDef withReseededDecoyIcons(Random random, {List<String>? sourcePool}) {
     final targetIcons = targets.map((t) => t.iconId).toSet();
-    final pool = kDecoyIconPool
+    final pool = (sourcePool ?? kDecoyIconPool)
         .where((i) => !targetIcons.contains(i))
         .toList(growable: false);
     if (pool.isEmpty) {
