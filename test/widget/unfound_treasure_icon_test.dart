@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:kidsapp_treasurehunt/features/seek_find/target_icons.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/unfound_treasure_icon.dart';
 
 void main() {
-  testWidgets('renders the icon silhouette through a gray ShaderMask', (
+  testWidgets('renders the SVG silhouette through a gray ShaderMask', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -15,12 +15,12 @@ void main() {
       ),
     );
 
-    // ShaderMask applies the gradient to the icon's alpha silhouette.
+    // ShaderMask applies the gray gradient to the alpha silhouette.
     expect(find.byType(ShaderMask), findsOneWidget);
 
-    // The underlying icon matches the treasure's icon id.
-    final icon = tester.widget<Icon>(find.byType(Icon));
-    expect(icon.icon, targetIcon('apple'));
+    // The silhouette uses the rich SVG art (same shape as the found state),
+    // so the found <-> unfound reveal keeps a consistent outline.
+    expect(find.byType(SvgPicture), findsOneWidget);
   });
 
   test('gradient runs light (top) to dark (bottom) for contrast', () {

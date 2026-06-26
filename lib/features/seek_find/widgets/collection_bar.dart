@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/find_target.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/icon_group.dart';
-import 'package:kidsapp_treasurehunt/features/seek_find/target_icons.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/widgets/treasure_glyph.dart';
 
 /// 画面下の図鑑。同じアイコンの宝が複数あっても横並びにはせず、iconId ごとに
 /// 1枠へまとめ、見つけた数を「found/total」でカウントアップ表示する。
@@ -68,13 +68,19 @@ class _CollectionSlot extends StatelessWidget {
               border: Border.all(color: Colors.brown, width: 3),
               color: complete ? Colors.amber.shade200 : Colors.white,
             ),
-            child: Icon(
-              targetIcon(group.iconId),
-              key: ValueKey(
-                complete ? 'found.${group.iconId}' : 'unfound.${group.iconId}',
+            alignment: Alignment.center,
+            child: SizedBox(
+              width: 36,
+              height: 36,
+              child: TreasureGlyph(
+                key: ValueKey(
+                  complete
+                      ? 'found.${group.iconId}'
+                      : 'unfound.${group.iconId}',
+                ),
+                iconId: group.iconId,
+                found: complete,
               ),
-              color: complete ? Colors.amber.shade800 : Colors.grey.shade400,
-              size: 36,
             ),
           ),
           if (group.hasMultiple)

@@ -103,3 +103,11 @@ Color targetColor(String id) => _kTargetColors[id] ?? const Color(0xFF9E9E9E);
 /// 既知のアイコン id か。未知の id は targetIcon で `?`（help_outline）に
 /// フォールバックし子供が認識できないため、シーン整合性テストで弾く。
 bool hasTargetIcon(String id) => _kTargetIcons.containsKey(id);
+
+/// 宝アイコンの SVG アセットパス（`assets/treasure_icons/<id>.svg`）。
+String treasureSvgAsset(String id) => 'assets/treasure_icons/$id.svg';
+
+/// この id に対応するリッチ SVG アセットが同梱されているか。
+/// 既知アイコン（`_kTargetIcons` の全 id）には 1:1 で SVG を用意している。
+/// 未知 id（'mystery' 等のフォールバック）は SVG が無く Material アイコンへ退避する。
+bool hasTreasureSvg(String id) => _kTargetIcons.containsKey(id);
