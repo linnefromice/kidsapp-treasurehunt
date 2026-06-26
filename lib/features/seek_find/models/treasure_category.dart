@@ -92,3 +92,12 @@ TreasureCategory? nextQuestCategory(
   }
   return null;
 }
+
+/// 今の「お題」対象 = 未発見で最も手前にある宝そのもの（無ければ null）。
+/// 「これを さがそう」と宝の絵を見せる I-Spy 型ガイドに使う（読字不要）。
+FindTarget? nextQuestTarget(List<FindTarget> targets, Set<String> foundIds) {
+  for (final t in targets) {
+    if (!foundIds.contains(t.id)) return t;
+  }
+  return null;
+}

@@ -57,4 +57,17 @@ void main() {
       expect(nextQuestCategory(mixed, const {}), TreasureCategory.animal);
     });
   });
+
+  group('nextQuestTarget', () {
+    final targets = [_t('apple_1', 'apple'), _t('duck_1', 'duck')];
+
+    test('is the earliest unfound treasure itself (concrete I-Spy target)', () {
+      expect(nextQuestTarget(targets, const {})?.id, 'apple_1');
+      expect(nextQuestTarget(targets, {'apple_1'})?.id, 'duck_1');
+    });
+
+    test('null when everything is found', () {
+      expect(nextQuestTarget(targets, {'apple_1', 'duck_1'}), isNull);
+    });
+  });
 }

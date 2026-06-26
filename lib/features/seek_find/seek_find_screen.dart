@@ -374,6 +374,7 @@ class _SceneViewState extends ConsumerState<_SceneView>
         .length;
     // お題発見（A3）: 今さがすカテゴリ（ソフトガイド・無ければ非表示）。
     final questCategory = nextQuestCategory(scene.targets, found);
+    final questTarget = nextQuestTarget(scene.targets, found);
 
     // 完了は「画面上の全宝（レア宝 C4 を含む _scene.targets）を見つけたら」。
     // レアは出れば必ず見つけられる位置にあり、完了に含めることで確実に図鑑へ
@@ -395,7 +396,9 @@ class _SceneViewState extends ConsumerState<_SceneView>
             // 「○○ を さがそう」ガイドと、大エリアの「うごかす / さがす」トグル。
             // Wrap で横並び＋反流させ、縦の圧迫と（重ねた場合の）タップ吸収を避ける。
             // Stack に重ねないのはピル下のターゲットへのタップ吸収を防ぐため。
-            if (!_completed && (questCategory != null || _isLargeArea))
+            if (!_completed &&
+                ((questCategory != null && questTarget != null) ||
+                    _isLargeArea))
               Padding(
                 padding: const EdgeInsets.only(top: 8, bottom: 4),
                 child: Wrap(
@@ -403,9 +406,10 @@ class _SceneViewState extends ConsumerState<_SceneView>
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    if (questCategory != null)
+                    if (questCategory != null && questTarget != null)
                       QuestBanner(
                         key: const ValueKey('quest-banner'),
+                        iconId: questTarget.iconId,
                         category: questCategory,
                         localeCode: localeCode,
                       ),
