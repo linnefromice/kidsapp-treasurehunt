@@ -33,12 +33,17 @@ PNG の richness が最も効くのは「大きく・主役で・少数」:
 - ドリフトテスト `treasure_hero_png_test` が登録 id の PNG 実在を検証。
 
 ### ヒーロー PNG の足し方（2 ステップ）
-1. `assets/treasure_icons_hd/<id>.png` を置く（透明背景・正方形・1024px 目安）。
+1. `assets/treasure_icons_hd/<id>.png` を置く（**必ず透明背景**・正方形・1024px 目安）。
    - `id` は既存の宝/バッジ iconId に一致させる（例 `rare_gem`）。
-2. `target_icons.dart` の `kHeroPngIcons` に `<id>` を足す。
-→ コード変更はこれだけ。`TreasureGlyph` を使う全箇所（シーン内・図鑑・レアリビール）で自動的に PNG 表示に切替わる。
+2. `pubspec.yaml` の `flutter > assets` に `- assets/treasure_icons_hd/` を追加（初回のみ）。
+3. `target_icons.dart` の `kHeroPngIcons` に `<id>` を足す。
+→ あとはコード変更不要。`TreasureGlyph` を使う全箇所（シーン内・図鑑・レアリビール）で自動的に PNG 表示に切替わる。
 
-## 現状の初期ヒーロー枠
-- `rare_gem` / `rare_crown` / `rare_medal`（レア3種）を登録済み。
-- ただし**現物は SVG を高解像度ラスタライズしたスタンドイン**（richness は SVG と同等）。
-  本番の艶を出すには Gemini/OpenAI の AI アートや 3D 書き出し PNG で上書きすること。
+## 現状
+- `kHeroPngIcons` は**空**（＝全て SVG 描画）。
+- 以前レア3種を「SVG を qlmanage でラスタライズしたスタンドイン PNG」で登録していたが、
+  **背景が白に焼き込まれ（1-bit alpha）**、図鑑「とくべつ」等で**白い四角**として出る不備が
+  あったため外した。
+- 真の艶を出すには **透明背景**の AI アート（Gemini/OpenAI）や 3D 書き出し PNG を上記手順で入れる。
+  ラスタライズは透過を保てるレンダラ（resvg / rsvg-convert / cairosvg 等）を使うこと
+  （qlmanage は透過を潰すので不可）。
