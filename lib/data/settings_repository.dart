@@ -15,6 +15,7 @@ class SettingsRepository {
   static const _trailColorKey = 'settings.trailColor';
   static const _trailStyleKey = 'settings.trailStyle';
   static const _trailColors3Key = 'settings.trailColors3';
+  static const _trailShapeKey = 'settings.trailShape';
 
   /// トレイルスタイル解放フラグのキー接頭辞（`settings.trailUnlock.<styleId>`）。
   static const _trailUnlockKeyPrefix = 'settings.trailUnlock.';
@@ -62,6 +63,13 @@ class SettingsRepository {
 
   Future<void> setTrailColors3Csv(String csv) =>
       _prefs.setString(_trailColors3Key, csv);
+
+  /// なぞりトレイルの粒の形 id（#4）。未設定時は既定（'circle'）。
+  /// 未知値は呼び出し側の `TrailShape.fromId` が安全に倒す。
+  String trailShapeId() => _prefs.getString(_trailShapeKey) ?? 'circle';
+
+  Future<void> setTrailShapeId(String id) =>
+      _prefs.setString(_trailShapeKey, id);
 
   /// スタイル id の解放フラグ（端末ぜんたい・全スロット共通）。未設定は未解放。
   /// styleId → モードの対応（解放方針）は features 側が持つ。

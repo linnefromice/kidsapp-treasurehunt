@@ -12,6 +12,7 @@ import 'package:kidsapp_treasurehunt/data/settings_repository.dart';
 import 'package:kidsapp_treasurehunt/features/collection/models/collection_world.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/scene_def.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/models/trail_color.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/models/trail_shape.dart';
 import 'package:kidsapp_treasurehunt/save_slots_catalog.dart';
 import 'package:kidsapp_treasurehunt/scenes_catalog.dart';
 import 'package:kidsapp_treasurehunt/shared/audio/audio_service.dart';
@@ -270,6 +271,39 @@ final trailSettingControllerProvider =
     NotifierProvider<TrailSettingController, TrailSetting>(
       TrailSettingController.new,
     );
+
+/// なぞりトレイルの粒の「形」（#4・色とは独立）。永続化から復元し、選択で更新する。
+class TrailShapeController extends Notifier<TrailShape> {
+  SettingsRepository get _repo => ref.read(settingsRepositoryProvider);
+
+  @override
+  TrailShape build() => TrailShape.fromId(_repo.trailShapeId());
+
+  Future<void> select(TrailShape shape) async {
+    await _repo.setTrailShapeId(shape.id);
+    state = shape;
+  }
+}
+
+final trailShapeControllerProvider =
+    NotifierProvider<TrailShapeController, TrailShape>(
+      TrailShapeController.new,
+    );
+
+/// 現在使えるトレイル形の集合（UI の真実源）。形は**バッチ取得**で解放する。
+/// circle は常時。ほし/ハートは対応バッチを獲得済みなら解放（スロット非選択時は
+/// circle のみ）。
+final unlockedTrailShapesProvider = Provider<Set<TrailShape>>((ref) {
+  final slotId = ref.watch(activeSlotProvider);
+  final earned = slotId == null
+      ? const <String>{}
+      : ref.watch(badgeRepositoryProvider).earned();
+  return {
+    for (final shape in TrailShape.values)
+      if (shape.unlockBadgeId == null || earned.contains(shape.unlockBadgeId))
+        shape,
+  };
+});
 
 /// 進捗を見て、満たした解放要件のトレイルスタイルをグローバルに解放する
 /// （sticky・端末ぜんたい・一度立てたら戻さない）。クリア確定時（_handleComplete）
