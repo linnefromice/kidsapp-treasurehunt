@@ -218,6 +218,18 @@ List<String> get kAllTreasureIconIds =>
 /// 宝アイコンの SVG アセットパス（`assets/treasure_icons/<id>.svg`）。
 String treasureSvgAsset(String id) => 'assets/treasure_icons/$id.svg';
 
+/// 高解像度ヒーロー PNG のアセットパス（`assets/treasure_icons_hd/<id>.png`）。
+/// 大きく主役で見せる山場（レアリビール等）向けのリッチ版。
+String treasurePngAsset(String id) => 'assets/treasure_icons_hd/$id.png';
+
+/// PNG ヒーローアートで描画する id（`kHeroPngIcons` に登録した分だけ PNG 優先）。
+/// 未登録は SVG のまま。差し替えは「PNG を置く＋ここに id を足す」の 2 ステップ。
+/// 詳細は docs/treasure-art-svg-vs-png.md。
+const Set<String> kHeroPngIcons = {'rare_gem', 'rare_crown', 'rare_medal'};
+
+/// この id を PNG ヒーローアートで描画するか。
+bool hasHeroPng(String id) => kHeroPngIcons.contains(id);
+
 /// この id に対応するリッチ SVG アセットが同梱されているか。
 /// 既知アイコン（`_kTargetIcons` の全 id）には 1:1 で SVG を用意している。
 /// 未知 id（'mystery' 等のフォールバック）は SVG が無く Material アイコンへ退避する。

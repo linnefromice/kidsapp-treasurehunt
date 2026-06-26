@@ -19,6 +19,11 @@ class TreasureGlyph extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!found) return UnfoundTreasureIcon(iconId: iconId);
+    // 山場向けリッチ版（PNG ヒーローアート）を登録した id は PNG 優先。
+    // 未登録は SVG、SVG も無ければ Material アイコンへ退避。
+    if (hasHeroPng(iconId)) {
+      return Image.asset(treasurePngAsset(iconId), fit: BoxFit.contain);
+    }
     if (!hasTreasureSvg(iconId)) {
       return Icon(targetIcon(iconId), color: targetColor(iconId));
     }
