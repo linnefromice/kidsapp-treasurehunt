@@ -27,6 +27,7 @@ import 'package:kidsapp_treasurehunt/features/seek_find/widgets/clear_overlay.da
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/collection_bar.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/hint_glow.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/interaction_toggle.dart';
+import 'package:kidsapp_treasurehunt/features/seek_find/widgets/lives_bar.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/miss_bubble.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/pause_menu.dart';
 import 'package:kidsapp_treasurehunt/features/seek_find/widgets/quest_banner.dart';
@@ -50,6 +51,9 @@ const double _kTrailSpawnMinDistance = 18.0;
 /// 同時に保持するなぞりキラキラの上限。超えたら最古から捨てる
 /// （連続ドラッグでも生存ウィジェット数を一定に保つ安全弁）。
 const int _kTrailMaxParticles = 24;
+
+/// pro モードの残機数（♥）。ステージ入場ごと・再挑戦ごとに満タンに戻す。
+const int kProLives = 3;
 
 /// 正規化 Rect（0.0–1.0）をシーンの実ピクセルへ変換した [Positioned] を作る。
 /// 宝とダミーで共通の配置ロジック。[rect] は呼び出し側で
@@ -138,7 +142,16 @@ class _SceneViewState extends ConsumerState<_SceneView>
     with TickerProviderStateMixin {
   /// 実際に描画するシーン。クリア済みの再訪やフリーモードでは入場時に配置を
   /// シャッフルして「毎回ちがう場所」にする（C1）。初回（未クリア）は安定配置のまま。
-  late final SceneDef _scene = _maybeShuffleOnReplay();
+  /// pro モードで残機 0 のときは再シャッフルして同ステージを再挑戦するため final 不可。
+  late SceneDef _scene = _maybeShuffleOnReplay();
+
+  /// 残機（pro モードのみ非 null）。おとりタップ（誤答）で 1 減り、0 で
+  /// 「もういちど さがそう！」とやさしく同ステージを再挑戦する。
+  /// easy/normal/hard は null（no-fail 厳守＝残機の概念を持たない）。
+  int? _lives;
+
+  /// 残機 0 後の「もういちど さがそう！」フラッシュ表示中か（数秒で消える）。
+  bool _retryFlash = false;
 
   /// 季節/時間バリアント（C3）。再訪/フリーで抽選、初回は normal（素のまま）。
   late final SceneAmbientVariant _ambient = _isReplay()
@@ -200,10 +213,11 @@ class _SceneViewState extends ConsumerState<_SceneView>
     GameMode.easy => widget.scene.id,
     GameMode.normal => '${widget.scene.id}#normal',
     GameMode.hard => '${widget.scene.id}#hard',
+    GameMode.pro => '${widget.scene.id}#pro',
   };
 
-  /// Normal / Hard はビューポートより大きい探索エリア（パン必須）。
-  bool get _isLargeArea => widget.mode != GameMode.easy;
+  /// Hard / Pro はビューポートより大きい探索エリア（パン必須）。
+  bool get _isLargeArea => widget.mode.scrolls;
 
   /// 大エリアでの 1 本指ドラッグの用途（地図を動かす / なぞって探す）。
   /// 既定は [SceneInteraction.move]: まず地図を見渡せて、タップ発見は常に可能。
@@ -230,12 +244,13 @@ class _SceneViewState extends ConsumerState<_SceneView>
 
   SceneDef _maybeShuffleOnReplay() {
     final replay = _isReplay();
-    final hard = widget.mode == GameMode.hard;
+    // 大エリア（Hard / Pro）は初回から配置をスキャッタして「規則正しさ」を崩す。
+    final scatterFromStart = widget.mode.scrolls;
     final random = math.Random();
     var scene = widget.scene;
-    // 配置スキャッタ(C1+ジッター)。Hard は初回から、Easy/Normal はリプレイで適用し
+    // 配置スキャッタ(C1+ジッター)。Hard/Pro は初回から、Easy/Normal はリプレイで適用し
     // 「規則正しさ」を崩す（要望[1]）。初回 Easy/Normal は作者の安定配置を維持。
-    if (replay || hard) {
+    if (replay || scatterFromStart) {
       scene = scene.withShuffledPositions(random);
     }
     // おとり抽選(C2) は再訪/フリーのみ（初回の見た目は変えない）。
@@ -263,11 +278,16 @@ class _SceneViewState extends ConsumerState<_SceneView>
   @override
   void initState() {
     super.initState();
-    if (widget.mode == GameMode.hard) {
+    // 点滅は normal / hard / pro（mode.blinks）。easy のみ静止。
+    if (widget.mode.blinks) {
       _blinkClock = AnimationController(
         vsync: this,
         duration: kBlinkCyclePeriod,
       )..repeat();
+    }
+    // 残機は pro のみ。入場時に満タンで開始する。
+    if (widget.mode.hasLives) {
+      _lives = kProLives;
     }
     _scheduleHint();
   }
@@ -402,6 +422,42 @@ class _SceneViewState extends ConsumerState<_SceneView>
     });
   }
 
+  /// pro モードで残機を 1 つ失う。連鎖はリセットし、減ったことが分かる位置に
+  /// ミスバブルを出す。0 になったらやさしく同ステージを再挑戦する。
+  /// 罰しない設計の例外は pro のみ: それでも ×・減点・不快音・順位は出さない。
+  void _loseLife(Offset position) {
+    HapticFeedback.mediumImpact();
+    final remaining = (_lives ?? kProLives) - 1;
+    setState(() {
+      _lives = remaining < 0 ? 0 : remaining;
+      _streak = 0;
+    });
+    _addMissBubble(position);
+    if (remaining <= 0) {
+      _restartProScene();
+    }
+  }
+
+  /// 残機 0 → 「もういちど さがそう！」とやさしく同ステージを再挑戦する。
+  /// 配置を再シャッフルし、残機を満タンに戻し、発見状態を空に戻す。
+  /// ×・減点・不快音・ゲームオーバー画面・順位は一切出さない。
+  void _restartProScene() {
+    ref.read(foundControllerProvider(_foundKey).notifier).reset();
+    setState(() {
+      _scene = _maybeShuffleOnReplay();
+      _lives = kProLives;
+      _streak = 0;
+      _burstIntensity.clear();
+      _missBubbles.clear();
+      _retryFlash = true;
+    });
+    Future.delayed(const Duration(milliseconds: 1500), () {
+      if (mounted) {
+        setState(() => _retryFlash = false);
+      }
+    });
+  }
+
   /// なぞり位置に追従するキラキラ粒子を 1 つ生成する（Easy のなぞり中のみ呼ぶ）。
   /// 直近生成位置から [_kTrailSpawnMinDistance] 未満なら間引いて密集を防ぐ。
   void _handlePanTrail(Offset position) {
@@ -502,6 +558,43 @@ class _SceneViewState extends ConsumerState<_SceneView>
               interaction: _interaction,
               localeCode: localeCode,
               onChanged: (i) => setState(() => _interaction = i),
+            ),
+          ),
+        // 残機表示（pro のみ・表示専用）。左上に ♥♥♥。
+        if (!_completed && widget.mode.hasLives && _lives != null)
+          Positioned(
+            top: 6,
+            left: 8,
+            child: IgnorePointer(
+              child: LivesBar(lives: _lives!, max: kProLives),
+            ),
+          ),
+        // 残機 0 後の「もういちど さがそう！」フラッシュ（やさしく再挑戦・表示専用）。
+        if (_retryFlash)
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Center(
+                child: Container(
+                  key: const ValueKey('pro-retry-flash'),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 28,
+                    vertical: 18,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.amber.shade100.withValues(alpha: 0.95),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: Colors.amber.shade400, width: 3),
+                  ),
+                  child: Text(
+                    tr(localeCode, 'pro.retry'),
+                    style: TextStyle(
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.brown.shade700,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         if (_completed)
@@ -774,13 +867,19 @@ class _SceneViewState extends ConsumerState<_SceneView>
       );
       if (allowMiss && !onHidden) {
         if (_pokedDecoy(localPosition, sceneSize)) {
-          // #6 イースターエッグ: おとりを「つつく」と、罰でなく ちいさなきらめき＋
-          // 触覚で反応する。世界が反応する楽しさ。連鎖は崩さない（中立な遊び）。
-          _addPokeSparkle(localPosition);
-          HapticFeedback.selectionClick();
+          if (widget.mode.hasLives) {
+            // pro のみ: おとり（誤答）タップで残機を 1 つ失う。
+            _loseLife(localPosition);
+          } else {
+            // #6 イースターエッグ: おとりを「つつく」と、罰でなく ちいさなきらめき＋
+            // 触覚で反応する。世界が反応する楽しさ。連鎖は崩さない（中立な遊び）。
+            _addPokeSparkle(localPosition);
+            HapticFeedback.selectionClick();
+          }
         } else {
           // 空の場所だけミスバブル。タップの空振りでのみ連鎖が途切れる。
           // 静かにリセットするだけで、減点・不快音・×は出さない（no-fail 厳守）。
+          // pro でも空振りは残機を減らさない（誤答＝おとりタップのみが対象）。
           _addMissBubble(localPosition);
           _streak = 0;
         }

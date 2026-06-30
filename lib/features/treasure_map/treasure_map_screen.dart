@@ -76,7 +76,12 @@ class _TreasureMapScreenState extends ConsumerState<TreasureMapScreen> {
       ),
     );
 
-    final isHard = mode == GameMode.hard;
+    // 選択モードに応じたトロフィー装飾（むずかしい=🔥 / ぷろ=⭐）。
+    final trophy = switch (mode) {
+      GameMode.hard => '🏆🔥',
+      GameMode.pro => '🏆⭐',
+      _ => '🏆',
+    };
     // バッジ・カウンタ・軌跡・現在地はすべて選択中モードの進捗を反映する。
     final clearedForMode = kSceneCatalog
         .where((e) => progress.isCleared(mode, e.id))
@@ -104,7 +109,7 @@ class _TreasureMapScreenState extends ConsumerState<TreasureMapScreen> {
               child: Text(
                 '${tr(localeCode, 'home.cleared')} '
                 '${clearedForMode.length}/${kSceneCatalog.length} '
-                '${isHard ? '🏆🔥' : '🏆'}',
+                '$trophy',
                 style: const TextStyle(fontSize: 16),
               ),
             ),

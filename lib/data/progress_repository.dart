@@ -20,6 +20,7 @@ class ProgressRepository {
     GameMode.easy => 'progress.$_slotId.unlockedSceneIds',
     GameMode.normal => 'progress.$_slotId.normal.unlockedSceneIds',
     GameMode.hard => 'progress.$_slotId.hard.unlockedSceneIds',
+    GameMode.pro => 'progress.$_slotId.pro.unlockedSceneIds',
   };
 
   String _clearedKey(GameMode mode) => switch (mode) {
@@ -28,6 +29,7 @@ class ProgressRepository {
     // 既存セーブ互換のため hard クリアだけ旧キー名を流用する（`hard.` 接頭ではない）。
     // unlock 側は新形式 `hard.unlockedSceneIds` なので、ここの非対称は意図的。
     GameMode.hard => 'progress.$_slotId.hardClearedSceneIds',
+    GameMode.pro => 'progress.$_slotId.pro.clearedSceneIds',
   };
 
   List<String> unlockedSceneIds(GameMode mode) =>
