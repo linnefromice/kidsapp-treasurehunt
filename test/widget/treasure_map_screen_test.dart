@@ -234,8 +234,8 @@ void main() {
     });
   });
 
-  group('mode toggle (always visible: Easy / Normal / Hard)', () {
-    testWidgets('toggle and all three chips render on a fresh slot', (
+  group('mode toggle (always visible: Easy / Normal / Hard / Pro)', () {
+    testWidgets('toggle and all four chips render on a fresh slot', (
       tester,
     ) async {
       await _pumpHome(tester, {
@@ -245,6 +245,7 @@ void main() {
       expect(find.byKey(const ValueKey('mode-easy')), findsOneWidget);
       expect(find.byKey(const ValueKey('mode-normal')), findsOneWidget);
       expect(find.byKey(const ValueKey('mode-hard')), findsOneWidget);
+      expect(find.byKey(const ValueKey('mode-pro')), findsOneWidget);
       // Default mode is Easy: legacy keys drive the display, scene01 current.
       expect(
         find.byKey(const ValueKey('node-current.scene01')),

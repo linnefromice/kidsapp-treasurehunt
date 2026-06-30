@@ -365,6 +365,9 @@ class FoundController extends AutoDisposeFamilyNotifier<Set<String>, String> {
     if (state.contains(targetId)) return;
     state = {...state, targetId};
   }
+
+  /// 発見状態を空に戻す（pro モードで残機 0 → 同ステージをやさしく再挑戦する用途）。
+  void reset() => state = <String>{};
 }
 
 final foundControllerProvider = NotifierProvider.autoDispose

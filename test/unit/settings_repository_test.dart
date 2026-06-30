@@ -20,6 +20,14 @@ void main() {
     expect(prefs.getString('settings.gameMode'), 'normal');
   });
 
+  test('persists the pro game mode round-trip', () async {
+    final prefs = await SharedPreferences.getInstance();
+    final repo = SettingsRepository(prefs);
+    await repo.setGameMode(GameMode.pro);
+    expect(repo.gameMode(), GameMode.pro);
+    expect(prefs.getString('settings.gameMode'), 'pro');
+  });
+
   test('defaults to ja', () async {
     final prefs = await SharedPreferences.getInstance();
     final repo = SettingsRepository(prefs);

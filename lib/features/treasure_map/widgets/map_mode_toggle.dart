@@ -4,7 +4,7 @@ import 'package:kidsapp_treasurehunt/shared/game_mode.dart';
 import 'package:kidsapp_treasurehunt/shared/strings/strings.dart';
 import 'package:kidsapp_treasurehunt/shared/theme/kids_theme.dart';
 
-/// 「やさしい / ふつう / むずかしい」を切り替えるピル型トグル。常時表示。
+/// 「やさしい / ふつう / むずかしい / ぷろ」を切り替えるピル型トグル。常時表示。
 class MapModeToggle extends StatelessWidget {
   const MapModeToggle({
     super.key,
@@ -48,6 +48,13 @@ class MapModeToggle extends StatelessWidget {
               label: '🔥 ${tr(localeCode, 'home.modeHard')}',
               selected: mode == GameMode.hard,
               onTap: () => onChanged(GameMode.hard),
+            ),
+            const SizedBox(width: 4),
+            _ModeChip(
+              keyValue: 'mode-pro',
+              label: '⭐ ${tr(localeCode, 'home.modePro')}',
+              selected: mode == GameMode.pro,
+              onTap: () => onChanged(GameMode.pro),
             ),
           ],
         ),

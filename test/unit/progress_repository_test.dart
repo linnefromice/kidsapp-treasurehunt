@@ -25,6 +25,14 @@ void main() {
     expect(r.isCleared(GameMode.easy, 'scene01'), isTrue);
   });
 
+  test('pro progress is independent from hard (separate keys)', () async {
+    final r = await _repo('slot1');
+    await r.markCleared(GameMode.pro, 'scene01');
+    expect(r.isCleared(GameMode.pro, 'scene01'), isTrue);
+    // pro と hard は別キー。pro クリアが hard を勝手にクリア扱いにしない。
+    expect(r.isCleared(GameMode.hard, 'scene01'), isFalse);
+  });
+
   test('slots are independent', () async {
     final prefs = await SharedPreferences.getInstance();
     final s1 = ProgressRepository(prefs, 'slot1');
