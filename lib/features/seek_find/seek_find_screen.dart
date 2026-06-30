@@ -53,7 +53,7 @@ const double _kTrailSpawnMinDistance = 18.0;
 const int _kTrailMaxParticles = 24;
 
 /// pro モードの残機数（♥）。ステージ入場ごと・再挑戦ごとに満タンに戻す。
-const int kProLives = 3;
+const int kProLives = 5;
 
 /// 正規化 Rect（0.0–1.0）をシーンの実ピクセルへ変換した [Positioned] を作る。
 /// 宝とダミーで共通の配置ロジック。[rect] は呼び出し側で
