@@ -1,0 +1,251 @@
+{
+  "id": "scene16",
+  "titleKey": "scene.scene16.title",
+  "imageAsset": "assets/scenes/scene16.png",
+  "targets": [
+    {
+      "id": "fox_1",
+      "iconId": "fox",
+      "labelKey": "target.fox",
+      "left": 0.196,
+      "top": 0.645,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "rabbit_1",
+      "iconId": "rabbit",
+      "labelKey": "target.rabbit",
+      "left": 0.843,
+      "top": 0.182,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "owl_1",
+      "iconId": "owl",
+      "labelKey": "target.owl",
+      "left": 0.041,
+      "top": 0.652,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "penguin_1",
+      "iconId": "penguin",
+      "labelKey": "target.penguin",
+      "left": 0.686,
+      "top": 0.342,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "hedgehog_1",
+      "iconId": "hedgehog",
+      "labelKey": "target.hedgehog",
+      "left": 0.69,
+      "top": 0.799,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "squirrel_1",
+      "iconId": "squirrel",
+      "labelKey": "target.squirrel",
+      "left": 0.849,
+      "top": 0.492,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "camel_1",
+      "iconId": "camel",
+      "labelKey": "target.camel",
+      "left": 0.69,
+      "top": 0.028,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "duck_1",
+      "iconId": "duck",
+      "labelKey": "target.duck",
+      "left": 0.36,
+      "top": 0.342,
+      "width": 0.11,
+      "height": 0.13
+    }
+  ],
+  "dummies": [
+    {
+      "id": "d_bird_0",
+      "iconId": "bird",
+      "left": 0.519,
+      "top": 0.189,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_cat_1",
+      "iconId": "cat",
+      "left": 0.02,
+      "top": 0.335,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_snake_2",
+      "iconId": "snake",
+      "left": 0.854,
+      "top": 0.344,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_bee_3",
+      "iconId": "bee",
+      "left": 0.511,
+      "top": 0.649,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_butterfly_4",
+      "iconId": "butterfly",
+      "left": 0.533,
+      "top": 0.802,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_bug_5",
+      "iconId": "bug",
+      "left": 0.86,
+      "top": 0.645,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_leaf_6",
+      "iconId": "leaf",
+      "left": 0.686,
+      "top": 0.652,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_acorn_7",
+      "iconId": "acorn",
+      "left": 0.677,
+      "top": 0.18,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_bird_8",
+      "iconId": "bird",
+      "left": 0.185,
+      "top": 0.335,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_cat_9",
+      "iconId": "cat",
+      "left": 0.185,
+      "top": 0.492,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_snake_10",
+      "iconId": "snake",
+      "left": 0.35,
+      "top": 0.65,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_bee_11",
+      "iconId": "bee",
+      "left": 0.041,
+      "top": 0.186,
+      "width": 0.1,
+      "height": 0.12
+    }
+  ],
+  "hardDummies": [
+    {
+      "id": "h_bird_0",
+      "iconId": "bird",
+      "left": 0.038,
+      "top": 0.029,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.7
+    },
+    {
+      "id": "h_cat_1",
+      "iconId": "cat",
+      "left": 0.851,
+      "top": 0.029,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.85
+    },
+    {
+      "id": "h_snake_2",
+      "iconId": "snake",
+      "left": 0.348,
+      "top": 0.489,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.0
+    },
+    {
+      "id": "h_bee_3",
+      "iconId": "bee",
+      "left": 0.194,
+      "top": 0.795,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.15
+    },
+    {
+      "id": "h_butterfly_4",
+      "iconId": "butterfly",
+      "left": 0.855,
+      "top": 0.796,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.3
+    },
+    {
+      "id": "h_bug_5",
+      "iconId": "bug",
+      "left": 0.529,
+      "top": 0.495,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.8
+    },
+    {
+      "id": "h_leaf_6",
+      "iconId": "leaf",
+      "left": 0.022,
+      "top": 0.489,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.2
+    },
+    {
+      "id": "h_acorn_7",
+      "iconId": "acorn",
+      "left": 0.197,
+      "top": 0.187,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.95
+    }
+  ]
+}

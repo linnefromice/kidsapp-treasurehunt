@@ -68,7 +68,7 @@ void main() {
       expect(find.byKey(const ValueKey('node-locked.scene02')), findsOneWidget);
       expect(find.byKey(const ValueKey('node-locked.scene05')), findsOneWidget);
 
-      expect(find.textContaining('0/13'), findsOneWidget);
+      expect(find.textContaining('0/${kSceneCatalog.length}'), findsOneWidget);
     });
 
     testWidgets('cleared scene01 + unlocked scene02 reflects states', (
@@ -92,7 +92,7 @@ void main() {
       );
       expect(find.byKey(const ValueKey('node-locked.scene03')), findsOneWidget);
 
-      expect(find.textContaining('1/13'), findsOneWidget);
+      expect(find.textContaining('1/${kSceneCatalog.length}'), findsOneWidget);
     });
 
     testWidgets('multiple cleared scenes render without error', (tester) async {
@@ -120,7 +120,7 @@ void main() {
       );
       expect(find.byKey(const ValueKey('node-locked.scene05')), findsOneWidget);
 
-      expect(find.textContaining('3/13'), findsOneWidget);
+      expect(find.textContaining('3/${kSceneCatalog.length}'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -267,7 +267,10 @@ void main() {
         });
 
         // タップなしで Normal ビュー（1/13・scene02 が現在地）になっている。
-        expect(find.textContaining('1/13'), findsOneWidget);
+        expect(
+          find.textContaining('1/${kSceneCatalog.length}'),
+          findsOneWidget,
+        );
         expect(
           find.byKey(const ValueKey('node-current.scene02')),
           findsOneWidget,
@@ -303,7 +306,10 @@ void main() {
       });
 
       // Easy view first: 13/13.
-      expect(find.textContaining('13/13'), findsOneWidget);
+      expect(
+        find.textContaining('${kSceneCatalog.length}/${kSceneCatalog.length}'),
+        findsOneWidget,
+      );
 
       await tester.tap(find.byKey(const ValueKey('mode-normal')));
       await tester.pump();
@@ -317,7 +323,7 @@ void main() {
         findsOneWidget,
       );
       expect(find.byKey(const ValueKey('node-locked.scene03')), findsOneWidget);
-      expect(find.textContaining('1/13'), findsOneWidget);
+      expect(find.textContaining('1/${kSceneCatalog.length}'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -345,7 +351,7 @@ void main() {
       );
       expect(find.byKey(const ValueKey('node-locked.scene03')), findsOneWidget);
       // Hard counter: 1/13 with the fire marker.
-      expect(find.textContaining('1/13'), findsOneWidget);
+      expect(find.textContaining('1/${kSceneCatalog.length}'), findsOneWidget);
       expect(find.textContaining('🔥'), findsWidgets);
       expect(tester.takeException(), isNull);
     });
