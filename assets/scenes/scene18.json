@@ -1,0 +1,251 @@
+{
+  "id": "scene18",
+  "titleKey": "scene.scene18.title",
+  "imageAsset": "assets/scenes/scene18.png",
+  "targets": [
+    {
+      "id": "car_1",
+      "iconId": "car",
+      "labelKey": "target.car",
+      "left": 0.678,
+      "top": 0.795,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "bus_1",
+      "iconId": "bus",
+      "labelKey": "target.bus",
+      "left": 0.034,
+      "top": 0.188,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "trafficlight_1",
+      "iconId": "trafficlight",
+      "labelKey": "target.trafficlight",
+      "left": 0.193,
+      "top": 0.647,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "fire_1",
+      "iconId": "fire",
+      "labelKey": "target.fire",
+      "left": 0.035,
+      "top": 0.492,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "shield_1",
+      "iconId": "shield",
+      "labelKey": "target.shield",
+      "left": 0.347,
+      "top": 0.183,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "key_1",
+      "iconId": "key",
+      "labelKey": "target.key",
+      "left": 0.844,
+      "top": 0.796,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "flag_1",
+      "iconId": "flag",
+      "labelKey": "target.flag",
+      "left": 0.357,
+      "top": 0.492,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "bell_1",
+      "iconId": "bell",
+      "labelKey": "target.bell",
+      "left": 0.846,
+      "top": 0.336,
+      "width": 0.11,
+      "height": 0.13
+    }
+  ],
+  "dummies": [
+    {
+      "id": "d_house_0",
+      "iconId": "house",
+      "left": 0.358,
+      "top": 0.031,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_cloud_1",
+      "iconId": "cloud",
+      "left": 0.029,
+      "top": 0.65,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_sun_2",
+      "iconId": "sun",
+      "left": 0.036,
+      "top": 0.799,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_balloon_3",
+      "iconId": "balloon",
+      "left": 0.528,
+      "top": 0.344,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_lightbulb_4",
+      "iconId": "lightbulb",
+      "left": 0.846,
+      "top": 0.031,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_bird_5",
+      "iconId": "bird",
+      "left": 0.686,
+      "top": 0.187,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_umbrella_6",
+      "iconId": "umbrella",
+      "left": 0.524,
+      "top": 0.797,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_gift_7",
+      "iconId": "gift",
+      "left": 0.037,
+      "top": 0.031,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_house_8",
+      "iconId": "house",
+      "left": 0.854,
+      "top": 0.64,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_cloud_9",
+      "iconId": "cloud",
+      "left": 0.527,
+      "top": 0.647,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_sun_10",
+      "iconId": "sun",
+      "left": 0.678,
+      "top": 0.647,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_balloon_11",
+      "iconId": "balloon",
+      "left": 0.366,
+      "top": 0.642,
+      "width": 0.1,
+      "height": 0.12
+    }
+  ],
+  "hardDummies": [
+    {
+      "id": "h_house_0",
+      "iconId": "house",
+      "left": 0.028,
+      "top": 0.337,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.7
+    },
+    {
+      "id": "h_cloud_1",
+      "iconId": "cloud",
+      "left": 0.684,
+      "top": 0.343,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.85
+    },
+    {
+      "id": "h_sun_2",
+      "iconId": "sun",
+      "left": 0.192,
+      "top": 0.025,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.0
+    },
+    {
+      "id": "h_balloon_3",
+      "iconId": "balloon",
+      "left": 0.195,
+      "top": 0.34,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.15
+    },
+    {
+      "id": "h_lightbulb_4",
+      "iconId": "lightbulb",
+      "left": 0.364,
+      "top": 0.798,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.3
+    },
+    {
+      "id": "h_bird_5",
+      "iconId": "bird",
+      "left": 0.693,
+      "top": 0.033,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.8
+    },
+    {
+      "id": "h_umbrella_6",
+      "iconId": "umbrella",
+      "left": 0.191,
+      "top": 0.18,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.2
+    },
+    {
+      "id": "h_gift_7",
+      "iconId": "gift",
+      "left": 0.364,
+      "top": 0.337,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.95
+    }
+  ]
+}

@@ -185,6 +185,46 @@ const Map<String, List<String>> _kSceneDecoys = {
     'bell',
     'flower',
   ], // ゆうえんち
+  'scene18': [
+    'house',
+    'cloud',
+    'sun',
+    'balloon',
+    'lightbulb',
+    'bird',
+    'umbrella',
+    'gift',
+  ], // まちのおしごと
+  'scene19': [
+    'bird',
+    'cloud',
+    'sun',
+    'flag',
+    'starfish',
+    'jellyfish',
+    'umbrella',
+    'gem',
+  ], // みなと
+  'scene20': [
+    'cat',
+    'star',
+    'heart',
+    'lightbulb',
+    'key',
+    'cloud',
+    'flower',
+    'crown',
+  ], // こどもべや
+  'scene21': [
+    'cake',
+    'pizza',
+    'icecream',
+    'gift',
+    'bucket',
+    'balloon',
+    'bell',
+    'key',
+  ], // スーパー
 };
 
 /// 汎用フォールバック（未知シーン）。

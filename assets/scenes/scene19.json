@@ -1,0 +1,251 @@
+{
+  "id": "scene19",
+  "titleKey": "scene.scene19.title",
+  "imageAsset": "assets/scenes/scene19.png",
+  "targets": [
+    {
+      "id": "sailboat_1",
+      "iconId": "sailboat",
+      "labelKey": "target.sailboat",
+      "left": 0.347,
+      "top": 0.335,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "anchor_1",
+      "iconId": "anchor",
+      "labelKey": "target.anchor",
+      "left": 0.031,
+      "top": 0.799,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "fish_1",
+      "iconId": "fish",
+      "labelKey": "target.fish",
+      "left": 0.689,
+      "top": 0.648,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "crab_1",
+      "iconId": "crab",
+      "labelKey": "target.crab",
+      "left": 0.684,
+      "top": 0.026,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "shell_1",
+      "iconId": "shell",
+      "labelKey": "target.shell",
+      "left": 0.515,
+      "top": 0.642,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "seahorse_1",
+      "iconId": "seahorse",
+      "labelKey": "target.seahorse",
+      "left": 0.522,
+      "top": 0.491,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "octopus_1",
+      "iconId": "octopus",
+      "labelKey": "target.octopus",
+      "left": 0.848,
+      "top": 0.487,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "bucket_1",
+      "iconId": "bucket",
+      "labelKey": "target.bucket",
+      "left": 0.186,
+      "top": 0.19,
+      "width": 0.11,
+      "height": 0.13
+    }
+  ],
+  "dummies": [
+    {
+      "id": "d_bird_0",
+      "iconId": "bird",
+      "left": 0.532,
+      "top": 0.027,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_cloud_1",
+      "iconId": "cloud",
+      "left": 0.845,
+      "top": 0.646,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_sun_2",
+      "iconId": "sun",
+      "left": 0.021,
+      "top": 0.337,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_flag_3",
+      "iconId": "flag",
+      "left": 0.687,
+      "top": 0.334,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_starfish_4",
+      "iconId": "starfish",
+      "left": 0.359,
+      "top": 0.648,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_jellyfish_5",
+      "iconId": "jellyfish",
+      "left": 0.347,
+      "top": 0.181,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_umbrella_6",
+      "iconId": "umbrella",
+      "left": 0.685,
+      "top": 0.187,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_gem_7",
+      "iconId": "gem",
+      "left": 0.525,
+      "top": 0.806,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_bird_8",
+      "iconId": "bird",
+      "left": 0.533,
+      "top": 0.342,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_cloud_9",
+      "iconId": "cloud",
+      "left": 0.202,
+      "top": 0.338,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_sun_10",
+      "iconId": "sun",
+      "left": 0.022,
+      "top": 0.641,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_flag_11",
+      "iconId": "flag",
+      "left": 0.193,
+      "top": 0.796,
+      "width": 0.1,
+      "height": 0.12
+    }
+  ],
+  "hardDummies": [
+    {
+      "id": "h_bird_0",
+      "iconId": "bird",
+      "left": 0.68,
+      "top": 0.492,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.7
+    },
+    {
+      "id": "h_cloud_1",
+      "iconId": "cloud",
+      "left": 0.024,
+      "top": 0.031,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.85
+    },
+    {
+      "id": "h_sun_2",
+      "iconId": "sun",
+      "left": 0.846,
+      "top": 0.033,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.0
+    },
+    {
+      "id": "h_flag_3",
+      "iconId": "flag",
+      "left": 0.355,
+      "top": 0.801,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.15
+    },
+    {
+      "id": "h_starfish_4",
+      "iconId": "starfish",
+      "left": 0.532,
+      "top": 0.183,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.3
+    },
+    {
+      "id": "h_jellyfish_5",
+      "iconId": "jellyfish",
+      "left": 0.857,
+      "top": 0.806,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.8
+    },
+    {
+      "id": "h_umbrella_6",
+      "iconId": "umbrella",
+      "left": 0.858,
+      "top": 0.187,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.2
+    },
+    {
+      "id": "h_gem_7",
+      "iconId": "gem",
+      "left": 0.183,
+      "top": 0.491,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.95
+    }
+  ]
+}
