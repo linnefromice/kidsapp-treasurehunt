@@ -1,0 +1,251 @@
+{
+  "id": "scene17",
+  "titleKey": "scene.scene17.title",
+  "imageAsset": "assets/scenes/scene17.png",
+  "targets": [
+    {
+      "id": "balloon_1",
+      "iconId": "balloon",
+      "labelKey": "target.balloon",
+      "left": 0.857,
+      "top": 0.488,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "kite_1",
+      "iconId": "kite",
+      "labelKey": "target.kite",
+      "left": 0.028,
+      "top": 0.649,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "gift_1",
+      "iconId": "gift",
+      "labelKey": "target.gift",
+      "left": 0.365,
+      "top": 0.033,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "ball_1",
+      "iconId": "ball",
+      "labelKey": "target.ball",
+      "left": 0.367,
+      "top": 0.641,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "icecream_1",
+      "iconId": "icecream",
+      "labelKey": "target.icecream",
+      "left": 0.201,
+      "top": 0.187,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "music_1",
+      "iconId": "music",
+      "labelKey": "target.music",
+      "left": 0.02,
+      "top": 0.181,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "crown_1",
+      "iconId": "crown",
+      "labelKey": "target.crown",
+      "left": 0.025,
+      "top": 0.025,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "star_1",
+      "iconId": "star",
+      "labelKey": "target.star",
+      "left": 0.356,
+      "top": 0.797,
+      "width": 0.11,
+      "height": 0.13
+    }
+  ],
+  "dummies": [
+    {
+      "id": "d_flag_0",
+      "iconId": "flag",
+      "left": 0.189,
+      "top": 0.796,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_heart_1",
+      "iconId": "heart",
+      "left": 0.531,
+      "top": 0.032,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_sun_2",
+      "iconId": "sun",
+      "left": 0.519,
+      "top": 0.803,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_cake_3",
+      "iconId": "cake",
+      "left": 0.854,
+      "top": 0.19,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_cookie_4",
+      "iconId": "cookie",
+      "left": 0.039,
+      "top": 0.494,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_umbrella_5",
+      "iconId": "umbrella",
+      "left": 0.194,
+      "top": 0.336,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_bell_6",
+      "iconId": "bell",
+      "left": 0.838,
+      "top": 0.032,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_flower_7",
+      "iconId": "flower",
+      "left": 0.193,
+      "top": 0.497,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_flag_8",
+      "iconId": "flag",
+      "left": 0.203,
+      "top": 0.026,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_heart_9",
+      "iconId": "heart",
+      "left": 0.686,
+      "top": 0.339,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_sun_10",
+      "iconId": "sun",
+      "left": 0.348,
+      "top": 0.334,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_cake_11",
+      "iconId": "cake",
+      "left": 0.848,
+      "top": 0.34,
+      "width": 0.1,
+      "height": 0.12
+    }
+  ],
+  "hardDummies": [
+    {
+      "id": "h_flag_0",
+      "iconId": "flag",
+      "left": 0.692,
+      "top": 0.489,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.7
+    },
+    {
+      "id": "h_heart_1",
+      "iconId": "heart",
+      "left": 0.86,
+      "top": 0.804,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.85
+    },
+    {
+      "id": "h_sun_2",
+      "iconId": "sun",
+      "left": 0.685,
+      "top": 0.024,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.0
+    },
+    {
+      "id": "h_cake_3",
+      "iconId": "cake",
+      "left": 0.515,
+      "top": 0.339,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.15
+    },
+    {
+      "id": "h_cookie_4",
+      "iconId": "cookie",
+      "left": 0.026,
+      "top": 0.801,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.3
+    },
+    {
+      "id": "h_umbrella_5",
+      "iconId": "umbrella",
+      "left": 0.515,
+      "top": 0.494,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.8
+    },
+    {
+      "id": "h_bell_6",
+      "iconId": "bell",
+      "left": 0.527,
+      "top": 0.646,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.2
+    },
+    {
+      "id": "h_flower_7",
+      "iconId": "flower",
+      "left": 0.681,
+      "top": 0.8,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.95
+    }
+  ]
+}

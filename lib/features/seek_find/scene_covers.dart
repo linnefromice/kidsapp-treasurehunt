@@ -20,6 +20,10 @@ const Map<String, List<String>> _kSceneCovers = {
   'scene11': ['cover_cloud', 'cover_bush', 'cover_leaves'], // 虹の丘
   'scene12': ['cover_box', 'cover_chest', 'cover_rock'], // 城
   'scene13': ['cover_cloud', 'cover_star', 'cover_rock'], // 銀河
+  'scene14': ['cover_box', 'cover_chest', 'cover_bush'], // まち
+  'scene15': ['cover_box', 'cover_chest', 'cover_star'], // おかしのくに
+  'scene16': ['cover_bush', 'cover_leaves', 'cover_box'], // どうぶつえん
+  'scene17': ['cover_box', 'cover_cloud', 'cover_star'], // ゆうえんち
 };
 
 /// 各ターゲットがカバー（箱隠し）で隠れる確率（要望[2]: 体感 ~40%）。

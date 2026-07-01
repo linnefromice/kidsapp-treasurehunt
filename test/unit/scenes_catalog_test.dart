@@ -25,7 +25,11 @@ void main() {
     expect(nextSceneId('scene10'), 'scene11');
     expect(nextSceneId('scene11'), 'scene12');
     expect(nextSceneId('scene12'), 'scene13');
-    expect(nextSceneId('scene13'), isNull);
+    expect(nextSceneId('scene13'), 'scene14');
+    expect(nextSceneId('scene14'), 'scene15');
+    expect(nextSceneId('scene15'), 'scene16');
+    expect(nextSceneId('scene16'), 'scene17');
+    expect(nextSceneId('scene17'), isNull);
     expect(nextSceneId('mystery'), isNull);
   });
 
@@ -47,9 +51,9 @@ void main() {
 
       test('on the last scene does not throw / unlock', () async {
         final progress = await _repo();
-        await completeScene(progress, mode, 'scene13');
-        expect(progress.isCleared(mode, 'scene13'), isTrue);
-        expect(progress.isUnlocked(mode, 'scene13'), isFalse);
+        await completeScene(progress, mode, 'scene17');
+        expect(progress.isCleared(mode, 'scene17'), isTrue);
+        expect(progress.isUnlocked(mode, 'scene17'), isFalse);
       });
     });
   }

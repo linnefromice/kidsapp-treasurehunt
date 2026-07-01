@@ -15,6 +15,10 @@ part 'scene_background/flower_field_painter.dart';
 part 'scene_background/rainbow_hills_painter.dart';
 part 'scene_background/castle_painter.dart';
 part 'scene_background/galaxy_painter.dart';
+part 'scene_background/town_painter.dart';
+part 'scene_background/candy_painter.dart';
+part 'scene_background/zoo_painter.dart';
+part 'scene_background/park_painter.dart';
 
 /// シーン背景。静止画レイヤ（[_PaintedScene]）の上に環境アニメ層
 /// （[sceneAmbient]）を重ねる。静止画はそのまま、その上で雲・光・雪などが緩く動く。
@@ -37,6 +41,10 @@ Widget _sceneBase(String sceneId) => switch (sceneId) {
   'scene11' => const _PaintedScene(painter: _RainbowHillsPainter()),
   'scene12' => const _PaintedScene(painter: _CastlePainter()),
   'scene13' => const _PaintedScene(painter: _GalaxyPainter()),
+  'scene14' => const _PaintedScene(painter: _TownPainter()),
+  'scene15' => const _PaintedScene(painter: _CandyPainter()),
+  'scene16' => const _PaintedScene(painter: _ZooPainter()),
+  'scene17' => const _PaintedScene(painter: _ParkPainter()),
   _ => const ColoredBox(color: Color(0xFF87CEEB)),
 };
 
