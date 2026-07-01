@@ -1,0 +1,251 @@
+{
+  "id": "scene20",
+  "titleKey": "scene.scene20.title",
+  "imageAsset": "assets/scenes/scene20.png",
+  "targets": [
+    {
+      "id": "ball_1",
+      "iconId": "ball",
+      "labelKey": "target.ball",
+      "left": 0.512,
+      "top": 0.645,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "balloon_1",
+      "iconId": "balloon",
+      "labelKey": "target.balloon",
+      "left": 0.843,
+      "top": 0.647,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "car_1",
+      "iconId": "car",
+      "labelKey": "target.car",
+      "left": 0.69,
+      "top": 0.178,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "kite_1",
+      "iconId": "kite",
+      "labelKey": "target.kite",
+      "left": 0.511,
+      "top": 0.795,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "gift_1",
+      "iconId": "gift",
+      "labelKey": "target.gift",
+      "left": 0.519,
+      "top": 0.188,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "backpack_1",
+      "iconId": "backpack",
+      "labelKey": "target.backpack",
+      "left": 0.853,
+      "top": 0.18,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "music_1",
+      "iconId": "music",
+      "labelKey": "target.music",
+      "left": 0.85,
+      "top": 0.027,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "bell_1",
+      "iconId": "bell",
+      "labelKey": "target.bell",
+      "left": 0.355,
+      "top": 0.033,
+      "width": 0.11,
+      "height": 0.13
+    }
+  ],
+  "dummies": [
+    {
+      "id": "d_cat_0",
+      "iconId": "cat",
+      "left": 0.039,
+      "top": 0.031,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_star_1",
+      "iconId": "star",
+      "left": 0.677,
+      "top": 0.497,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_heart_2",
+      "iconId": "heart",
+      "left": 0.533,
+      "top": 0.495,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_lightbulb_3",
+      "iconId": "lightbulb",
+      "left": 0.349,
+      "top": 0.34,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_key_4",
+      "iconId": "key",
+      "left": 0.195,
+      "top": 0.805,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_cloud_5",
+      "iconId": "cloud",
+      "left": 0.033,
+      "top": 0.805,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_flower_6",
+      "iconId": "flower",
+      "left": 0.2,
+      "top": 0.341,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_crown_7",
+      "iconId": "crown",
+      "left": 0.184,
+      "top": 0.644,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_cat_8",
+      "iconId": "cat",
+      "left": 0.355,
+      "top": 0.641,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_star_9",
+      "iconId": "star",
+      "left": 0.533,
+      "top": 0.333,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_heart_10",
+      "iconId": "heart",
+      "left": 0.206,
+      "top": 0.027,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_lightbulb_11",
+      "iconId": "lightbulb",
+      "left": 0.851,
+      "top": 0.343,
+      "width": 0.1,
+      "height": 0.12
+    }
+  ],
+  "hardDummies": [
+    {
+      "id": "h_cat_0",
+      "iconId": "cat",
+      "left": 0.532,
+      "top": 0.034,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.7
+    },
+    {
+      "id": "h_star_1",
+      "iconId": "star",
+      "left": 0.841,
+      "top": 0.494,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.85
+    },
+    {
+      "id": "h_heart_2",
+      "iconId": "heart",
+      "left": 0.188,
+      "top": 0.188,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.0
+    },
+    {
+      "id": "h_lightbulb_3",
+      "iconId": "lightbulb",
+      "left": 0.683,
+      "top": 0.035,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.15
+    },
+    {
+      "id": "h_key_4",
+      "iconId": "key",
+      "left": 0.039,
+      "top": 0.343,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.3
+    },
+    {
+      "id": "h_cloud_5",
+      "iconId": "cloud",
+      "left": 0.018,
+      "top": 0.487,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.8
+    },
+    {
+      "id": "h_flower_6",
+      "iconId": "flower",
+      "left": 0.025,
+      "top": 0.183,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.2
+    },
+    {
+      "id": "h_crown_7",
+      "iconId": "crown",
+      "left": 0.689,
+      "top": 0.334,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.95
+    }
+  ]
+}

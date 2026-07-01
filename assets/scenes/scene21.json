@@ -1,0 +1,251 @@
+{
+  "id": "scene21",
+  "titleKey": "scene.scene21.title",
+  "imageAsset": "assets/scenes/scene21.png",
+  "targets": [
+    {
+      "id": "apple_1",
+      "iconId": "apple",
+      "labelKey": "target.apple",
+      "left": 0.37,
+      "top": 0.031,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "fish_1",
+      "iconId": "fish",
+      "labelKey": "target.fish",
+      "left": 0.032,
+      "top": 0.186,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "banana_1",
+      "iconId": "banana",
+      "labelKey": "target.banana",
+      "left": 0.842,
+      "top": 0.341,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "bread_1",
+      "iconId": "bread",
+      "labelKey": "target.bread",
+      "left": 0.84,
+      "top": 0.029,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "milk_1",
+      "iconId": "milk",
+      "labelKey": "target.milk",
+      "left": 0.366,
+      "top": 0.494,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "carrot_1",
+      "iconId": "carrot",
+      "labelKey": "target.carrot",
+      "left": 0.021,
+      "top": 0.344,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "egg_1",
+      "iconId": "egg",
+      "labelKey": "target.egg",
+      "left": 0.844,
+      "top": 0.796,
+      "width": 0.11,
+      "height": 0.13
+    },
+    {
+      "id": "cheese_1",
+      "iconId": "cheese",
+      "labelKey": "target.cheese",
+      "left": 0.695,
+      "top": 0.797,
+      "width": 0.11,
+      "height": 0.13
+    }
+  ],
+  "dummies": [
+    {
+      "id": "d_cake_0",
+      "iconId": "cake",
+      "left": 0.859,
+      "top": 0.182,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_pizza_1",
+      "iconId": "pizza",
+      "left": 0.847,
+      "top": 0.498,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_icecream_2",
+      "iconId": "icecream",
+      "left": 0.688,
+      "top": 0.34,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_gift_3",
+      "iconId": "gift",
+      "left": 0.698,
+      "top": 0.486,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_bucket_4",
+      "iconId": "bucket",
+      "left": 0.352,
+      "top": 0.189,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_balloon_5",
+      "iconId": "balloon",
+      "left": 0.529,
+      "top": 0.494,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_bell_6",
+      "iconId": "bell",
+      "left": 0.522,
+      "top": 0.338,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_key_7",
+      "iconId": "key",
+      "left": 0.193,
+      "top": 0.34,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_cake_8",
+      "iconId": "cake",
+      "left": 0.201,
+      "top": 0.804,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_pizza_9",
+      "iconId": "pizza",
+      "left": 0.527,
+      "top": 0.644,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_icecream_10",
+      "iconId": "icecream",
+      "left": 0.206,
+      "top": 0.036,
+      "width": 0.1,
+      "height": 0.12
+    },
+    {
+      "id": "d_gift_11",
+      "iconId": "gift",
+      "left": 0.685,
+      "top": 0.65,
+      "width": 0.1,
+      "height": 0.12
+    }
+  ],
+  "hardDummies": [
+    {
+      "id": "h_cake_0",
+      "iconId": "cake",
+      "left": 0.695,
+      "top": 0.18,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.7
+    },
+    {
+      "id": "h_pizza_1",
+      "iconId": "pizza",
+      "left": 0.021,
+      "top": 0.486,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.85
+    },
+    {
+      "id": "h_icecream_2",
+      "iconId": "icecream",
+      "left": 0.357,
+      "top": 0.641,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.0
+    },
+    {
+      "id": "h_gift_3",
+      "iconId": "gift",
+      "left": 0.849,
+      "top": 0.641,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.15
+    },
+    {
+      "id": "h_bucket_4",
+      "iconId": "bucket",
+      "left": 0.511,
+      "top": 0.029,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.3
+    },
+    {
+      "id": "h_balloon_5",
+      "iconId": "balloon",
+      "left": 0.203,
+      "top": 0.189,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.8
+    },
+    {
+      "id": "h_bell_6",
+      "iconId": "bell",
+      "left": 0.364,
+      "top": 0.803,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 1.2
+    },
+    {
+      "id": "h_key_7",
+      "iconId": "key",
+      "left": 0.029,
+      "top": 0.795,
+      "width": 0.1,
+      "height": 0.12,
+      "scale": 0.95
+    }
+  ]
+}

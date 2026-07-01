@@ -232,5 +232,47 @@ List<AmbientSpec> ambientSpecsFor(String sceneId) => switch (sceneId) {
       seed: 1701,
     ),
   ],
+  // scene18 まちのおしごと: 青空に雲が漂う。
+  'scene18' => const [
+    AmbientSpec(
+      kind: AmbientKind.drift,
+      count: 3,
+      color: Color(0xCCFFFFFF),
+      seed: 1801,
+    ),
+  ],
+  // scene19 みなと: 海の上を漂う雲＋きらめく光の粒。
+  'scene19' => const [
+    AmbientSpec(
+      kind: AmbientKind.drift,
+      count: 2,
+      color: Color(0xCCFFFFFF),
+      seed: 1901,
+    ),
+    AmbientSpec(
+      kind: AmbientKind.mote,
+      count: 6,
+      color: Color(0xFFFFFDE7),
+      seed: 1902,
+    ),
+  ],
+  // scene20 こどもべや: 窓から差す光のほこり（やわらかいモート）。
+  'scene20' => const [
+    AmbientSpec(
+      kind: AmbientKind.mote,
+      count: 10,
+      color: Color(0xFFFFF6C8),
+      seed: 2001,
+    ),
+  ],
+  // scene21 スーパー: 明るい店内の光の粒。
+  'scene21' => const [
+    AmbientSpec(
+      kind: AmbientKind.mote,
+      count: 8,
+      color: Color(0xFFFFFDE7),
+      seed: 2101,
+    ),
+  ],
   _ => const [],
 };

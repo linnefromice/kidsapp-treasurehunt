@@ -82,6 +82,13 @@ const Map<String, IconData> _kTargetIcons = {
   'mitten': Icons.back_hand,
   'sled': Icons.toys,
   'shield': Icons.shield,
+  // おかいもの（スーパー）用の食材アイコン。
+  'banana': Icons.lunch_dining,
+  'bread': Icons.bakery_dining,
+  'milk': Icons.local_drink,
+  'carrot': Icons.restaurant,
+  'egg': Icons.egg,
+  'cheese': Icons.restaurant_menu,
   // めくり露出（A1）用の「かぶせもの」。宝に被せ、タップ発見でめくれて宝が現れる。
   // ステージのイメージに合わせて使い分ける（scene_covers.dart のプール参照）。
   'cover_leaves': Icons.grass,
@@ -177,6 +184,13 @@ const Map<String, Color> _kTargetColors = {
   'mitten': Color(0xFFC92A2A),
   'sled': Color(0xFFC92A2A),
   'shield': Color(0xFF1971C2),
+  // おかいもの（スーパー）用の食材カラー。
+  'banana': Color(0xFFF9A825),
+  'bread': Color(0xFFC98A45),
+  'milk': Color(0xFF64B5F6),
+  'carrot': Color(0xFFE8590C),
+  'egg': Color(0xFFFFB300),
+  'cheese': Color(0xFFF0A500),
   // かぶせもの（自然物っぽい色・ヒントグローの発光色にも使う）。
   'cover_leaves': Color(0xFF558B2F),
   'cover_snow': Color(0xFF90CAF9),

@@ -881,6 +881,74 @@ icons["bucket"]=dict(hc="#4DABF7",
        '<ellipse cx="50" cy="82" rx="16" ry="4" fill="#FFE066" opacity="0.7"/>'),
  sparks=[(68,44,4,0.8)])
 
+# ===== おかいもの（スーパー）用の食材アイコン =============================
+
+# banana ------------------------------------------------------------------
+icons["banana"]=dict(hc="#FFE066",
+ defs=[lgrad("b",0,0,1,1,[(0,"#FFF3BF",1),(55,"#FFD43B",1),(100,"#E8A100",1)])],
+ body=('<path d="M30 36 C34 70 60 80 78 62 C73 66 66 66 60 63 '
+       'C45 56 41 40 39 35 C37 31 31 32 30 36 Z" fill="url(#b)"/>'
+       '<circle cx="31" cy="35" r="3.4" fill="#8C6D1F"/>'
+       '<circle cx="77" cy="62" r="3" fill="#8C6D1F"/>'
+       '<path d="M36 40 C40 62 58 70 70 62" stroke="#FFF" '
+       'stroke-width="2.2" fill="none" opacity="0.35"/>'),
+ sparks=[(52,44,4.5,0.9),(66,58,3,0.8)])
+
+# bread (loaf) ------------------------------------------------------------
+icons["bread"]=dict(hc="#F0C27B",
+ defs=[lgrad("b",0,0,0,1,[(0,"#F6D8A6",1),(100,"#C98A45",1)])],
+ body=('<path d="M22 64 Q22 38 50 38 Q78 38 78 64 L78 70 '
+       'Q78 76 72 76 L28 76 Q22 76 22 70 Z" fill="url(#b)"/>'
+       '<path d="M40 44 L34 70 M52 42 L48 72 M64 44 L60 70" '
+       'stroke="#A6713A" stroke-width="2" opacity="0.5" fill="none"/>'
+       '<ellipse cx="40" cy="48" rx="12" ry="6" fill="#FFF" opacity="0.2"/>'),
+ sparks=[(66,46,4.5,0.9),(32,66,3,0.8)])
+
+# milk (carton) -----------------------------------------------------------
+icons["milk"]=dict(hc="#E7F5FF",
+ defs=[lgrad("b",0,0,0,1,[(0,"#FFFFFF",1),(100,"#D0EBFF",1)])],
+ body=('<path d="M34 44 L50 30 L66 44 L66 82 L34 82 Z" fill="url(#b)"/>'
+       '<path d="M34 44 L50 30 L66 44 Z" fill="#A5D8FF"/>'
+       '<rect x="34" y="56" width="32" height="12" fill="#4DABF7"/>'
+       '<circle cx="50" cy="62" r="4" fill="#FFF"/>'
+       '<path d="M40 46 L40 78" stroke="#FFF" stroke-width="2" opacity="0.4"/>'),
+ sparks=[(60,50,4,0.85),(40,72,3,0.75)])
+
+# carrot ------------------------------------------------------------------
+icons["carrot"]=dict(hc="#FFA94D",
+ defs=[lgrad("b",0,0,0,1,[(0,"#FFC078",1),(100,"#E8590C",1)])],
+ body=('<path d="M50 24 C44 30 42 34 42 40 L58 40 C58 34 56 30 50 24 Z" '
+       'fill="#40C057"/>'
+       '<ellipse cx="40" cy="30" rx="5" ry="9" fill="#2F9E44" '
+       'transform="rotate(-20 40 30)"/>'
+       '<ellipse cx="60" cy="30" rx="5" ry="9" fill="#2F9E44" '
+       'transform="rotate(20 60 30)"/>'
+       '<path d="M40 42 L60 42 L50 86 Z" fill="url(#b)"/>'
+       '<path d="M45 52 L55 52 M46 62 L54 62 M48 72 L52 72" '
+       'stroke="#B34700" stroke-width="1.6" opacity="0.6"/>'),
+ sparks=[(56,50,4,0.85),(44,66,2.6,0.75)])
+
+# egg (fried) -------------------------------------------------------------
+icons["egg"]=dict(hc="#FFF3BF",
+ defs=[rgrad("yolk",44,42,55,[(0,"#FFE066",1),(100,"#F59F00",1)])],
+ body=('<path d="M30 54 Q24 36 44 34 Q52 24 62 34 Q82 34 76 52 '
+       'Q84 68 64 70 Q54 82 42 70 Q22 66 30 54 Z" fill="#FFFFFF"/>'
+       '<circle cx="52" cy="50" r="13" fill="url(#yolk)"/>'
+       '<ellipse cx="48" cy="46" rx="4" ry="3" fill="#FFF" opacity="0.6"/>'),
+ sparks=[(70,40,4,0.85),(34,60,3,0.75)])
+
+# cheese (wedge) ----------------------------------------------------------
+icons["cheese"]=dict(hc="#FFE066",
+ defs=[lgrad("b",0,0,0,1,[(0,"#FFE98A",1),(100,"#F0A500",1)])],
+ body=('<path d="M24 66 L72 46 Q77 44 77 50 L77 64 Q77 68 73 68 '
+       'L28 68 Q24 68 24 66 Z" fill="url(#b)"/>'
+       '<path d="M24 66 L72 46" stroke="#FFF3BF" stroke-width="3" '
+       'opacity="0.7"/>'
+       '<circle cx="46" cy="60" r="4" fill="#E8950C"/>'
+       '<circle cx="62" cy="58" r="3" fill="#E8950C"/>'
+       '<circle cx="55" cy="63" r="2.4" fill="#E8950C"/>'),
+ sparks=[(68,52,4,0.85),(34,64,2.6,0.75)])
+
 for slug,cfg in icons.items():
     wrap(slug,cfg["hc"],cfg["defs"],cfg["body"],cfg["sparks"])
 print("generated",len(icons),"icons")
